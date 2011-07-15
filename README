@@ -1,0 +1,27 @@
+This Python module adds a quaternion dtype to NumPy.
+
+To build:
+
+ $ python setup.py build
+
+To install (may require administrator rights):
+
+ # python setup.py install
+
+Example:
+
+ >>> import numpy as np
+ >>> import quaternion
+ >>> np.quaternion(1,0,0,0)
+ quaternion(1, 0, 0, 0)
+ >>> np.array([np.quaternion(1,2,3,4), np.quaternion(5,6,7,8)])
+ array([quaternion(1, 2, 3, 4), quaternion(5, 6, 7, 8)], dtype=quaternion)
+ >>> abs(_)
+ array([  5.47722558,  13.19090596])
+
+Only the bare minimum of ufuncs are currently implemented. More will follow.
+
+Written at the SciPy 2011 sprints, with help from Mark Weibe.
+
+(The basic structure of the package is copied from Mark's half-precision
+floating point package: https://github.com/m-paradox/numpy_half)
