@@ -29,6 +29,8 @@
 #include "quaternion.h"
 #include "math.h"
 
+#define _QUAT_EPS 1e-6
+
 int
 quaternion_isnonzero(quaternion q)
 {
@@ -56,22 +58,130 @@ quaternion_isfinite(quaternion q)
 double
 quaternion_absolute(quaternion q)
 {
-   return sqrt(pow(q.w, 2) + pow(q.x, 2) + pow(q.y, 2) + pow(q.z, 2));
+   return sqrt(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
 }
 
 quaternion
-quaternion_copysign(quaternion x, quaternion y)
+quaternion_add(quaternion q1, quaternion q2)
+{
+   return (quaternion) {
+      q1.w+q2.w,
+      q1.x+q2.x,
+      q1.y+q2.y,
+      q1.z+q2.z,
+   };
+}
+
+quaternion
+quaternion_subtract(quaternion q1, quaternion q2)
+{
+   return (quaternion) {
+      q1.w-q2.w,
+      q1.x-q2.x,
+      q1.y-q2.y,
+      q1.z-q2.z,
+   };
+}
+
+quaternion
+quaternion_multiply(quaternion q1, quaternion q2)
+{
+   return (quaternion) {
+      q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z,
+      q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y,
+      q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x,
+      q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w,
+   };
+}
+
+quaternion
+quaternion_divide(quaternion q1, quaternion q2)
+{
+   double s = q2.w*q2.w + q2.x*q2.x + q2.y*q2.y + q2.z*q2.z;
+   return (quaternion) {
+      (  q1.w*q2.w + q1.x*q2.x + q1.y*q2.y + q1.z*q2.z) / s,
+      (- q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y) / s,
+      (- q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x) / s,
+      (- q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w) / s
+   };
+}
+
+quaternion
+quaternion_multiply_scalar(quaternion q, double s)
+{
+   return (quaternion) {s*q.w, s*q.x, s*q.y, s*q.z};
+}
+
+quaternion
+quaternion_divide_scalar(quaternion q, double s)
+{
+   return (quaternion) {q.w/s, q.x/s, q.y/s, q.z/s};
+}
+
+quaternion
+quaternion_log(quaternion q)
+{
+   double sumvsq = q.x*q.x + q.y*q.y + q.z*q.z;
+   double vnorm = sqrt(sumvsq);
+   if (vnorm > _QUAT_EPS) {
+      double m = sqrt(q.w*q.w + sumvsq);
+      double s = acos(q.w/m) / vnorm;
+      return (quaternion) {log(m), s*q.x, s*q.y, s*q.z};
+   } else {
+      return (quaternion) {0, 0, 0, 0};
+   }
+}
+
+quaternion
+quaternion_exp(quaternion q)
+{
+   double vnorm = sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
+   if (vnorm > _QUAT_EPS) {
+      double s = sin(vnorm) / vnorm;
+      double e = exp(q.w);
+      return (quaternion) {e*cos(vnorm), e*s*q.x, e*s*q.y, e*s*q.z};
+   } else {
+      return (quaternion) {exp(q.w), 0, 0, 0};
+   }
+}
+
+quaternion
+quaternion_power(quaternion q, quaternion p)
+{
+   return quaternion_exp(quaternion_multiply(quaternion_log(q), p));
+}
+
+quaternion
+quaternion_power_scalar(quaternion q, double p)
+{
+   return quaternion_exp(quaternion_multiply_scalar(quaternion_log(q), p));
+}
+
+quaternion
+quaternion_negative(quaternion q)
+{
+   return (quaternion) {-q.w, -q.x, -q.y, -q.z};
+}
+
+quaternion
+quaternion_conjugate(quaternion q)
+{
+   return (quaternion) {q.w, -q.x, -q.y, -q.z};
+}
+
+quaternion
+quaternion_copysign(quaternion q1, quaternion q2)
 {
     return (quaternion) {
-        copysign(x.w, y.w),
-        copysign(x.x, y.x),
-        copysign(x.y, y.y),
-        copysign(x.z, y.z)
+        copysign(q1.w, q2.w),
+        copysign(q1.x, q2.x),
+        copysign(q1.y, q2.y),
+        copysign(q1.z, q2.z)
     };
 }
 
 int
-quaternion_eq(quaternion q1, quaternion q2)
+quaternion_equal(quaternion q1, quaternion q2)
 {
     return 
         !quaternion_isnan(q1) &&
@@ -83,13 +193,13 @@ quaternion_eq(quaternion q1, quaternion q2)
 }
 
 int
-quaternion_ne(quaternion q1, quaternion q2)
+quaternion_not_equal(quaternion q1, quaternion q2)
 {
-    return !quaternion_eq(q1, q2);
+    return !quaternion_equal(q1, q2);
 }
 
 int
-quaternion_lt(quaternion q1, quaternion q2)
+quaternion_less(quaternion q1, quaternion q2)
 {
     return
         (!quaternion_isnan(q1) &&
@@ -101,13 +211,7 @@ quaternion_lt(quaternion q1, quaternion q2)
 }
 
 int
-quaternion_gt(quaternion q1, quaternion q2)
-{
-    return quaternion_lt(q2, q1);
-}
-
-int
-quaternion_le(quaternion q1, quaternion q2)
+quaternion_less_equal(quaternion q1, quaternion q2)
 {
    return
         (!quaternion_isnan(q1) &&
@@ -116,10 +220,4 @@ quaternion_le(quaternion q1, quaternion q2)
             q1.x != q2.x ? q1.x < q2.x :
             q1.y != q2.y ? q1.y < q2.y :
             q1.z != q2.z ? q1.z < q2.z : 1);
-}
-
-int
-quaternion_ge(quaternion q1, quaternion q2)
-{
-    return quaternion_le(q2, q1);
 }

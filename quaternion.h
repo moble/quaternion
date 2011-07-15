@@ -40,20 +40,28 @@ typedef struct {
 	double z;
 } quaternion;
 
-/* Comparisons */
-int quaternion_eq(quaternion q1, quaternion q2);
-int quaternion_ne(quaternion q1, quaternion q2);
-int quaternion_le(quaternion q1, quaternion q2);
-int quaternion_lt(quaternion q1, quaternion q2);
-int quaternion_ge(quaternion q1, quaternion q2);
-int quaternion_gt(quaternion q1, quaternion q2);
-/* Miscellaneous functions */
 int quaternion_isnonzero(quaternion q);
 int quaternion_isnan(quaternion q);
 int quaternion_isinf(quaternion q);
 int quaternion_isfinite(quaternion q);
-quaternion quaternion_copysign(quaternion x, quaternion y);
 double quaternion_absolute(quaternion q);
+quaternion quaternion_add(quaternion q1, quaternion q2);
+quaternion quaternion_subtract(quaternion q1, quaternion q2);
+quaternion quaternion_multiply(quaternion q1, quaternion q2);
+quaternion quaternion_divide(quaternion q1, quaternion q2);
+quaternion quaternion_multiply_scalar(quaternion q, double s);
+quaternion quaternion_divide_scalar(quaternion q, double s);
+quaternion quaternion_log(quaternion q);
+quaternion quaternion_exp(quaternion q);
+quaternion quaternion_power(quaternion q, quaternion p);
+quaternion quaternion_power_scalar(quaternion q, double p);
+quaternion quaternion_negative(quaternion q);
+quaternion quaternion_conjugate(quaternion q);
+quaternion quaternion_copysign(quaternion q1, quaternion q2);
+int quaternion_equal(quaternion q1, quaternion q2);
+int quaternion_not_equal(quaternion q1, quaternion q2);
+int quaternion_less(quaternion q1, quaternion q2);
+int quaternion_less_equal(quaternion q1, quaternion q2);
 
 #ifdef __cplusplus
 }

@@ -14,14 +14,35 @@ Example:
  >>> import quaternion
  >>> np.quaternion(1,0,0,0)
  quaternion(1, 0, 0, 0)
- >>> np.array([np.quaternion(1,2,3,4), np.quaternion(5,6,7,8)])
+ >>> q1 = np.quaternion(1,2,3,4)
+ >>> q2 = np.quaternion(5,6,7,8)
+ >>> q1 * q2
+ quaternion(-60, 12, 30, 24)
+ >>> a = np.array([q1, q2])
+ >>> a
  array([quaternion(1, 2, 3, 4), quaternion(5, 6, 7, 8)], dtype=quaternion)
- >>> abs(_)
- array([  5.47722558,  13.19090596])
+ >>> exp(a)
+ array([quaternion(1.69392, -0.78956, -1.18434, -1.57912),
+        quaternion(138.909, -25.6861, -29.9671, -34.2481)], dtype=quaternion)
 
-Only the bare minimum of ufuncs are currently implemented. More will follow.
+The following ufuncs are implemented:
+ add, subtract, multiply, divide, log, exp, power, negative, conjugate,
+ copysign, equal, not_equal, less, less_equal, isnan, isinf, isfinite, absolute
+
+Quaternion components are stored as doubles.
+
+Comparison operations follow the same lexicographic ordering as tuples.
+
+The unary tests isnan, isinf and isfinite return true if they would return
+true for any individual component.
+
+Real types may be cast to quaternions, giving quaternions with zero for all
+three imaginary components. Complex types may also be cast to quaternions,
+with their single imaginary component becoming the first imaginary component of
+the quaternion. Quaternions may not be cast to real or complex types.
 
 Written at the SciPy 2011 sprints, with help from Mark Weibe.
 
-(The basic structure of the package is copied from Mark's half-precision
-floating point package: https://github.com/m-paradox/numpy_half)
+The basic structure of this package is copied from Mark's half-precision
+floating point package: https://github.com/m-paradox/numpy_half - without this
+and Mark's help I would have had little chance of figuring out how to do this!

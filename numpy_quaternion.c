@@ -39,7 +39,6 @@ typedef struct {
         quaternion obval;
 } PyQuaternionScalarObject;
 
-
 PyTypeObject PyQuaternionArrType_Type = {
 #if defined(NPY_PY3K)
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -206,9 +205,9 @@ QUATERNION_compare (quaternion *pa, quaternion *pb, PyArrayObject *NPY_UNUSED(ap
         ret = bnan ? 0 : -1;
     } else if (bnan) {
         ret = 1;
-    } else if(quaternion_lt(a, b)) {
+    } else if(quaternion_less(a, b)) {
         ret = -1;
-    } else if(quaternion_lt(b, a)) {
+    } else if(quaternion_less(b, a)) {
         ret = 1;
     } else {
         ret = 0;
@@ -235,7 +234,7 @@ QUATERNION_argmax(quaternion *ip, npy_intp n, npy_intp *max_ind, PyArrayObject *
         /*
          * Propagate nans, similarly as max() and min()
          */
-        if (!(quaternion_le(*ip, mp))) {  /* negated, for correct nan handling */
+        if (!(quaternion_less_equal(*ip, mp))) {  /* negated, for correct nan handling */
             mp = *ip;
             *max_ind = i;
             if (quaternion_isnan(mp)) {
@@ -263,7 +262,7 @@ QUATERNION_nonzero (char *ip, PyArrayObject *ap)
         descr->f->copyswap(&q.z, ip+24, !PyArray_ISNOTSWAPPED(ap), NULL);
         Py_DECREF(descr);
     }
-    return (npy_bool) !quaternion_eq(q, (quaternion) {0,0,0,0});
+    return (npy_bool) !quaternion_equal(q, (quaternion) {0,0,0,0});
 }
 
 static void
@@ -279,7 +278,7 @@ QUATERNION_fillwithscalar(quaternion *buffer, npy_intp length, quaternion *value
 
 #define MAKE_T_TO_QUATERNION(TYPE, type)                                       \
 static void                                                                    \
-TYPE ## _to_quaternion(type *ip, quaternion *op, npy_intp n,               \
+TYPE ## _to_quaternion(type *ip, quaternion *op, npy_intp n,                   \
                PyArrayObject *NPY_UNUSED(aip), PyArrayObject *NPY_UNUSED(aop)) \
 {                                                                              \
     while (n--) {                                                              \
@@ -307,7 +306,7 @@ MAKE_T_TO_QUATERNION(ULONGLONG, npy_ulonglong);
 
 #define MAKE_CT_TO_QUATERNION(TYPE, type)                                      \
 static void                                                                    \
-TYPE ## _to_quaternion(type *ip, quaternion *op, npy_intp n,               \
+TYPE ## _to_quaternion(type *ip, quaternion *op, npy_intp n,                   \
                PyArrayObject *NPY_UNUSED(aip), PyArrayObject *NPY_UNUSED(aop)) \
 {                                                                              \
     while (n--) {                                                              \
@@ -356,7 +355,7 @@ gentype_richcompare(PyObject *self, PyObject *other, int cmp_op)
 }
 
 static long
-quaterniontype_hash(PyObject *o)
+quaternion_arrtype_hash(PyObject *o)
 {
     quaternion q = ((PyQuaternionScalarObject *)o)->obval;
     long value = 0x456789;
@@ -370,7 +369,7 @@ quaterniontype_hash(PyObject *o)
 }
 
 static PyObject *
-quaterniontype_repr(PyObject *o)
+quaternion_arrtype_repr(PyObject *o)
 {
     char str[128];
     quaternion q = ((PyQuaternionScalarObject *)o)->obval;
@@ -379,7 +378,7 @@ quaterniontype_repr(PyObject *o)
 }
 
 static PyObject *
-quaterniontype_str(PyObject *o)
+quaternion_arrtype_str(PyObject *o)
 {
     char str[128];
     quaternion q = ((PyQuaternionScalarObject *)o)->obval;
@@ -391,64 +390,59 @@ static PyMethodDef QuaternionMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
-#define UNARY_LOOP\
+#define UNARY_UFUNC(name, ret_type)\
+static void \
+quaternion_##name##_ufunc(char** args, npy_intp* dimensions,\
+    npy_intp* steps, void* data) {\
     char *ip1 = args[0], *op1 = args[1];\
     npy_intp is1 = steps[0], os1 = steps[1];\
     npy_intp n = dimensions[0];\
     npy_intp i;\
-    for(i = 0; i < n; i++, ip1 += is1, op1 += os1)
+    for(i = 0; i < n; i++, ip1 += is1, op1 += os1){\
+        const quaternion in1 = *(quaternion *)ip1;\
+        *((ret_type *)op1) = quaternion_##name(in1);};}
 
-#define BINARY_LOOP\
+UNARY_UFUNC(isnan, npy_bool)
+UNARY_UFUNC(isinf, npy_bool)
+UNARY_UFUNC(isfinite, npy_bool)
+UNARY_UFUNC(absolute, npy_double)
+UNARY_UFUNC(log, quaternion)
+UNARY_UFUNC(exp, quaternion)
+UNARY_UFUNC(negative, quaternion)
+UNARY_UFUNC(conjugate, quaternion)
+
+#define BINARY_GEN_UFUNC(name, func_name, arg_type, ret_type)\
+static void \
+quaternion_##func_name##_ufunc(char** args, npy_intp* dimensions,\
+    npy_intp* steps, void* data) {\
     char *ip1 = args[0], *ip2 = args[1], *op1 = args[2];\
     npy_intp is1 = steps[0], is2 = steps[1], os1 = steps[2];\
     npy_intp n = dimensions[0];\
     npy_intp i;\
-    for(i = 0; i < n; i++, ip1 += is1, ip2 += is2, op1 += os1)
+    for(i = 0; i < n; i++, ip1 += is1, ip2 += is2, op1 += os1){\
+        const quaternion in1 = *(quaternion *)ip1;\
+        const arg_type in2 = *(arg_type *)ip2;\
+        *((ret_type *)op1) = quaternion_##func_name(in1, in2);};};
 
-static void
-quaternion_isnan_ufunc(char** args, npy_intp* dimensions,
-    npy_intp* steps, void* data)
-{
-    UNARY_LOOP
-    {
-        const quaternion in1 = *(quaternion *)ip1;
-        *((npy_bool *)op1) = quaternion_isnan(in1);
-    }
-}
+#define BINARY_UFUNC(name, ret_type)\
+    BINARY_GEN_UFUNC(name, name, quaternion, ret_type)
+#define BINARY_SCALAR_UFUNC(name, ret_type)\
+    BINARY_GEN_UFUNC(name, name##_scalar, npy_double, ret_type)
 
-static void
-quaternion_isinf_ufunc(char** args, npy_intp* dimensions,
-    npy_intp* steps, void* data)
-{
-    UNARY_LOOP
-    {
-        const quaternion in1 = *(quaternion *)ip1;
-        *((npy_bool *)op1) = quaternion_isinf(in1);
-    }
-}
+BINARY_UFUNC(add, quaternion)
+BINARY_UFUNC(subtract, quaternion)
+BINARY_UFUNC(multiply, quaternion)
+BINARY_UFUNC(divide, quaternion)
+BINARY_UFUNC(power, quaternion)
+BINARY_UFUNC(copysign, quaternion)
+BINARY_UFUNC(equal, npy_bool)
+BINARY_UFUNC(not_equal, npy_bool)
+BINARY_UFUNC(less, npy_bool)
+BINARY_UFUNC(less_equal, npy_bool)
 
-static void
-quaternion_not_equal_ufunc(char** args, npy_intp* dimensions,
-    npy_intp* steps, void* data)
-{
-    BINARY_LOOP
-    {
-        const quaternion in1 = *(quaternion *)ip1;
-        const quaternion in2 = *(quaternion *)ip2;
-        *((npy_bool *)op1) = quaternion_ne(in1, in2);
-    }
-}
-
-static void
-quaternion_absolute_ufunc(char** args, npy_intp* dimensions,
-    npy_intp* steps, void* data)
-{
-    UNARY_LOOP
-    {
-        const quaternion in1 = *(quaternion *)ip1;
-        *((npy_double *)op1) = quaternion_absolute(in1);
-    }
-}
+BINARY_SCALAR_UFUNC(multiply, quaternion)
+BINARY_SCALAR_UFUNC(divide, quaternion)
+BINARY_SCALAR_UFUNC(power, quaternion)
 
 PyMODINIT_FUNC initnumpy_quaternion(void)
 {
@@ -475,9 +469,9 @@ PyMODINIT_FUNC initnumpy_quaternion(void)
 #endif
     PyQuaternionArrType_Type.tp_new = quaternion_arrtype_new;
     PyQuaternionArrType_Type.tp_richcompare = gentype_richcompare;
-    PyQuaternionArrType_Type.tp_hash = quaterniontype_hash;
-    PyQuaternionArrType_Type.tp_repr = quaterniontype_repr;
-    PyQuaternionArrType_Type.tp_str = quaterniontype_str;
+    PyQuaternionArrType_Type.tp_hash = quaternion_arrtype_hash;
+    PyQuaternionArrType_Type.tp_repr = quaternion_arrtype_repr;
+    PyQuaternionArrType_Type.tp_str = quaternion_arrtype_str;
     PyQuaternionArrType_Type.tp_base = &PyGenericArrType_Type;
     if (PyType_Ready(&PyQuaternionArrType_Type) < 0) {
         PyErr_Print();
@@ -534,20 +528,62 @@ PyMODINIT_FUNC initnumpy_quaternion(void)
     register_cast_function(NPY_CDOUBLE, quaternionNum, (PyArray_VectorUnaryFunc*)CDOUBLE_to_quaternion);
     register_cast_function(NPY_CLONGDOUBLE, quaternionNum, (PyArray_VectorUnaryFunc*)CLONGDOUBLE_to_quaternion);
 
+#define REGISTER_UFUNC(name)\
+    PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name),\
+            quaternion_descr->type_num, quaternion_##name##_ufunc, arg_types, NULL)
+
+#define REGISTER_SCALAR_UFUNC(name)\
+    PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name),\
+            quaternion_descr->type_num, quaternion_##name##_scalar_ufunc, arg_types, NULL)
+
+    /* quat -> bool */
     arg_types[0] = quaternion_descr->type_num;
     arg_types[1] = NPY_BOOL;
-    PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, "isnan"),
-            quaternion_descr->type_num, quaternion_isnan_ufunc, arg_types, NULL);
-    PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, "isinf"),
-            quaternion_descr->type_num, quaternion_isinf_ufunc, arg_types, NULL);
-    arg_types[1] = NPY_DOUBLE;
-    PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, "absolute"),
-            quaternion_descr->type_num, quaternion_absolute_ufunc, arg_types, NULL);
-    arg_types[1] = quaternion_descr->type_num;
-    arg_types[2] = NPY_BOOL;
-    PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, "not_equal"),
-            quaternion_descr->type_num, quaternion_not_equal_ufunc, arg_types, NULL);
 
+    REGISTER_UFUNC(isnan);
+    REGISTER_UFUNC(isinf);
+    REGISTER_UFUNC(isfinite);
+    /* quat -> double */
+    arg_types[1] = NPY_DOUBLE;
+
+    REGISTER_UFUNC(absolute);
+
+    /* quat -> quat */
+    arg_types[1] = quaternion_descr->type_num;
+
+    REGISTER_UFUNC(log);
+    REGISTER_UFUNC(exp);
+    REGISTER_UFUNC(negative);
+    REGISTER_UFUNC(conjugate);
+
+    /* quat, quat -> bool */
+
+    arg_types[2] = NPY_BOOL;
+
+    REGISTER_UFUNC(equal);
+    REGISTER_UFUNC(not_equal);
+    REGISTER_UFUNC(less);
+    REGISTER_UFUNC(less_equal);
+
+    /* quat, double -> quat */
+
+    arg_types[1] = NPY_DOUBLE;
+    arg_types[2] = quaternion_descr->type_num;
+
+    REGISTER_SCALAR_UFUNC(multiply);
+    REGISTER_SCALAR_UFUNC(divide);
+    REGISTER_SCALAR_UFUNC(power);
+
+    /* quat, quat -> quat */
+
+    arg_types[1] = quaternion_descr->type_num;
+
+    REGISTER_UFUNC(add);
+    REGISTER_UFUNC(subtract);
+    REGISTER_UFUNC(multiply);
+    REGISTER_UFUNC(divide);
+    REGISTER_UFUNC(power);
+    REGISTER_UFUNC(copysign);
 
     PyModule_AddObject(m, "quaternion", (PyObject *)&PyQuaternionArrType_Type);
 }
