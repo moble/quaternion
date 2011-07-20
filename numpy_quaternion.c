@@ -31,6 +31,7 @@
 #include <numpy/arrayobject.h>
 #include <numpy/npy_math.h>
 #include <numpy/ufuncobject.h>
+#include "structmember.h"
 
 #include "quaternion.h"
 
@@ -38,6 +39,51 @@ typedef struct {
         PyObject_HEAD
         quaternion obval;
 } PyQuaternionScalarObject;
+
+PyMemberDef PyQuaternionArrType_members[] = {
+    {"real", T_DOUBLE, offsetof(PyQuaternionScalarObject, obval.w), READONLY,
+        "The real component of the quaternion"},
+    {"w", T_DOUBLE, offsetof(PyQuaternionScalarObject, obval.w), READONLY,
+        "The real component of the quaternion"},
+    {"x", T_DOUBLE, offsetof(PyQuaternionScalarObject, obval.x), READONLY,
+        "The first imaginary component of the quaternion"},
+    {"y", T_DOUBLE, offsetof(PyQuaternionScalarObject, obval.y), READONLY,
+        "The second imaginary component of the quaternion"},
+    {"z", T_DOUBLE, offsetof(PyQuaternionScalarObject, obval.z), READONLY,
+        "The third imaginary component of the quaternion"},
+    {NULL}
+};
+
+static PyObject *
+PyQuaternionArrType_get_components(PyObject *self, void *closure)
+{
+    quaternion *q = &((PyQuaternionScalarObject *)self)->obval;
+    PyObject *tuple = PyTuple_New(4);
+    PyTuple_SET_ITEM(tuple, 0, PyFloat_FromDouble(q->w));
+    PyTuple_SET_ITEM(tuple, 1, PyFloat_FromDouble(q->x));
+    PyTuple_SET_ITEM(tuple, 2, PyFloat_FromDouble(q->y));
+    PyTuple_SET_ITEM(tuple, 3, PyFloat_FromDouble(q->z));
+    return tuple;
+}
+
+static PyObject *
+PyQuaternionArrType_get_imag(PyObject *self, void *closure)
+{
+    quaternion *q = &((PyQuaternionScalarObject *)self)->obval;
+    PyObject *tuple = PyTuple_New(3);
+    PyTuple_SET_ITEM(tuple, 0, PyFloat_FromDouble(q->x));
+    PyTuple_SET_ITEM(tuple, 1, PyFloat_FromDouble(q->y));
+    PyTuple_SET_ITEM(tuple, 2, PyFloat_FromDouble(q->z));
+    return tuple;
+}
+
+PyGetSetDef PyQuaternionArrType_getset[] = {
+    {"components", PyQuaternionArrType_get_components, NULL,
+        "The components of the quaternion as a (w,x,y,z) tuple", NULL},
+    {"imag", PyQuaternionArrType_get_imag, NULL,
+        "The imaginary part of the quaternion as an (x,y,z) tuple", NULL},
+    {NULL}
+};
 
 PyTypeObject PyQuaternionArrType_Type = {
 #if defined(NPY_PY3K)
@@ -77,8 +123,8 @@ PyTypeObject PyQuaternionArrType_Type = {
     0,                                          /* tp_iter */
     0,                                          /* tp_iternext */
     0,                                          /* tp_methods */
-    0,                                          /* tp_members */
-    0,                                          /* tp_getset */
+    PyQuaternionArrType_members,                /* tp_members */
+    PyQuaternionArrType_getset,                 /* tp_getset */
     0,                                          /* tp_base */
     0,                                          /* tp_dict */
     0,                                          /* tp_descr_get */
