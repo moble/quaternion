@@ -33,8 +33,9 @@ Quaternion components are stored as doubles.
 
 Comparison operations follow the same lexicographic ordering as tuples.
 
-The unary tests isnan, isinf and isfinite return true if they would return
-true for any individual component.
+The unary tests isnan and isinf return true if they would return true for any
+individual component; isfinite returns true if it would return true for all
+components.
 
 Real types may be cast to quaternions, giving quaternions with zero for all
 three imaginary components. Complex types may also be cast to quaternions,
