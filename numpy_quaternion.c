@@ -335,8 +335,8 @@ TYPE ## _to_quaternion(type *ip, quaternion *op, npy_intp n,                   \
     }                                                                          \
 }
 
-MAKE_T_TO_QUATERNION(FLOAT, npy_uint32);
-MAKE_T_TO_QUATERNION(DOUBLE, npy_uint64);
+MAKE_T_TO_QUATERNION(FLOAT, npy_float);
+MAKE_T_TO_QUATERNION(DOUBLE, npy_double);
 MAKE_T_TO_QUATERNION(LONGDOUBLE, npy_longdouble);
 MAKE_T_TO_QUATERNION(BOOL, npy_bool);
 MAKE_T_TO_QUATERNION(BYTE, npy_byte);
