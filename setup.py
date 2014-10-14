@@ -6,7 +6,11 @@ def configuration(parent_package='',top_path=None):
         raise DistutilsError('The target NumPy already has a quaternion type')
     from numpy.distutils.misc_util import Configuration
     config = Configuration('quaternion',parent_package,top_path)
-    config.add_extension('numpy_quaternion',['quaternion.h','quaternion.c','numpy_quaternion.c'])
+    config.add_extension('numpy_quaternion',
+                         ['quaternion.h','quaternion.c','numpy_quaternion.c'],
+                         extra_compile_args=['-ffast-math', # NB: fast-math makes it impossible to detect NANs
+                                             '-O3', # Because some python builds use '-O1' or less!)
+                                             ],)
     return config
 
 if __name__ == "__main__":

@@ -234,7 +234,7 @@ QUATERNION_copyswapn(quaternion *dst, npy_intp dstride,
     descr->f->copyswapn(&dst->x, dstride, &src->x, sstride, n, swap, NULL);
     descr->f->copyswapn(&dst->y, dstride, &src->y, sstride, n, swap, NULL);
     descr->f->copyswapn(&dst->z, dstride, &src->z, sstride, n, swap, NULL);
-    Py_DECREF(descr);    
+    Py_DECREF(descr);
 }
 
 static int
