@@ -2,6 +2,9 @@
  * Quaternion type for NumPy
  * Copyright (c) 2011 Martin Ling
  *
+ * This code has been expanded (and a few bugs have been corrected) by
+ * Michael Boyle.
+ *
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -419,7 +422,7 @@ quaternion_arrtype_repr(PyObject *o)
 {
   char str[128];
   quaternion q = ((PyQuaternionScalarObject *)o)->obval;
-  sprintf(str, "quaternion(%g, %g, %g, %g)", q.w, q.x, q.y, q.z);
+  sprintf(str, "quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
   return PyString_FromString(str);
 }
 
@@ -428,7 +431,7 @@ quaternion_arrtype_str(PyObject *o)
 {
   char str[128];
   quaternion q = ((PyQuaternionScalarObject *)o)->obval;
-  sprintf(str, "quaternion(%g, %g, %g, %g)", q.w, q.x, q.y, q.z);
+  sprintf(str, "quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
   return PyString_FromString(str);
 }
 
@@ -461,14 +464,14 @@ UNARY_UFUNC(conjugate, quaternion)
   static void                                                           \
   quaternion_##func_name##_ufunc(char** args, npy_intp* dimensions,     \
                                    npy_intp* steps, void* data) {       \
-                                                                 char *ip1 = args[0], *ip2 = args[1], *op1 = args[2]; \
-                                                                 npy_intp is1 = steps[0], is2 = steps[1], os1 = steps[2]; \
-                                                                 npy_intp n = dimensions[0]; \
-                                                                 npy_intp i; \
-                                                                 for(i = 0; i < n; i++, ip1 += is1, ip2 += is2, op1 += os1){ \
-                                                                                                                            const quaternion in1 = *(quaternion *)ip1; \
-                                                                                                                            const arg_type in2 = *(arg_type *)ip2; \
-                                                                                                                            *((ret_type *)op1) = quaternion_##func_name(in1, in2);};};
+    char *ip1 = args[0], *ip2 = args[1], *op1 = args[2];                \
+    npy_intp is1 = steps[0], is2 = steps[1], os1 = steps[2];            \
+    npy_intp n = dimensions[0];                                         \
+    npy_intp i;                                                         \
+    for(i = 0; i < n; i++, ip1 += is1, ip2 += is2, op1 += os1){         \
+      const quaternion in1 = *(quaternion *)ip1;                        \
+      const arg_type in2 = *(arg_type *)ip2;                            \
+      *((ret_type *)op1) = quaternion_##func_name(in1, in2);};};
 
 #define BINARY_UFUNC(name, ret_type)                    \
   BINARY_GEN_UFUNC(name, name, quaternion, ret_type)
