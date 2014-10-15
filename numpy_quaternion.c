@@ -363,8 +363,8 @@ MAKE_T_TO_QUATERNION(ULONGLONG, npy_ulonglong);
                 }                                                       \
    }
 
-MAKE_CT_TO_QUATERNION(CFLOAT, npy_uint32);
-MAKE_CT_TO_QUATERNION(CDOUBLE, npy_uint64);
+MAKE_CT_TO_QUATERNION(CFLOAT, npy_float);
+MAKE_CT_TO_QUATERNION(CDOUBLE, npy_double);
 MAKE_CT_TO_QUATERNION(CLONGDOUBLE, npy_longdouble);
 
 static void register_cast_function(int sourceType, int destType, PyArray_VectorUnaryFunc *castfunc)
