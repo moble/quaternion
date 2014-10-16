@@ -30,6 +30,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+
 #include <Python.h>
 #include <numpy/arrayobject.h>
 #include <numpy/npy_math.h>
@@ -38,11 +40,50 @@
 
 #include "quaternion.h"
 
+// The basic python object holding a quaternion
 typedef struct {
   PyObject_HEAD
   quaternion obval;
 } PyQuaternionScalarObject;
 
+/* static PyTypeObject PyQuaternion_Type; */
+
+/* static PyObject* */
+/* PyQuaternion_FromQuaternion(quaternion q) { */
+/*   PyQuaternionScalarObject* p = (PyQuaternionScalarObject*)PyQuaternion_Type.tp_alloc(&PyQuaternion_Type,0); */
+/*   if (p) { */
+/*     p->obval = q; */
+/*   } */
+/*   return (PyObject*)p; */
+/* } */
+
+
+// This is the crucial feature that will make a quaternion into a
+// built-in numpy data type
+PyArray_Descr* quaternion_descr;
+
+
+static PyObject *
+PyQuaternionArrType_conjugate(PyObject *self, PyObject *args)
+{
+  quaternion q = quaternion_conjugate(((PyQuaternionScalarObject *)self)->obval);
+  return PyArray_Scalar(&q, quaternion_descr, NULL);
+}
+
+// This is an array of methods (member functions) that will be
+// available to use on the quaternion objects in python.  This is
+// packaged up here, and will be used in the `tp_members` field when
+// definining the PyQuaternionArrType_Type below.
+PyMethodDef PyQuaternionArrType_methods[] = {
+  {"conjugate", PyQuaternionArrType_conjugate, METH_NOARGS,
+   "Return the complex conjugate of the quaternion"},
+  {NULL}
+};
+
+// This is an array of members (member data) that will be available to
+// use on the quaternion objects in python.  This is packaged up here,
+// and will be used in the `tp_members` field when definining the
+// PyQuaternionArrType_Type below.
 PyMemberDef PyQuaternionArrType_members[] = {
   {"real", T_DOUBLE, offsetof(PyQuaternionScalarObject, obval.w), READONLY,
    "The real component of the quaternion"},
@@ -57,6 +98,9 @@ PyMemberDef PyQuaternionArrType_members[] = {
   {NULL}
 };
 
+// This will be defined as a member function on the quaternion
+// objects, so that calling "components" will return a tuple with the
+// components of the quaternion.
 static PyObject *
 PyQuaternionArrType_get_components(PyObject *self, void *closure)
 {
@@ -69,6 +113,9 @@ PyQuaternionArrType_get_components(PyObject *self, void *closure)
   return tuple;
 }
 
+// This will be defined as a member function on the quaternion
+// objects, so that calling "components" will return a tuple with the
+// last three components (the vector components) of the quaternion.
 static PyObject *
 PyQuaternionArrType_get_imag(PyObject *self, void *closure)
 {
@@ -80,6 +127,10 @@ PyQuaternionArrType_get_imag(PyObject *self, void *closure)
   return tuple;
 }
 
+// This collects the methods for getting and setting elements of the
+// quaternion.  This is packaged up here, and will be used in the
+// `tp_getset` field when definining the PyQuaternionArrType_Type
+// below.
 PyGetSetDef PyQuaternionArrType_getset[] = {
   {"components", PyQuaternionArrType_get_components, NULL,
    "The components of the quaternion as a (w,x,y,z) tuple", NULL},
@@ -88,6 +139,11 @@ PyGetSetDef PyQuaternionArrType_getset[] = {
   {NULL}
 };
 
+// This establishes the quaternion as a python object (not yet a numpy
+// scalar type).  The name may be a little counterintuitive; the idea
+// is that this will be a type that can be used as an array dtype.
+// Note that many of the slots below will be filled later, after the
+// corresponding functions are defined.
 PyTypeObject PyQuaternionArrType_Type = {
   #if defined(NPY_PY3K)
   PyVarObject_HEAD_INIT(NULL, 0)
@@ -125,7 +181,7 @@ PyTypeObject PyQuaternionArrType_Type = {
   0,                                          /* tp_weaklistoffset */
   0,                                          /* tp_iter */
   0,                                          /* tp_iternext */
-  0,                                          /* tp_methods */
+  PyQuaternionArrType_methods,                /* tp_methods */
   PyQuaternionArrType_members,                /* tp_members */
   PyQuaternionArrType_getset,                 /* tp_getset */
   0,                                          /* tp_base */
@@ -149,12 +205,17 @@ PyTypeObject PyQuaternionArrType_Type = {
   #endif
 };
 
+// Functions implementing internal features. Not all of these function
+// pointers must be defined for a given type. The required members are
+// nonzero, copyswap, copyswapn, setitem, getitem, and cast.
 static PyArray_ArrFuncs _PyQuaternion_ArrFuncs;
-PyArray_Descr *quaternion_descr;
 
+// This function doesn't seem to do anything...
 static PyObject *
 QUATERNION_getitem(char *ip, PyArrayObject *ap)
 {
+  return NULL;
+
   quaternion q;
   PyObject *tuple;
 
@@ -325,6 +386,9 @@ QUATERNION_fillwithscalar(quaternion *buffer, npy_intp length, quaternion *value
   }
 }
 
+// This is a macro (followed by applications of the macro) that cast
+// the input types to standard quaternions with only a nonzero scalar
+// part.
 #define MAKE_T_TO_QUATERNION(TYPE, type)                                \
   static void                                                           \
   TYPE ## _to_quaternion(type *ip, quaternion *op, npy_intp n,          \
@@ -337,7 +401,6 @@ QUATERNION_fillwithscalar(quaternion *buffer, npy_intp length, quaternion *value
       op->z = 0;                                                        \
     }                                                                   \
   }
-
 MAKE_T_TO_QUATERNION(FLOAT, npy_float);
 MAKE_T_TO_QUATERNION(DOUBLE, npy_double);
 MAKE_T_TO_QUATERNION(LONGDOUBLE, npy_longdouble);
@@ -353,19 +416,22 @@ MAKE_T_TO_QUATERNION(ULONG, npy_ulong);
 MAKE_T_TO_QUATERNION(LONGLONG, npy_longlong);
 MAKE_T_TO_QUATERNION(ULONGLONG, npy_ulonglong);
 
+// This is a macro (followed by applications of the macro) that cast
+// the input complex types to standard quaternions with only the first
+// two components nonzero.  This doesn't make a whole lot of sense to
+// me, and may be removed in the future.
 #define MAKE_CT_TO_QUATERNION(TYPE, type)                               \
   static void                                                           \
   TYPE ## _to_quaternion(type *ip, quaternion *op, npy_intp n,          \
-                           PyArrayObject *NPY_UNUSED(aip), PyArrayObject *NPY_UNUSED(aop)) \
+                         PyArrayObject *NPY_UNUSED(aip), PyArrayObject *NPY_UNUSED(aop)) \
   {                                                                     \
-   while (n--) {                                                        \
-                op->w = (double)(*ip++);                                \
-                op->x = (double)(*ip++);                                \
-                op->y = 0;                                              \
-                op->z = 0;                                              \
-                }                                                       \
-   }
-
+    while (n--) {                                                       \
+      op->w = (double)(*ip++);                                          \
+      op->x = (double)(*ip++);                                          \
+      op->y = 0;                                                        \
+      op->z = 0;                                                        \
+    }                                                                   \
+  }
 MAKE_CT_TO_QUATERNION(CFLOAT, npy_float);
 MAKE_CT_TO_QUATERNION(CDOUBLE, npy_double);
 MAKE_CT_TO_QUATERNION(CLONGDOUBLE, npy_longdouble);
@@ -435,10 +501,40 @@ quaternion_arrtype_str(PyObject *o)
   return PyString_FromString(str);
 }
 
-static PyMethodDef QuaternionMethods[] = {
-  {NULL, NULL, 0, NULL}
-};
+// This function generates a view of the quaternion array as a float
+// array.  I'm just not sure where to put it...
+/* {"float_array", PyQuaternionArrType_get_float_array, NULL, */
+/*  "The quaternion array, viewed as a float array (with an extra dimension of size 4)", NULL}, */
+/* static PyObject * */
+/* PyQuaternionArrType_get_float_array(PyObject *self, void *closure) */
+/* { */
+/*   PyArrayObject* array = (PyArrayObject *) self; */
 
+/*   // Save the dtype of double, because it will be stolen */
+/*   PyArray_Descr* dtype; */
+/*   dtype = PyArray_DescrFromType(NPY_DOUBLE); */
+
+/*   // Now, make an array of describing the new shape of the output array */
+/*   size_t size = PyArray_NDIM(array); */
+/*   npy_intp* shape_old; */
+/*   shape_old = PyArray_SHAPE(array); */
+/*   PyObject* shape_new = PyList_New(size+1); */
+/*   for (size_t i = 0; i != size; ++i) { */
+/*     PyList_SET_ITEM(shape_new, i, PyInt_FromLong(shape_old[i])); */
+/*   } */
+/*   PyList_SET_ITEM(shape_new, size, PyInt_FromLong(4)); */
+
+/*   // Get the new view */
+/*   PyArrayObject* array_float = (PyArrayObject*) PyArray_View((PyArrayObject *) self, dtype, self->ob_type); */
+
+/*   // Reshape it, so that the last dimension is split up properly */
+/*   return PyArray_Reshape(array_float, shape_new); */
+/* } */
+
+
+// This is a macro that will be used to define the various basic unary
+// quaternion functions, so that they can be applied quickly to a
+// numpy array of quaternions.
 #define UNARY_UFUNC(name, ret_type)                             \
   static void                                                   \
   quaternion_##name##_ufunc(char** args, npy_intp* dimensions,  \
@@ -450,7 +546,7 @@ static PyMethodDef QuaternionMethods[] = {
     for(i = 0; i < n; i++, ip1 += is1, op1 += os1){             \
       const quaternion in1 = *(quaternion *)ip1;                \
       *((ret_type *)op1) = quaternion_##name(in1);};}
-
+// And these all do the work mentioned above, using the macro
 UNARY_UFUNC(isnan, npy_bool)
 UNARY_UFUNC(isinf, npy_bool)
 UNARY_UFUNC(isfinite, npy_bool)
@@ -460,10 +556,13 @@ UNARY_UFUNC(exp, quaternion)
 UNARY_UFUNC(negative, quaternion)
 UNARY_UFUNC(conjugate, quaternion)
 
+// This is a macro that will be used to define the various basic binary
+// quaternion functions, so that they can be applied quickly to a
+// numpy array of quaternions.
 #define BINARY_GEN_UFUNC(name, func_name, arg_type, ret_type)           \
   static void                                                           \
   quaternion_##func_name##_ufunc(char** args, npy_intp* dimensions,     \
-                                   npy_intp* steps, void* data) {       \
+                                 npy_intp* steps, void* data) {         \
     char *ip1 = args[0], *ip2 = args[1], *op1 = args[2];                \
     npy_intp is1 = steps[0], is2 = steps[1], os1 = steps[2];            \
     npy_intp n = dimensions[0];                                         \
@@ -472,12 +571,12 @@ UNARY_UFUNC(conjugate, quaternion)
       const quaternion in1 = *(quaternion *)ip1;                        \
       const arg_type in2 = *(arg_type *)ip2;                            \
       *((ret_type *)op1) = quaternion_##func_name(in1, in2);};};
-
+// A couple special-case versions of the above
 #define BINARY_UFUNC(name, ret_type)                    \
   BINARY_GEN_UFUNC(name, name, quaternion, ret_type)
 #define BINARY_SCALAR_UFUNC(name, ret_type)                     \
   BINARY_GEN_UFUNC(name, name##_scalar, npy_double, ret_type)
-
+// And these all do the work mentioned above, using the macros
 BINARY_UFUNC(add, quaternion)
 BINARY_UFUNC(subtract, quaternion)
 BINARY_UFUNC(multiply, quaternion)
@@ -486,12 +585,26 @@ BINARY_UFUNC(power, quaternion)
 BINARY_UFUNC(copysign, quaternion)
 BINARY_UFUNC(equal, npy_bool)
 BINARY_UFUNC(not_equal, npy_bool)
-     BINARY_UFUNC(less, npy_bool)
+BINARY_UFUNC(less, npy_bool)
 BINARY_UFUNC(less_equal, npy_bool)
-
 BINARY_SCALAR_UFUNC(multiply, quaternion)
-     BINARY_SCALAR_UFUNC(divide, quaternion)
+BINARY_SCALAR_UFUNC(divide, quaternion)
 BINARY_SCALAR_UFUNC(power, quaternion)
+
+// These macros will be used below
+#define REGISTER_UFUNC(name)                                            \
+  PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
+                              quaternion_descr->type_num, quaternion_##name##_ufunc, arg_types, NULL)
+#define REGISTER_SCALAR_UFUNC(name)                                     \
+  PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
+                              quaternion_descr->type_num, quaternion_##name##_scalar_ufunc, arg_types, NULL)
+
+
+
+// This will just be an empty place-holder to start things out
+static PyMethodDef QuaternionMethodsPlaceHolder[] = {
+  {NULL, NULL, 0, NULL}
+};
 
 PyMODINIT_FUNC initnumpy_quaternion(void)
 {
@@ -501,7 +614,8 @@ PyMODINIT_FUNC initnumpy_quaternion(void)
   PyObject* numpy_dict = PyModule_GetDict(numpy);
   int arg_types[3];
 
-  m = Py_InitModule("numpy_quaternion", QuaternionMethods);
+  // Initialize a (for now, empty) module
+  m = Py_InitModule("numpy_quaternion", QuaternionMethodsPlaceHolder);
   if (m == NULL) {
     return;
   }
@@ -577,14 +691,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void)
   register_cast_function(NPY_CDOUBLE, quaternionNum, (PyArray_VectorUnaryFunc*)CDOUBLE_to_quaternion);
   register_cast_function(NPY_CLONGDOUBLE, quaternionNum, (PyArray_VectorUnaryFunc*)CLONGDOUBLE_to_quaternion);
 
-  #define REGISTER_UFUNC(name)                                          \
-    PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
-                                quaternion_descr->type_num, quaternion_##name##_ufunc, arg_types, NULL)
-
-  #define REGISTER_SCALAR_UFUNC(name)                                   \
-    PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
-                                quaternion_descr->type_num, quaternion_##name##_scalar_ufunc, arg_types, NULL)
-
   /* quat -> bool */
   arg_types[0] = quaternion_descr->type_num;
   arg_types[1] = NPY_BOOL;
@@ -626,5 +732,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void)
   REGISTER_UFUNC(power);
   REGISTER_UFUNC(copysign);
 
+  // Finally, add this quaternion object to the numpy_quaternion module itself
   PyModule_AddObject(m, "quaternion", (PyObject *)&PyQuaternionArrType_Type);
 }
