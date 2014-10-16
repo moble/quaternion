@@ -30,14 +30,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NPY_NO_DEPRECATED_API NPY_API_VERSION
 
-#include <math.h>
 #include <Python.h>
-#include <structmember.h>
 #include <numpy/arrayobject.h>
 #include <numpy/npy_math.h>
 #include <numpy/ufuncobject.h>
+#include "structmember.h"
+#include "numpy/npy_3kcompat.h"
 
 #include "quaternion.h"
 
@@ -522,7 +522,7 @@ quaternion_arrtype_repr(PyObject *o)
   char str[128];
   quaternion q = ((PyQuaternionScalarObject *)o)->obval;
   sprintf(str, "quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
-  return PyString_FromString(str);
+  return PyUString_FromString(str);
 }
 
 static PyObject *
@@ -531,7 +531,7 @@ quaternion_arrtype_str(PyObject *o)
   char str[128];
   quaternion q = ((PyQuaternionScalarObject *)o)->obval;
   sprintf(str, "quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
-  return PyString_FromString(str);
+  return PyUString_FromString(str);
 }
 
 // This function generates a view of the quaternion array as a float
@@ -639,8 +639,27 @@ static PyMethodDef QuaternionMethodsPlaceHolder[] = {
   {NULL, NULL, 0, NULL}
 };
 
-PyMODINIT_FUNC initnumpy_quaternion(void)
-{
+#if defined(NPY_PY3K)
+static struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+    "numpy_quaternion",
+    NULL,
+    -1,
+    QuaternionMethods,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+#endif
+
+// This is the initialization function that does the setup
+#if defined(NPY_PY3K)
+PyMODINIT_FUNC PyInit_numpy_quaternion(void) {
+#else
+PyMODINIT_FUNC initnumpy_quaternion(void) {
+#endif
+
   PyObject *m;
   int quaternionNum;
   PyObject* numpy = PyImport_ImportModule("numpy");
@@ -648,10 +667,15 @@ PyMODINIT_FUNC initnumpy_quaternion(void)
   int arg_types[3];
 
   // Initialize a (for now, empty) module
-  m = Py_InitModule("numpy_quaternion", QuaternionMethodsPlaceHolder);
-  if (m == NULL) {
-    return;
-  }
+#if defined(NPY_PY3K)
+    m = PyModule_Create(&moduledef);
+#else
+    m = Py_InitModule("numpy_quaternion", QuaternionMethods);
+#endif
+
+    if (!m) {
+        return NULL;
+    }
 
   /* Make sure NumPy is initialized */
   import_array();
@@ -672,7 +696,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void)
   if (PyType_Ready(&PyQuaternionArrType_Type) < 0) {
     PyErr_Print();
     PyErr_SetString(PyExc_SystemError, "could not initialize PyQuaternionArrType_Type");
-    return;
+    return NULL;
   }
 
   /* The array functions */
@@ -704,7 +728,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void)
   quaternionNum = PyArray_RegisterDataType(quaternion_descr);
 
   if (quaternionNum < 0)
-    return;
+    return NULL;
 
   register_cast_function(NPY_BOOL, quaternionNum, (PyArray_VectorUnaryFunc*)BOOL_to_quaternion);
   register_cast_function(NPY_BYTE, quaternionNum, (PyArray_VectorUnaryFunc*)BYTE_to_quaternion);
@@ -767,4 +791,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void)
 
   // Finally, add this quaternion object to the numpy_quaternion module itself
   PyModule_AddObject(m, "quaternion", (PyObject *)&PyQuaternionArrType_Type);
+
+  return m;
 }
