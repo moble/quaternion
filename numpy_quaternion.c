@@ -71,6 +71,30 @@ PyQuaternionArrType_conjugate(PyObject *self, PyObject *args)
   return PyArray_Scalar(&q, quaternion_descr, NULL);
 }
 
+static PyObject *
+PyQuaternionArrType_isnonzero(PyObject *self, PyObject *args)
+{
+  return PyBool_FromLong(quaternion_isnonzero(((PyQuaternionScalarObject *)self)->obval));
+}
+
+static PyObject *
+PyQuaternionArrType_isnan(PyObject *self, PyObject *args)
+{
+  return PyBool_FromLong(quaternion_isnan(((PyQuaternionScalarObject *)self)->obval));
+}
+
+static PyObject *
+PyQuaternionArrType_isinf(PyObject *self, PyObject *args)
+{
+  return PyBool_FromLong(quaternion_isinf(((PyQuaternionScalarObject *)self)->obval));
+}
+
+static PyObject *
+PyQuaternionArrType_isfinite(PyObject *self, PyObject *args)
+{
+  return PyBool_FromLong(quaternion_isfinite(((PyQuaternionScalarObject *)self)->obval));
+}
+
 // This is an array of methods (member functions) that will be
 // available to use on the quaternion objects in python.  This is
 // packaged up here, and will be used in the `tp_members` field when
@@ -78,6 +102,14 @@ PyQuaternionArrType_conjugate(PyObject *self, PyObject *args)
 PyMethodDef PyQuaternionArrType_methods[] = {
   {"conjugate", PyQuaternionArrType_conjugate, METH_NOARGS,
    "Return the complex conjugate of the quaternion"},
+  {"nonzero", PyQuaternionArrType_isnonzero, METH_NOARGS,
+   "True if the quaternion has all zero components"},
+  {"isnan", PyQuaternionArrType_isnan, METH_NOARGS,
+   "True if the quaternion has any NAN components"},
+  {"isinf", PyQuaternionArrType_isinf, METH_NOARGS,
+   "True if the quaternion has any INF components"},
+  {"isfinite", PyQuaternionArrType_isfinite, METH_NOARGS,
+   "True if the quaternion has all finite components"},
   {NULL}
 };
 
