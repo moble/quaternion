@@ -32,11 +32,12 @@
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
+#include <math.h>
 #include <Python.h>
+#include <structmember.h>
 #include <numpy/arrayobject.h>
 #include <numpy/npy_math.h>
 #include <numpy/ufuncobject.h>
-#include "structmember.h"
 
 #include "quaternion.h"
 
