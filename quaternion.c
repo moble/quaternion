@@ -30,10 +30,10 @@
 #include "quaternion.h"
 #include "math.h"
 
-#define _QUAT_EPS 1e-6
+#define _QUAT_EPS 1e-14
 
 int
-quaternion_isnonzero(quaternion q)
+quaternion_nonzero(quaternion q)
 {
   if(quaternion_isnan(q)) { return 1; }
   return ! (q.w == 0 && q.x == 0 && q.y == 0 && q.z == 0);
@@ -204,22 +204,52 @@ int
 quaternion_less(quaternion q1, quaternion q2)
 {
   return
-    (!quaternion_isnan(q1) &&
-     !quaternion_isnan(q2)) && (
-                                q1.w != q2.w ? q1.w < q2.w :
-                                q1.x != q2.x ? q1.x < q2.x :
-                                q1.y != q2.y ? q1.y < q2.y :
-                                q1.z != q2.z ? q1.z < q2.z : 0);
+    (!quaternion_isnan(q1) && !quaternion_isnan(q2))
+    &&
+    (q1.w != q2.w ? q1.w < q2.w :
+     q1.x != q2.x ? q1.x < q2.x :
+     q1.y != q2.y ? q1.y < q2.y :
+     q1.z != q2.z ? q1.z < q2.z : 0);
+}
+
+int
+quaternion_greater(quaternion q1, quaternion q2)
+{
+  return
+    (!quaternion_isnan(q1) && !quaternion_isnan(q2))
+    &&
+    (q1.w != q2.w ? q1.w > q2.w :
+     q1.x != q2.x ? q1.x > q2.x :
+     q1.y != q2.y ? q1.y > q2.y :
+     q1.z != q2.z ? q1.z > q2.z : 0);
 }
 
 int
 quaternion_less_equal(quaternion q1, quaternion q2)
 {
   return
-    (!quaternion_isnan(q1) &&
-     !quaternion_isnan(q2)) && (
-                                q1.w != q2.w ? q1.w < q2.w :
-                                q1.x != q2.x ? q1.x < q2.x :
-                                q1.y != q2.y ? q1.y < q2.y :
-                                q1.z != q2.z ? q1.z < q2.z : 1);
+    (!quaternion_isnan(q1) && !quaternion_isnan(q2))
+    &&
+    (q1.w != q2.w ? q1.w < q2.w :
+     q1.x != q2.x ? q1.x < q2.x :
+     q1.y != q2.y ? q1.y < q2.y :
+     q1.z != q2.z ? q1.z < q2.z : 1);
+  // Note that the final possibility is 1, whereas in
+  // `quaternion_less` it was 0.  This distinction correctly
+  // accounts for equality.
+}
+
+int
+quaternion_greater_equal(quaternion q1, quaternion q2)
+{
+  return
+    (!quaternion_isnan(q1) && !quaternion_isnan(q2))
+    &&
+    (q1.w != q2.w ? q1.w > q2.w :
+     q1.x != q2.x ? q1.x > q2.x :
+     q1.y != q2.y ? q1.y > q2.y :
+     q1.z != q2.z ? q1.z > q2.z : 1);
+  // Note that the final possibility is 1, whereas in
+  // `quaternion_greater` it was 0.  This distinction correctly
+  // accounts for equality.
 }

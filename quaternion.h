@@ -41,7 +41,7 @@ extern "C" {
   } quaternion;
 
   // Unary bool returners
-  int quaternion_isnonzero(quaternion q);
+  int quaternion_nonzero(quaternion q);
   int quaternion_isnan(quaternion q);
   int quaternion_isinf(quaternion q);
   int quaternion_isfinite(quaternion q);
@@ -49,7 +49,9 @@ extern "C" {
   int quaternion_equal(quaternion q1, quaternion q2);
   int quaternion_not_equal(quaternion q1, quaternion q2);
   int quaternion_less(quaternion q1, quaternion q2);
+  int quaternion_greater(quaternion q1, quaternion q2);
   int quaternion_less_equal(quaternion q1, quaternion q2);
+  int quaternion_greater_equal(quaternion q1, quaternion q2);
   // Unary float returners
   double quaternion_absolute(quaternion q);
   // Unary quaternion returners
@@ -60,13 +62,13 @@ extern "C" {
   // Quaternion-quaternion binary quaternion returners
   quaternion quaternion_add(quaternion q1, quaternion q2);
   quaternion quaternion_subtract(quaternion q1, quaternion q2);
-  quaternion quaternion_multiply(quaternion q1, quaternion q2);
-  quaternion quaternion_divide(quaternion q1, quaternion q2);
-  quaternion quaternion_power(quaternion q, quaternion p);
   quaternion quaternion_copysign(quaternion q1, quaternion q2);
-  // Quaternion-scalar binary quaternion returners
+  // Quaternion-quaternion/quaternion-scalar binary quaternion returners
+  quaternion quaternion_multiply(quaternion q1, quaternion q2);
   quaternion quaternion_multiply_scalar(quaternion q, double s);
+  quaternion quaternion_divide(quaternion q1, quaternion q2);
   quaternion quaternion_divide_scalar(quaternion q, double s);
+  quaternion quaternion_power(quaternion q, quaternion p);
   quaternion quaternion_power_scalar(quaternion q, double p);
 
   #ifdef __cplusplus
