@@ -47,19 +47,19 @@
 typedef struct {
   PyObject_HEAD;
   quaternion obval;
-} PyQuaternionScalarObject;
+} PyQuaternion;
 
-static PyTypeObject PyQuaternionScalarObject_Type;
+static PyTypeObject PyQuaternion_Type;
 
 static NPY_INLINE int
-PyQuaternionScalarObject_Check(PyObject* object) {
-    return PyObject_IsInstance(object,(PyObject*)&PyQuaternionScalarObject_Type);
+PyQuaternion_Check(PyObject* object) {
+    return PyObject_IsInstance(object,(PyObject*)&PyQuaternion_Type);
 }
 
 static PyObject*
-PyQuaternionScalarObject_FromQuaternion(quaternion q) {
-    PyQuaternionScalarObject* p =
-      (PyQuaternionScalarObject*) PyQuaternionScalarObject_Type.tp_alloc(&PyQuaternionScalarObject_Type,0);
+PyQuaternion_FromQuaternion(quaternion q) {
+    PyQuaternion* p =
+      (PyQuaternion*) PyQuaternion_Type.tp_alloc(&PyQuaternion_Type,0);
     if (p) {
         p->obval = q;
     }
@@ -67,47 +67,60 @@ PyQuaternionScalarObject_FromQuaternion(quaternion q) {
 }
 
 
-// This is the crucial feature that will make a quaternion into a
-// built-in numpy data type
-PyArray_Descr* quaternion_descr;
+#define UNARY_BOOL_RETURNER(cname, pyname)                              \
+  static PyObject*                                                      \
+  pyquaternion_##pyname(PyObject* a, PyObject* b) {                     \
+    return PyBool_FromLong(quaternion_##cname(((PyQuaternion *)self)->obval)); \
+  }
 
 
-static PyObject *
-PyQuaternionArrType_conjugate(PyObject *self, PyObject *args)
-{
-  quaternion q = quaternion_conjugate(((PyQuaternionScalarObject *)self)->obval);
-  return PyArray_Scalar(&q, quaternion_descr, NULL);
-}
 
+// bool returners
 static PyObject *
 PyQuaternionArrType_isnonzero(PyObject *self, PyObject *args)
 {
-  return PyBool_FromLong(quaternion_isnonzero(((PyQuaternionScalarObject *)self)->obval));
+  return PyBool_FromLong(quaternion_isnonzero(((PyQuaternion *)self)->obval));
 }
 
 static PyObject *
 PyQuaternionArrType_isnan(PyObject *self, PyObject *args)
 {
-  return PyBool_FromLong(quaternion_isnan(((PyQuaternionScalarObject *)self)->obval));
+  return PyBool_FromLong(quaternion_isnan(((PyQuaternion *)self)->obval));
 }
 
 static PyObject *
 PyQuaternionArrType_isinf(PyObject *self, PyObject *args)
 {
-  return PyBool_FromLong(quaternion_isinf(((PyQuaternionScalarObject *)self)->obval));
+  return PyBool_FromLong(quaternion_isinf(((PyQuaternion *)self)->obval));
 }
 
 static PyObject *
 PyQuaternionArrType_isfinite(PyObject *self, PyObject *args)
 {
-  return PyBool_FromLong(quaternion_isfinite(((PyQuaternionScalarObject *)self)->obval));
+  return PyBool_FromLong(quaternion_isfinite(((PyQuaternion *)self)->obval));
 }
 
+// float returners
 static PyObject *
 PyQuaternionArrType_absolute(PyObject *self, PyObject *args)
 {
-  return PyFloat_FromDouble(quaternion_absolute(((PyQuaternionScalarObject *)self)->obval));
+  return PyFloat_FromDouble(quaternion_absolute(((PyQuaternion *)self)->obval));
 }
+
+
+// quaternion returners
+
+// This is the crucial feature that will make a quaternion into a
+// built-in numpy data type.  We will describe its features below.
+PyArray_Descr* quaternion_descr;
+
+static PyObject *
+PyQuaternionArrType_conjugate(PyObject *self, PyObject *args)
+{
+  quaternion q = quaternion_conjugate(((PyQuaternion *)self)->obval);
+  return PyArray_Scalar(&q, quaternion_descr, NULL);
+}
+
 
 // static PyObject *
 // PyQuaternionArrType_add(PyObject* self, PyObject* args)
@@ -124,8 +137,7 @@ PyQuaternionArrType_absolute(PyObject *self, PyObject *args)
 // packaged up here, and will be used in the `tp_methods` field when
 // definining the PyQuaternionArrType_Type below.
 PyMethodDef PyQuaternionArrType_methods[] = {
-  {"conjugate", PyQuaternionArrType_conjugate, METH_NOARGS,
-   "Return the complex conjugate of the quaternion"},
+  // bool returners
   {"nonzero", PyQuaternionArrType_isnonzero, METH_NOARGS,
    "True if the quaternion has all zero components"},
   {"isnan", PyQuaternionArrType_isnan, METH_NOARGS,
@@ -134,10 +146,14 @@ PyMethodDef PyQuaternionArrType_methods[] = {
    "True if the quaternion has any INF components"},
   {"isfinite", PyQuaternionArrType_isfinite, METH_NOARGS,
    "True if the quaternion has all finite components"},
+  // float returners
   {"absolute", PyQuaternionArrType_absolute, METH_NOARGS,
    "Absolute value of quaternion"},
   {"abs", PyQuaternionArrType_absolute, METH_NOARGS,
    "Absolute value of quaternion"},
+  // quaternion returners
+  {"conjugate", PyQuaternionArrType_conjugate, METH_NOARGS,
+   "Return the complex conjugate of the quaternion"},
   {NULL}
 };
 
@@ -146,15 +162,15 @@ PyMethodDef PyQuaternionArrType_methods[] = {
 // and will be used in the `tp_members` field when definining the
 // PyQuaternionArrType_Type below.
 PyMemberDef PyQuaternionArrType_members[] = {
-  {"real", T_DOUBLE, offsetof(PyQuaternionScalarObject, obval.w), READONLY,
+  {"real", T_DOUBLE, offsetof(PyQuaternion, obval.w), READONLY,
    "The real component of the quaternion"},
-  {"w", T_DOUBLE, offsetof(PyQuaternionScalarObject, obval.w), READONLY,
+  {"w", T_DOUBLE, offsetof(PyQuaternion, obval.w), READONLY,
    "The real component of the quaternion"},
-  {"x", T_DOUBLE, offsetof(PyQuaternionScalarObject, obval.x), READONLY,
+  {"x", T_DOUBLE, offsetof(PyQuaternion, obval.x), READONLY,
    "The first imaginary component of the quaternion"},
-  {"y", T_DOUBLE, offsetof(PyQuaternionScalarObject, obval.y), READONLY,
+  {"y", T_DOUBLE, offsetof(PyQuaternion, obval.y), READONLY,
    "The second imaginary component of the quaternion"},
-  {"z", T_DOUBLE, offsetof(PyQuaternionScalarObject, obval.z), READONLY,
+  {"z", T_DOUBLE, offsetof(PyQuaternion, obval.z), READONLY,
    "The third imaginary component of the quaternion"},
   {NULL}
 };
@@ -165,7 +181,7 @@ PyMemberDef PyQuaternionArrType_members[] = {
 static PyObject *
 PyQuaternionArrType_get_components(PyObject *self, void *closure)
 {
-  quaternion *q = &((PyQuaternionScalarObject *)self)->obval;
+  quaternion *q = &((PyQuaternion *)self)->obval;
   PyObject *tuple = PyTuple_New(4);
   PyTuple_SET_ITEM(tuple, 0, PyFloat_FromDouble(q->w));
   PyTuple_SET_ITEM(tuple, 1, PyFloat_FromDouble(q->x));
@@ -180,7 +196,7 @@ PyQuaternionArrType_get_components(PyObject *self, void *closure)
 static PyObject *
 PyQuaternionArrType_get_imag(PyObject *self, void *closure)
 {
-  quaternion *q = &((PyQuaternionScalarObject *)self)->obval;
+  quaternion *q = &((PyQuaternion *)self)->obval;
   PyObject *tuple = PyTuple_New(3);
   PyTuple_SET_ITEM(tuple, 0, PyFloat_FromDouble(q->x));
   PyTuple_SET_ITEM(tuple, 1, PyFloat_FromDouble(q->y));
@@ -213,7 +229,7 @@ PyTypeObject PyQuaternionArrType_Type = {
   0,                                          // ob_size
   #endif
   "quaternion.quaternion",                    // tp_name
-  sizeof(PyQuaternionScalarObject),           // tp_basicsize
+  sizeof(PyQuaternion),           // tp_basicsize
   0,                                          // tp_itemsize
   0,                                          // tp_dealloc
   0,                                          // tp_print
@@ -307,7 +323,7 @@ static int QUATERNION_setitem(PyObject *op, char *ov, PyArrayObject *ap)
   quaternion q;
 
   if (PyArray_IsScalar(op, Quaternion)) {
-    q = ((PyQuaternionScalarObject *)op)->obval;
+    q = ((PyQuaternion *)op)->obval;
   }
   else {
     q.w = PyFloat_AsDouble(PyTuple_GetItem(op, 0));
@@ -531,7 +547,7 @@ gentype_richcompare(PyObject *self, PyObject *other, int cmp_op)
 static long
 quaternion_arrtype_hash(PyObject *o)
 {
-  quaternion q = ((PyQuaternionScalarObject *)o)->obval;
+  quaternion q = ((PyQuaternion *)o)->obval;
   long value = 0x456789;
   value = (10000004 * value) ^ _Py_HashDouble(q.w);
   value = (10000004 * value) ^ _Py_HashDouble(q.x);
@@ -546,7 +562,7 @@ static PyObject *
 quaternion_arrtype_repr(PyObject *o)
 {
   char str[128];
-  quaternion q = ((PyQuaternionScalarObject *)o)->obval;
+  quaternion q = ((PyQuaternion *)o)->obval;
   sprintf(str, "quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
   return PyUString_FromString(str);
 }
@@ -555,7 +571,7 @@ static PyObject *
 quaternion_arrtype_str(PyObject *o)
 {
   char str[128];
-  quaternion q = ((PyQuaternionScalarObject *)o)->obval;
+  quaternion q = ((PyQuaternion *)o)->obval;
   sprintf(str, "quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
   return PyUString_FromString(str);
 }
@@ -649,15 +665,6 @@ BINARY_UFUNC(less_equal, npy_bool)
 BINARY_SCALAR_UFUNC(multiply, quaternion)
 BINARY_SCALAR_UFUNC(divide, quaternion)
 BINARY_SCALAR_UFUNC(power, quaternion)
-
-// These macros will be used below
-#define REGISTER_UFUNC(name)                                            \
-  PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
-                              quaternion_descr->type_num, quaternion_##name##_ufunc, arg_types, NULL)
-#define REGISTER_SCALAR_UFUNC(name)                                     \
-  PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
-                              quaternion_descr->type_num, quaternion_##name##_scalar_ufunc, arg_types, NULL)
-
 
 
 // This will just be an empty place-holder to start things out
@@ -786,6 +793,16 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   register_cast_function(NPY_CFLOAT, quaternionNum, (PyArray_VectorUnaryFunc*)CFLOAT_to_quaternion);
   register_cast_function(NPY_CDOUBLE, quaternionNum, (PyArray_VectorUnaryFunc*)CDOUBLE_to_quaternion);
   register_cast_function(NPY_CLONGDOUBLE, quaternionNum, (PyArray_VectorUnaryFunc*)CLONGDOUBLE_to_quaternion);
+
+
+  // These macros will be used below
+  #define REGISTER_UFUNC(name)                                          \
+    PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
+    quaternion_descr->type_num, quaternion_##name##_ufunc, arg_types, NULL)
+  #define REGISTER_SCALAR_UFUNC(name)                                   \
+    PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
+    quaternion_descr->type_num, quaternion_##name##_scalar_ufunc, arg_types, NULL)
+
 
   // quat -> bool
   arg_types[0] = quaternion_descr->type_num;
