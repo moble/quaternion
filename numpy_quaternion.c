@@ -45,20 +45,26 @@
 
 // The basic python object holding a quaternion
 typedef struct {
-  PyObject_HEAD
+  PyObject_HEAD;
   quaternion obval;
 } PyQuaternionScalarObject;
 
-/* static PyTypeObject PyQuaternion_Type; */
+static PyTypeObject PyQuaternionScalarObject_Type;
 
-/* static PyObject* */
-/* PyQuaternion_FromQuaternion(quaternion q) { */
-/*   PyQuaternionScalarObject* p = (PyQuaternionScalarObject*)PyQuaternion_Type.tp_alloc(&PyQuaternion_Type,0); */
-/*   if (p) { */
-/*     p->obval = q; */
-/*   } */
-/*   return (PyObject*)p; */
-/* } */
+static NPY_INLINE int
+PyQuaternionScalarObject_Check(PyObject* object) {
+    return PyObject_IsInstance(object,(PyObject*)&PyQuaternionScalarObject_Type);
+}
+
+static PyObject*
+PyQuaternionScalarObject_FromQuaternion(quaternion q) {
+    PyQuaternionScalarObject* p =
+      (PyQuaternionScalarObject*) PyQuaternionScalarObject_Type.tp_alloc(&PyQuaternionScalarObject_Type,0);
+    if (p) {
+        p->obval = q;
+    }
+    return (PyObject*)p;
+}
 
 
 // This is the crucial feature that will make a quaternion into a
@@ -97,9 +103,25 @@ PyQuaternionArrType_isfinite(PyObject *self, PyObject *args)
   return PyBool_FromLong(quaternion_isfinite(((PyQuaternionScalarObject *)self)->obval));
 }
 
+static PyObject *
+PyQuaternionArrType_absolute(PyObject *self, PyObject *args)
+{
+  return PyFloat_FromDouble(quaternion_absolute(((PyQuaternionScalarObject *)self)->obval));
+}
+
+// static PyObject *
+// PyQuaternionArrType_add(PyObject* self, PyObject* args)
+// {
+//   PyObject* q_obj;
+//   if (!PyArg_ParseTuple(args, "O", q_obj)) {
+//     return NULL;
+//   }
+
+// }
+
 // This is an array of methods (member functions) that will be
 // available to use on the quaternion objects in python.  This is
-// packaged up here, and will be used in the `tp_members` field when
+// packaged up here, and will be used in the `tp_methods` field when
 // definining the PyQuaternionArrType_Type below.
 PyMethodDef PyQuaternionArrType_methods[] = {
   {"conjugate", PyQuaternionArrType_conjugate, METH_NOARGS,
@@ -112,6 +134,10 @@ PyMethodDef PyQuaternionArrType_methods[] = {
    "True if the quaternion has any INF components"},
   {"isfinite", PyQuaternionArrType_isfinite, METH_NOARGS,
    "True if the quaternion has all finite components"},
+  {"absolute", PyQuaternionArrType_absolute, METH_NOARGS,
+   "Absolute value of quaternion"},
+  {"abs", PyQuaternionArrType_absolute, METH_NOARGS,
+   "Absolute value of quaternion"},
   {NULL}
 };
 
@@ -376,9 +402,7 @@ QUATERNION_argmax(quaternion *ip, npy_intp n, npy_intp *max_ind, PyArrayObject *
 
   for (i = 1; i < n; i++) {
     ip++;
-    /*
-     * Propagate nans, similarly as max() and min()
-     */
+    /*Propagate nans, similarly as max() and min() */
     if (!(quaternion_less_equal(*ip, mp))) {  /* negated, for correct nan handling */
       mp = *ip;
       *max_ind = i;
@@ -538,33 +562,33 @@ quaternion_arrtype_str(PyObject *o)
 
 // This function generates a view of the quaternion array as a float
 // array.  I'm just not sure where to put it...
-/* {"float_array", PyQuaternionArrType_get_float_array, NULL, */
-/*  "The quaternion array, viewed as a float array (with an extra dimension of size 4)", NULL}, */
-/* static PyObject * */
-/* PyQuaternionArrType_get_float_array(PyObject *self, void *closure) */
-/* { */
-/*   PyArrayObject* array = (PyArrayObject *) self; */
+// {"float_array", PyQuaternionArrType_get_float_array, NULL,
+//  "The quaternion array, viewed as a float array (with an extra dimension of size 4)", NULL},
+// static PyObject *
+// PyQuaternionArrType_get_float_array(PyObject *self, void *closure)
+// {
+//   PyArrayObject* array = (PyArrayObject *) self;
 
-/*   // Save the dtype of double, because it will be stolen */
-/*   PyArray_Descr* dtype; */
-/*   dtype = PyArray_DescrFromType(NPY_DOUBLE); */
+//   // Save the dtype of double, because it will be stolen
+//   PyArray_Descr* dtype;
+//   dtype = PyArray_DescrFromType(NPY_DOUBLE);
 
-/*   // Now, make an array of describing the new shape of the output array */
-/*   size_t size = PyArray_NDIM(array); */
-/*   npy_intp* shape_old; */
-/*   shape_old = PyArray_SHAPE(array); */
-/*   PyObject* shape_new = PyList_New(size+1); */
-/*   for (size_t i = 0; i != size; ++i) { */
-/*     PyList_SET_ITEM(shape_new, i, PyInt_FromLong(shape_old[i])); */
-/*   } */
-/*   PyList_SET_ITEM(shape_new, size, PyInt_FromLong(4)); */
+//   // Now, make an array of describing the new shape of the output array
+//   size_t size = PyArray_NDIM(array);
+//   npy_intp* shape_old;
+//   shape_old = PyArray_SHAPE(array);
+//   PyObject* shape_new = PyList_New(size+1);
+//   for (size_t i = 0; i != size; ++i) {
+//     PyList_SET_ITEM(shape_new, i, PyInt_FromLong(shape_old[i]));
+//   }
+//   PyList_SET_ITEM(shape_new, size, PyInt_FromLong(4));
 
-/*   // Get the new view */
-/*   PyArrayObject* array_float = (PyArrayObject*) PyArray_View((PyArrayObject *) self, dtype, self->ob_type); */
+//   // Get the new view
+//   PyArrayObject* array_float = (PyArrayObject*) PyArray_View((PyArrayObject *) self, dtype, self->ob_type);
 
-/*   // Reshape it, so that the last dimension is split up properly */
-/*   return PyArray_Reshape(array_float, shape_new); */
-/* } */
+//   // Reshape it, so that the last dimension is split up properly
+//   return PyArray_Reshape(array_float, shape_new);
+// }
 
 
 // This is a macro that will be used to define the various basic unary

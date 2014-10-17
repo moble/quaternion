@@ -35,7 +35,8 @@
 int
 quaternion_isnonzero(quaternion q)
 {
-  return q.w != 0 || q.x != 0 || q.y != 0 || q.z != 0;
+  if(quaternion_isnan(q)) { return 1; }
+  return ! (q.w == 0 && q.x == 0 && q.y == 0 && q.z == 0);
 }
 
 int
