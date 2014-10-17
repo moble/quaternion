@@ -18,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTERS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTERS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #define NPY_NO_DEPRECATED_API NPY_API_VERSION
@@ -645,7 +647,7 @@ static struct PyModuleDef moduledef = {
     "numpy_quaternion",
     NULL,
     -1,
-    QuaternionMethods,
+    QuaternionMethodsPlaceHolder,
     NULL,
     NULL,
     NULL,
@@ -670,11 +672,15 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 #if defined(NPY_PY3K)
     m = PyModule_Create(&moduledef);
 #else
-    m = Py_InitModule("numpy_quaternion", QuaternionMethods);
+    m = Py_InitModule("numpy_quaternion", QuaternionMethodsPlaceHolder);
 #endif
 
     if (!m) {
+#if defined(NPY_PY3K)
         return NULL;
+#else
+        return;
+#endif
     }
 
   /* Make sure NumPy is initialized */
@@ -696,7 +702,11 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   if (PyType_Ready(&PyQuaternionArrType_Type) < 0) {
     PyErr_Print();
     PyErr_SetString(PyExc_SystemError, "could not initialize PyQuaternionArrType_Type");
+#if defined(NPY_PY3K)
     return NULL;
+#else
+    return;
+#endif
   }
 
   /* The array functions */
@@ -727,8 +737,13 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   Py_INCREF(&PyQuaternionArrType_Type);
   quaternionNum = PyArray_RegisterDataType(quaternion_descr);
 
-  if (quaternionNum < 0)
+  if (quaternionNum < 0) {
+#if defined(NPY_PY3K)
     return NULL;
+#else
+    return;
+#endif
+  }
 
   register_cast_function(NPY_BOOL, quaternionNum, (PyArray_VectorUnaryFunc*)BOOL_to_quaternion);
   register_cast_function(NPY_BYTE, quaternionNum, (PyArray_VectorUnaryFunc*)BYTE_to_quaternion);
@@ -792,5 +807,9 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   // Finally, add this quaternion object to the numpy_quaternion module itself
   PyModule_AddObject(m, "quaternion", (PyObject *)&PyQuaternionArrType_Type);
 
-  return m;
+#if defined(NPY_PY3K)
+    return m;
+#else
+    return;
+#endif
 }
