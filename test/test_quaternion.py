@@ -207,9 +207,18 @@ def test_quaternion_methods():
     for q in Qs_finite:
         assert_(0.0*q==q_0)
         assert_(0.0*q==q*0.0)
-    strict_assert(False) # Right-multiplication by non-unit scalar
-    strict_assert(False) # Left-multiplication by scalar
-    strict_assert(False) # Each of the 16 basic products
+    for q in [q_1, x, y, z]:
+        assert_(q_1*q==q)
+        assert_(q*q_1==q)
+    assert_(x*x==-q_1)
+    assert_(x*y==z)
+    assert_(x*z==-y)
+    assert_(y*x==-z)
+    assert_(y*y==-q_1)
+    assert_(y*z==x)
+    assert_(z*x==y)
+    assert_(z*y==-x)
+    assert_(z*z==-q_1)
     # divide
     for q in Qs_finitenonzero:
         assert_( ((q/q)-q_1).abs()<np.finfo(float).eps )
@@ -217,6 +226,18 @@ def test_quaternion_methods():
         assert_( q/1.0==q )
     strict_assert(False) # Division by non-unit scalar
     strict_assert(False) # Each of the 16 basic products
+    for q in [q_1, x, y, z]:
+        assert_(q_1/q==q.conj())
+        assert_(q/q_1==q)
+    assert_(x/x==q_1)
+    assert_(x/y==-z)
+    assert_(x/z==y)
+    assert_(y/x==z)
+    assert_(y/y==q_1)
+    assert_(y/z==-x)
+    assert_(z/x==-y)
+    assert_(z/y==x)
+    assert_(z/z==q_1)
     # power
     qpower_precision = 4.e-14
     for q in Qs:
