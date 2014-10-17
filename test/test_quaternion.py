@@ -5,6 +5,7 @@ from numpy import *
 import numpy as np
 import quaternion
 import warnings
+import sys
 from numpy.testing import assert_
 
 def passer(b):
@@ -155,6 +156,7 @@ def test_quaternion_methods():
     # conjugate
     assert_(Q.conjugate() == Qbar)
     for q in Qs_nonnan:
+        assert_(q.conjugate() == q.conj())
         assert_(q.conjugate().conjugate() == q)
     # log, exp
     qlogexp_precision = 4.e-15
@@ -192,7 +194,7 @@ def test_quaternion_methods():
         assert_(q*1.0==q)
     for s in [-2.3,-1.2,-1.0,1.0,1.2,2.3]:
         for q in Qs_finite:
-            assert_(s*q==quaternion.quaternion(s*q.w,s*q.x,s*q.y,s*q.z))
+            assert_(q*s==quaternion.quaternion(s*q.w,s*q.x,s*q.y,s*q.z))
             assert_(s*q==q*s)
     for q in Qs_finite:
         assert_(0.0*q==q_0)

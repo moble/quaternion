@@ -53,14 +53,14 @@ static PyTypeObject PyQuaternion_Type;
 
 static NPY_INLINE int
 PyQuaternion_Check(PyObject* object) {
-    return PyObject_IsInstance(object,(PyObject*)&PyQuaternion_Type);
+  return PyObject_IsInstance(object,(PyObject*)&PyQuaternion_Type);
 }
 
 static PyObject*
 PyQuaternion_FromQuaternion(quaternion q) {
-    PyQuaternion* p = (PyQuaternion*)PyQuaternion_Type.tp_alloc(&PyQuaternion_Type,0);
-    if (p) { p->obval = q; }
-    return (PyObject*)p;
+  PyQuaternion* p = (PyQuaternion*)PyQuaternion_Type.tp_alloc(&PyQuaternion_Type,0);
+  if (p) { p->obval = q; }
+  return (PyObject*)p;
 }
 
 // TODO: Add list/tuple conversions
@@ -133,9 +133,10 @@ QQ_BINARY_QUATERNION_RETURNER(add)
 QQ_BINARY_QUATERNION_RETURNER(subtract)
 QQ_BINARY_QUATERNION_RETURNER(copysign)
 
-#define QQ_QS_BINARY_QUATERNION_RETURNER(name)                          \
+#define QQ_QS_SQ_BINARY_QUATERNION_RETURNER(name)                       \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
+    if(PyFloat_Check(a)) { return pyquaternion_##name(b,a); }           \
     PyQuaternion_AsQuaternion(p, a);                                    \
     if(PyQuaternion_Check(b)) {                                         \
       quaternion q = ((PyQuaternion*)b)->obval;                         \
@@ -146,10 +147,10 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
     }                                                                   \
     return NULL;                                                        \
   }
-QQ_QS_BINARY_QUATERNION_RETURNER(multiply)
-QQ_QS_BINARY_QUATERNION_RETURNER(divide)
-QQ_QS_BINARY_QUATERNION_RETURNER(power)
-// QQ_QS_BINARY_QUATERNION_RETURNER(copysign)
+QQ_QS_SQ_BINARY_QUATERNION_RETURNER(multiply)
+QQ_QS_SQ_BINARY_QUATERNION_RETURNER(divide)
+QQ_QS_SQ_BINARY_QUATERNION_RETURNER(power)
+// QQ_QS_SQ_BINARY_QUATERNION_RETURNER(copysign)
 
 
 // This is an array of methods (member functions) that will be
@@ -194,6 +195,8 @@ PyMethodDef pyquaternion_methods[] = {
    "Return the quaternion itself"},
   {"conjugate", pyquaternion_conjugate, METH_NOARGS,
    "Return the complex conjugate of the quaternion"},
+  {"conj", pyquaternion_conjugate, METH_NOARGS,
+   "Return the complex conjugate of the quaternion"},
   {"log", pyquaternion_log, METH_NOARGS,
    "Return the logarithm (base e) of the quaternion"},
   {"exp", pyquaternion_exp, METH_NOARGS,
@@ -218,48 +221,56 @@ PyMethodDef pyquaternion_methods[] = {
   {NULL}
 };
 
+static PyObject* pyquaternion_num_power(PyObject* a, PyObject* b, PyObject *c) { return pyquaternion_power(a,b); }
+static PyObject* pyquaternion_num_negative(PyObject* a) { return pyquaternion_negative(a,NULL); }
+static PyObject* pyquaternion_num_positive(PyObject* a) { return pyquaternion_positive(a,NULL); }
+static PyObject* pyquaternion_num_absolute(PyObject* a) { return pyquaternion_absolute(a,NULL); }
+static int pyquaternion_num_nonzero(PyObject* a) {
+  quaternion q = ((PyQuaternion*)a)->obval;
+  return quaternion_nonzero(q);
+}
 
-// static PyNumberMethods pyquaternion_as_number = {
-//   pyquaternion_add,          // nb_add
-//   pyquaternion_subtract,     // nb_subtract
-//   pyquaternion_multiply,     // nb_multiply
-//   pyquaternion_divide,       // nb_divide
-//   0,                         // nb_remainder
-//   0,                         // nb_divmod
-//   0,                         // nb_power
-//   pyquaternion_negative,     // nb_negative
-//   pyquaternion_positive,     // nb_positive
-//   pyquaternion_absolute,     // nb_absolute
-//   pyquaternion_nonzero,      // nb_nonzero
-//   0,                         // nb_invert
-//   0,                         // nb_lshift
-//   0,                         // nb_rshift
-//   0,                         // nb_and
-//   0,                         // nb_xor
-//   0,                         // nb_or
-//   0,                         // nb_coerce
-//   0,                         // nb_int
-//   0,                         // nb_long
-//   0,                         // nb_float
-//   0,                         // nb_oct
-//   0,                         // nb_hex
-//   0,                         // nb_inplace_add
-//   0,                         // nb_inplace_subtract
-//   0,                         // nb_inplace_multiply
-//   0,                         // nb_inplace_divide
-//   0,                         // nb_inplace_remainder
-//   0,                         // nb_inplace_power
-//   0,                         // nb_inplace_lshift
-//   0,                         // nb_inplace_rshift
-//   0,                         // nb_inplace_and
-//   0,                         // nb_inplace_xor
-//   0,                         // nb_inplace_or
-//   pyquaternion_divide,       // nb_floor_divide
-//   pyquaternion_divide,       // nb_true_divide
-//   0,                         // nb_inplace_floor_divide
-//   0,                         // nb_inplace_true_divide
-//   0,                         // nb_index
-// };
+static PyNumberMethods pyquaternion_as_number = {
+  pyquaternion_add,              // nb_add
+  pyquaternion_subtract,         // nb_subtract
+  pyquaternion_multiply,         // nb_multiply
+  pyquaternion_divide,           // nb_divide
+  0,                             // nb_remainder
+  0,                             // nb_divmod
+  pyquaternion_num_power,        // nb_power
+  pyquaternion_num_negative,     // nb_negative
+  pyquaternion_num_positive,     // nb_positive
+  pyquaternion_num_absolute,     // nb_absolute
+  pyquaternion_num_nonzero,      // nb_nonzero
+  0,                             // nb_invert
+  0,                             // nb_lshift
+  0,                             // nb_rshift
+  0,                             // nb_and
+  0,                             // nb_xor
+  0,                             // nb_or
+  0,                             // nb_coerce
+  0,                             // nb_int
+  0,                             // nb_long
+  0,                             // nb_float
+  0,                             // nb_oct
+  0,                             // nb_hex
+  0,                             // nb_inplace_add
+  0,                             // nb_inplace_subtract
+  0,                             // nb_inplace_multiply
+  0,                             // nb_inplace_divide
+  0,                             // nb_inplace_remainder
+  0,                             // nb_inplace_power
+  0,                             // nb_inplace_lshift
+  0,                             // nb_inplace_rshift
+  0,                             // nb_inplace_and
+  0,                             // nb_inplace_xor
+  0,                             // nb_inplace_or
+  pyquaternion_divide,           // nb_floor_divide
+  pyquaternion_divide,           // nb_true_divide
+  0,                             // nb_inplace_floor_divide
+  0,                             // nb_inplace_true_divide
+  0,                             // nb_index
+};
 
 
 // This is an array of members (member data) that will be available to
@@ -346,8 +357,7 @@ static PyTypeObject PyQuaternion_Type = {
   0,                                          // tp_compare
   #endif
   0,                                          // tp_repr
-  0,                                          // tp_as_number
-  // &pyquaternion_as_number,                    // tp_as_number
+  &pyquaternion_as_number,                    // tp_as_number
   0,                                          // tp_as_sequence
   0,                                          // tp_as_mapping
   0,                                          // tp_hash
