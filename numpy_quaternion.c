@@ -210,59 +210,59 @@ PyTypeObject PyQuaternionArrType_Type = {
   PyVarObject_HEAD_INIT(NULL, 0)
   #else
   PyObject_HEAD_INIT(NULL)
-  0,                                          /* ob_size */
+  0,                                          // ob_size
   #endif
-  "quaternion.quaternion",                    /* tp_name*/
-  sizeof(PyQuaternionScalarObject),           /* tp_basicsize*/
-  0,                                          /* tp_itemsize */
-  0,                                          /* tp_dealloc */
-  0,                                          /* tp_print */
-  0,                                          /* tp_getattr */
-  0,                                          /* tp_setattr */
+  "quaternion.quaternion",                    // tp_name
+  sizeof(PyQuaternionScalarObject),           // tp_basicsize
+  0,                                          // tp_itemsize
+  0,                                          // tp_dealloc
+  0,                                          // tp_print
+  0,                                          // tp_getattr
+  0,                                          // tp_setattr
   #if defined(NPY_PY3K)
-  0,                                          /* tp_reserved */
+  0,                                          // tp_reserved
   #else
-  0,                                          /* tp_compare */
+  0,                                          // tp_compare
   #endif
-  0,                                          /* tp_repr */
-  0,                                          /* tp_as_number */
-  0,                                          /* tp_as_sequence */
-  0,                                          /* tp_as_mapping */
-  0,                                          /* tp_hash */
-  0,                                          /* tp_call */
-  0,                                          /* tp_str */
-  0,                                          /* tp_getattro */
-  0,                                          /* tp_setattro */
-  0,                                          /* tp_as_buffer */
-  0,                                          /* tp_flags */
-  0,                                          /* tp_doc */
-  0,                                          /* tp_traverse */
-  0,                                          /* tp_clear */
-  0,                                          /* tp_richcompare */
-  0,                                          /* tp_weaklistoffset */
-  0,                                          /* tp_iter */
-  0,                                          /* tp_iternext */
-  PyQuaternionArrType_methods,                /* tp_methods */
-  PyQuaternionArrType_members,                /* tp_members */
-  PyQuaternionArrType_getset,                 /* tp_getset */
-  0,                                          /* tp_base */
-  0,                                          /* tp_dict */
-  0,                                          /* tp_descr_get */
-  0,                                          /* tp_descr_set */
-  0,                                          /* tp_dictoffset */
-  0,                                          /* tp_init */
-  0,                                          /* tp_alloc */
-  0,                                          /* tp_new */
-  0,                                          /* tp_free */
-  0,                                          /* tp_is_gc */
-  0,                                          /* tp_bases */
-  0,                                          /* tp_mro */
-  0,                                          /* tp_cache */
-  0,                                          /* tp_subclasses */
-  0,                                          /* tp_weaklist */
-  0,                                          /* tp_del */
+  0,                                          // tp_repr
+  0,                                          // tp_as_number
+  0,                                          // tp_as_sequence
+  0,                                          // tp_as_mapping
+  0,                                          // tp_hash
+  0,                                          // tp_call
+  0,                                          // tp_str
+  0,                                          // tp_getattro
+  0,                                          // tp_setattro
+  0,                                          // tp_as_buffer
+  0,                                          // tp_flags
+  0,                                          // tp_doc
+  0,                                          // tp_traverse
+  0,                                          // tp_clear
+  0,                                          // tp_richcompare
+  0,                                          // tp_weaklistoffset
+  0,                                          // tp_iter
+  0,                                          // tp_iternext
+  PyQuaternionArrType_methods,                // tp_methods
+  PyQuaternionArrType_members,                // tp_members
+  PyQuaternionArrType_getset,                 // tp_getset
+  0,                                          // tp_base
+  0,                                          // tp_dict
+  0,                                          // tp_descr_get
+  0,                                          // tp_descr_set
+  0,                                          // tp_dictoffset
+  0,                                          // tp_init
+  0,                                          // tp_alloc
+  0,                                          // tp_new
+  0,                                          // tp_free
+  0,                                          // tp_is_gc
+  0,                                          // tp_bases
+  0,                                          // tp_mro
+  0,                                          // tp_cache
+  0,                                          // tp_subclasses
+  0,                                          // tp_weaklist
+  0,                                          // tp_del
   #if PY_VERSION_HEX >= 0x02060000
-  0,                                          /* tp_version_tag */
+  0,                                          // tp_version_tag
   #endif
 };
 
@@ -396,18 +396,18 @@ QUATERNION_argmax(quaternion *ip, npy_intp n, npy_intp *max_ind, PyArrayObject *
   *max_ind = 0;
 
   if (quaternion_isnan(mp)) {
-    /* nan encountered; it's maximal */
+    // nan encountered; it's maximal
     return 0;
   }
 
   for (i = 1; i < n; i++) {
     ip++;
-    /*Propagate nans, similarly as max() and min() */
-    if (!(quaternion_less_equal(*ip, mp))) {  /* negated, for correct nan handling */
+    //Propagate nans, similarly as max() and min()
+    if (!(quaternion_less_equal(*ip, mp))) {  // negated, for correct nan handling
       mp = *ip;
       *max_ind = i;
       if (quaternion_isnan(mp)) {
-        /* nan encountered, it's maximal */
+        // nan encountered, it's maximal
         break;
       }
     }
@@ -707,11 +707,11 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 #endif
     }
 
-  /* Make sure NumPy is initialized */
+  // Make sure NumPy is initialized
   import_array();
   import_umath();
 
-  /* Register the quaternion array scalar type */
+  // Register the quaternion array scalar type
   #if defined(NPY_PY3K)
   PyQuaternionArrType_Type.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   #else
@@ -733,7 +733,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 #endif
   }
 
-  /* The array functions */
+  // The array functions
   PyArray_InitArrFuncs(&_PyQuaternion_ArrFuncs);
   _PyQuaternion_ArrFuncs.getitem = (PyArray_GetItemFunc*)QUATERNION_getitem;
   _PyQuaternion_ArrFuncs.setitem = (PyArray_SetItemFunc*)QUATERNION_setitem;
@@ -744,13 +744,13 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   _PyQuaternion_ArrFuncs.nonzero = (PyArray_NonzeroFunc*)QUATERNION_nonzero;
   _PyQuaternion_ArrFuncs.fillwithscalar = (PyArray_FillWithScalarFunc*)QUATERNION_fillwithscalar;
 
-  /* The quaternion array descr */
+  // The quaternion array descr
   quaternion_descr = PyObject_New(PyArray_Descr, &PyArrayDescr_Type);
   quaternion_descr->typeobj = &PyQuaternionArrType_Type;
   quaternion_descr->kind = 'q';
   quaternion_descr->type = 'j';
   quaternion_descr->byteorder = '=';
-  quaternion_descr->type_num = 0; /* assigned at registration */
+  quaternion_descr->type_num = 0; // assigned at registration
   quaternion_descr->elsize = 8*4;
   quaternion_descr->alignment = 8;
   quaternion_descr->subarray = NULL;
@@ -787,39 +787,39 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   register_cast_function(NPY_CDOUBLE, quaternionNum, (PyArray_VectorUnaryFunc*)CDOUBLE_to_quaternion);
   register_cast_function(NPY_CLONGDOUBLE, quaternionNum, (PyArray_VectorUnaryFunc*)CLONGDOUBLE_to_quaternion);
 
-  /* quat -> bool */
+  // quat -> bool
   arg_types[0] = quaternion_descr->type_num;
   arg_types[1] = NPY_BOOL;
   REGISTER_UFUNC(isnan);
   REGISTER_UFUNC(isinf);
   REGISTER_UFUNC(isfinite);
 
-  /* quat -> double */
+  // quat -> double
   arg_types[1] = NPY_DOUBLE;
   REGISTER_UFUNC(absolute);
 
-  /* quat -> quat */
+  // quat -> quat
   arg_types[1] = quaternion_descr->type_num;
   REGISTER_UFUNC(log);
   REGISTER_UFUNC(exp);
   REGISTER_UFUNC(negative);
   REGISTER_UFUNC(conjugate);
 
-  /* quat, quat -> bool */
+  // quat, quat -> bool
   arg_types[2] = NPY_BOOL;
   REGISTER_UFUNC(equal);
   REGISTER_UFUNC(not_equal);
   REGISTER_UFUNC(less);
   REGISTER_UFUNC(less_equal);
 
-  /* quat, double -> quat */
+  // quat, double -> quat
   arg_types[1] = NPY_DOUBLE;
   arg_types[2] = quaternion_descr->type_num;
   REGISTER_SCALAR_UFUNC(multiply);
   REGISTER_SCALAR_UFUNC(divide);
   REGISTER_SCALAR_UFUNC(power);
 
-  /* quat, quat -> quat */
+  // quat, quat -> quat
   arg_types[1] = quaternion_descr->type_num;
   REGISTER_UFUNC(add);
   REGISTER_UFUNC(subtract);
