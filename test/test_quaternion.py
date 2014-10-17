@@ -54,21 +54,31 @@ def test_quaternion_methods():
 
     ## Unary bool returners
     # nonzero
+    assert_(not q_0.nonzero()) # Do this one explicitly, to not use circular logic
+    assert_(q_1.nonzero()) # Do this one explicitly, to not use circular logic
     for q in Qs_zero:
-        assert_(not q_0.nonzero())
+        assert_(not q.nonzero())
     for q in Qs_nonzero:
         assert_(q.nonzero())
     # isnan
+    assert_(not q_0.isnan()) # Do this one explicitly, to not use circular logic
+    assert_(q_nan1.isnan()) # Do this one explicitly, to not use circular logic
     for q in Qs_nan:
         assert_(q.isnan())
     for q in Qs_nonnan:
         assert_(not q.isnan())
     # isinf
+    assert_(not q_0.isinf()) # Do this one explicitly, to not use circular logic
+    assert_(q_inf1.isinf()) # Do this one explicitly, to not use circular logic
     for q in Qs_inf:
         assert_(q.isinf())
     for q in Qs_noninf:
         assert_(not q.isinf())
     # isfinite
+    assert_(not q_nan1.isfinite()) # Do this one explicitly, to not use circular logic
+    assert_(not q_inf1.isfinite()) # Do this one explicitly, to not use circular logic
+    assert_(not q_minf1.isfinite()) # Do this one explicitly, to not use circular logic
+    assert_(q_0.isfinite()) # Do this one explicitly, to not use circular logic
     for q in Qs_nonfinite:
         assert_(not q.isfinite())
     for q in Qs_finite:
@@ -148,11 +158,11 @@ def test_quaternion_methods():
 
     ## Unary quaternion returners
     # negative
-    assert_(Q.negative() == Qneg)
+    assert_(-Q == Qneg)
     for q in Qs_finite:
-        assert_(q.negative()==-1.0*q)
+        assert_(-q==-1.0*q)
     for q in Qs_nonnan:
-        assert_(q.negative().negative()==q)
+        assert_(-(-q)==q)
     # conjugate
     assert_(Q.conjugate() == Qbar)
     for q in Qs_nonnan:
@@ -172,16 +182,14 @@ def test_quaternion_methods():
     # add
     for q in Qs_nonnan:
         for p in Qs_nonnan:
-            assert_(q.add(p)==
-                    quaternion.quaternion(q.w+p.w,q.x+p.x,q.y+p.y,q.z+p.z)
+            assert_(q+p==quaternion.quaternion(q.w+p.w,q.x+p.x,q.y+p.y,q.z+p.z)
                     or (q is q_inf1 and p is q_minf1)
                     or (p is q_inf1 and q is q_minf1))
     strict_assert(False) # Check nans and (q_inf1+q_minf1) and (q_minf1+q_inf1)
     # subtract
     for q in Qs_finite:
         for p in Qs_finite:
-            assert_(q.subtract(p)==
-                    quaternion.quaternion(q.w-p.w,q.x-p.x,q.y-p.y,q.z-p.z))
+            assert_(q-p==quaternion.quaternion(q.w-p.w,q.x-p.x,q.y-p.y,q.z-p.z))
     strict_assert(False) # Check non-finite
     # copysign
     strict_assert(False)
@@ -204,24 +212,24 @@ def test_quaternion_methods():
     strict_assert(False) # Each of the 16 basic products
     # divide
     for q in Qs_finitenonzero:
-        assert_( (q.divide(q)-q_1).abs()<np.finfo(float).eps )
+        assert_( ((q/q)-q_1).abs()<np.finfo(float).eps )
     for q in Qs_nonnan:
-        assert_( q.divide(1.0)==q )
+        assert_( q/1.0==q )
     strict_assert(False) # Division by non-unit scalar
     strict_assert(False) # Each of the 16 basic products
     # power
     qpower_precision = 4.e-14
     for q in Qs:
         if(q.isfinite() and q.nonzero()):
-            assert_( (q.power(1.0)-q).abs()<qpower_precision )
-            assert_( (q.power(2.0)-q*q).abs()<qpower_precision )
+            assert_( (q**1.0-q).abs()<qpower_precision )
+            assert_( (q**2.0-q*q).abs()<qpower_precision )
     qinverse_precision = 5.e-16
     for q in Qs:
         if(q.isfinite() and q.nonzero()):
-            assert_( (q.power(-1.0)*q - q_1).abs()<qinverse_precision )
+            assert_( ((q**-1.0)*q - q_1).abs()<qinverse_precision )
     for q in Qs:
         if(q.isfinite() and q.nonzero()):
-            assert_( (q.power(q_1)-q).abs()<qpower_precision )
+            assert_( ((q**q_1)-q).abs()<qpower_precision )
     strict_assert(False)
 
 
