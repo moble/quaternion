@@ -189,10 +189,10 @@ PyMethodDef pyquaternion_methods[] = {
    "Absolute value of quaternion"},
 
   // Unary quaternion returners
-  {"negative", pyquaternion_negative, METH_NOARGS,
-   "Return the negated quaternion"},
-  {"positive", pyquaternion_positive, METH_NOARGS,
-   "Return the quaternion itself"},
+  // {"negative", pyquaternion_negative, METH_NOARGS,
+  //  "Return the negated quaternion"},
+  // {"positive", pyquaternion_positive, METH_NOARGS,
+  //  "Return the quaternion itself"},
   {"conjugate", pyquaternion_conjugate, METH_NOARGS,
    "Return the complex conjugate of the quaternion"},
   {"conj", pyquaternion_conjugate, METH_NOARGS,
@@ -203,20 +203,20 @@ PyMethodDef pyquaternion_methods[] = {
    "Return the exponential of the quaternion (e**q)"},
 
   // Quaternion-quaternion binary quaternion returners
-  {"add", pyquaternion_add, METH_O,
-   "Componentwise addition"},
-  {"subtract", pyquaternion_subtract, METH_O,
-   "Componentwise subtraction"},
+  // {"add", pyquaternion_add, METH_O,
+  //  "Componentwise addition"},
+  // {"subtract", pyquaternion_subtract, METH_O,
+  //  "Componentwise subtraction"},
   {"copysign", pyquaternion_copysign, METH_O,
    "Componentwise copysign"},
 
   // Quaternion-quaternion or quaternion-scalar binary quaternion returners
-  {"multiply", pyquaternion_multiply, METH_O,
-   "Standard (geometric) quaternion product"},
-  {"divide", pyquaternion_divide, METH_O,
-   "Standard (geometric) quaternion division"},
-  {"power", pyquaternion_power, METH_O,
-   "q.power(p) = (q.log() * p).exp()"},
+  // {"multiply", pyquaternion_multiply, METH_O,
+  //  "Standard (geometric) quaternion product"},
+  // {"divide", pyquaternion_divide, METH_O,
+  //  "Standard (geometric) quaternion division"},
+  // {"power", pyquaternion_power, METH_O,
+  //  "q.power(p) = (q.log() * p).exp()"},
 
   {NULL}
 };
