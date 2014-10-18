@@ -143,8 +143,8 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
 #define QQ_QS_SQ_BINARY_QUATERNION_RETURNER(name)                       \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
-    if(PyFloat_Check(a)) { return pyquaternion_##name(b,a); }           \
     quaternion p = {0};                                                 \
+    if(PyFloat_Check(a)) { return pyquaternion_##name(b,a); }           \
     PyQuaternion_AsQuaternion(p, a);                                    \
     if(PyQuaternion_Check(b)) {                                         \
       return PyQuaternion_FromQuaternion(quaternion_##name(p,((PyQuaternion*)b)->obval));       \
@@ -156,7 +156,6 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(multiply)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(divide)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(power)
-// QQ_QS_SQ_BINARY_QUATERNION_RETURNER(copysign)
 
 
 // This is an array of methods (member functions) that will be
