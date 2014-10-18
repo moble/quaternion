@@ -105,6 +105,7 @@ BINARY_BOOL_RETURNER(greater_equal)
     return PyFloat_FromDouble(quaternion_##name(q));                    \
   }
 UNARY_FLOAT_RETURNER(absolute)
+UNARY_FLOAT_RETURNER(norm)
 
 #define UNARY_QUATERNION_RETURNER(name)                                 \
   static PyObject*                                                      \
@@ -187,6 +188,8 @@ PyMethodDef pyquaternion_methods[] = {
    "Absolute value of quaternion"},
   {"abs", pyquaternion_absolute, METH_NOARGS,
    "Absolute value of quaternion"},
+  {"norm", pyquaternion_norm, METH_NOARGS,
+   "Norm (square of the absolute value) of quaternion"},
 
   // Unary quaternion returners
   // {"negative", pyquaternion_negative, METH_NOARGS,

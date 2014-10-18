@@ -152,8 +152,16 @@ def test_quaternion_methods():
     for q,a in [(q_0,0.0), (q_1, 1.0), (x,1.0), (y,1.0), (z,1.0),
                 (Q,   np.sqrt(Q.w**2+Q.x**2+Q.y**2+Q.z**2)),
                 (Qbar,np.sqrt(Q.w**2+Q.x**2+Q.y**2+Q.z**2))]:
-        assert_(q.absolute() == q.abs())
         assert_(q.abs() == a)
+    # norm
+    for q in Qs_nan:
+        assert_(np.isnan(q.norm()))
+    for q in Qs_inf:
+        assert_(np.isinf(q.norm()))
+    for q,a in [(q_0,0.0), (q_1, 1.0), (x,1.0), (y,1.0), (z,1.0),
+                (Q,   Q.w**2+Q.x**2+Q.y**2+Q.z**2),
+                (Qbar,Q.w**2+Q.x**2+Q.y**2+Q.z**2)]:
+        assert_(q.norm() == a)
 
 
     ## Unary quaternion returners

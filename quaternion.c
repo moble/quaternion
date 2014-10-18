@@ -58,6 +58,12 @@ quaternion_isfinite(quaternion q)
 }
 
 double
+quaternion_norm(quaternion q)
+{
+  return q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z;
+}
+
+double
 quaternion_absolute(quaternion q)
 {
   return sqrt(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);

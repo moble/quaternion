@@ -54,6 +54,7 @@ extern "C" {
   int quaternion_greater_equal(quaternion q1, quaternion q2);
   // Unary float returners
   double quaternion_absolute(quaternion q);
+  double quaternion_norm(quaternion q);
   // Unary quaternion returners
   quaternion quaternion_negative(quaternion q);
   quaternion quaternion_conjugate(quaternion q);
