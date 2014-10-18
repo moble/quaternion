@@ -65,7 +65,6 @@ PyQuaternion_FromQuaternion(quaternion q) {
 
 // TODO: Add list/tuple conversions
 #define PyQuaternion_AsQuaternion(q, o)         \
-  quaternion q = {0};                           \
   if(PyQuaternion_Check(o)) {                   \
     q = ((PyQuaternion*)o)->obval;              \
   } else {                                      \
@@ -76,6 +75,7 @@ PyQuaternion_FromQuaternion(quaternion q) {
 #define UNARY_BOOL_RETURNER(name)                                       \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
+    quaternion q = {0};                                                 \
     PyQuaternion_AsQuaternion(q, a);                                    \
     return PyBool_FromLong(quaternion_##name(q));                       \
   }
@@ -87,6 +87,8 @@ UNARY_BOOL_RETURNER(isfinite)
 #define BINARY_BOOL_RETURNER(name)                                      \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
+    quaternion p = {0};                                                 \
+    quaternion q = {0};                                                 \
     PyQuaternion_AsQuaternion(p, a);                                    \
     PyQuaternion_AsQuaternion(q, b);                                    \
     return PyBool_FromLong(quaternion_##name(p,q));                     \
@@ -101,6 +103,7 @@ BINARY_BOOL_RETURNER(greater_equal)
 #define UNARY_FLOAT_RETURNER(name)                                      \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
+    quaternion q = {0};                                                 \
     PyQuaternion_AsQuaternion(q, a);                                    \
     return PyFloat_FromDouble(quaternion_##name(q));                    \
   }
@@ -110,6 +113,7 @@ UNARY_FLOAT_RETURNER(norm)
 #define UNARY_QUATERNION_RETURNER(name)                                 \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
+    quaternion q = {0};                                                 \
     PyQuaternion_AsQuaternion(q, a);                                    \
     return PyQuaternion_FromQuaternion(quaternion_##name(q));           \
   }
@@ -126,6 +130,8 @@ pyquaternion_positive(PyObject* self, PyObject* b) {
 #define QQ_BINARY_QUATERNION_RETURNER(name)                             \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
+    quaternion p = {0};                                                 \
+    quaternion q = {0};                                                 \
     PyQuaternion_AsQuaternion(p, a);                                    \
     PyQuaternion_AsQuaternion(q, b);                                    \
     return PyQuaternion_FromQuaternion(quaternion_##name(p,q));         \
@@ -138,13 +144,12 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
     if(PyFloat_Check(a)) { return pyquaternion_##name(b,a); }           \
+    quaternion p = {0};                                                 \
     PyQuaternion_AsQuaternion(p, a);                                    \
     if(PyQuaternion_Check(b)) {                                         \
-      quaternion q = ((PyQuaternion*)b)->obval;                         \
-      return PyQuaternion_FromQuaternion(quaternion_##name(p,q));       \
+      return PyQuaternion_FromQuaternion(quaternion_##name(p,((PyQuaternion*)b)->obval));       \
     } else if(PyFloat_Check(b)) {                                       \
-      double q = PyFloat_AsDouble(b);                                   \
-      return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,q)); \
+      return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyFloat_AsDouble(b))); \
     }                                                                   \
     return NULL;                                                        \
   }
@@ -422,16 +427,14 @@ static PyArray_ArrFuncs _PyQuaternion_ArrFuncs;
 static PyObject *
 QUATERNION_getitem(char *ip, PyArrayObject *ap)
 {
-  return NULL;
-
   quaternion q;
   PyObject *tuple;
+  PyArray_Descr *descr;
 
   if ((ap == NULL) || PyArray_ISBEHAVED_RO(ap)) {
     q = *((quaternion *)ip);
   }
   else {
-    PyArray_Descr *descr;
     descr = PyArray_DescrFromType(NPY_DOUBLE);
     descr->f->copyswap(&q.w, ip, !PyArray_ISNOTSWAPPED(ap), NULL);
     descr->f->copyswap(&q.x, ip+8, !PyArray_ISNOTSWAPPED(ap), NULL);
@@ -452,6 +455,7 @@ QUATERNION_getitem(char *ip, PyArrayObject *ap)
 static int QUATERNION_setitem(PyObject *op, char *ov, PyArrayObject *ap)
 {
   quaternion q;
+  PyArray_Descr *descr;
 
   // if (PyArray_IsScalar(op, Quaternion)) {
   if (PyQuaternion_Check(op)) {
@@ -474,7 +478,6 @@ static int QUATERNION_setitem(PyObject *op, char *ov, PyArrayObject *ap)
   if (ap == NULL || PyArray_ISBEHAVED(ap))
     *((quaternion *)ov)=q;
   else {
-    PyArray_Descr *descr;
     descr = PyArray_DescrFromType(NPY_DOUBLE);
     descr->f->copyswap(ov, &q.w, !PyArray_ISNOTSWAPPED(ap), NULL);
     descr->f->copyswap(ov+8, &q.x, !PyArray_ISNOTSWAPPED(ap), NULL);
@@ -833,6 +836,9 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 
   int quaternionNum;
   int arg_types[3];
+  PyObject* numpy_str;
+  PyObject* numpy;
+  PyObject* numpy_dict;
 
   // Initialize a (for now, empty) module
   PyObject *m;
@@ -866,7 +872,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
     return;
 #endif
   }
-  PyObject* numpy_str = PyString_FromString("numpy");
+  numpy_str = PyString_FromString("numpy");
   if (!numpy_str) {
 #if defined(NPY_PY3K)
     return NULL;
@@ -874,7 +880,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
     return;
 #endif
   }
-  PyObject* numpy = PyImport_Import(numpy_str);
+  numpy = PyImport_Import(numpy_str);
   Py_DECREF(numpy_str);
   if (!numpy) {
 #if defined(NPY_PY3K)
@@ -883,7 +889,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
     return;
 #endif
   }
-  PyObject* numpy_dict = PyModule_GetDict(numpy);
+  numpy_dict = PyModule_GetDict(numpy);
   if (!numpy_dict) {
 #if defined(NPY_PY3K)
     return NULL;

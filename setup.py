@@ -11,7 +11,6 @@ def configuration(parent_package='',top_path=None):
                          ['quaternion.h','quaternion.c','numpy_quaternion.c'],
                          extra_compile_args=['-ffast-math', # NB: fast-math makes it impossible to detect NANs
                                              '-O3', # Because some python builds use '-O1' or less!)
-                                             '-std=c99', # Because Travis builds PY3K with c90...
                                              ],)
     return config
 
