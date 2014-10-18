@@ -257,7 +257,11 @@ static PyNumberMethods pyquaternion_as_number = {
   0,                             // nb_coerce
   #endif
   0,                             // nb_int
-  0,                             // nb_long or nb_reserved in PY3K
+  #if defined(NPY_PY3K)
+  0,                             // nb_reserved
+  #else
+  0,                             // nb_long
+  #endif
   0,                             // nb_float
   #if !defined(NPY_PY3K)
   0,                             // nb_oct
