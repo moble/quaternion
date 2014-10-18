@@ -237,7 +237,9 @@ static PyNumberMethods pyquaternion_as_number = {
   pyquaternion_add,              // nb_add
   pyquaternion_subtract,         // nb_subtract
   pyquaternion_multiply,         // nb_multiply
+  #if !defined(NPY_PY3K)
   pyquaternion_divide,           // nb_divide
+  #endif
   0,                             // nb_remainder
   0,                             // nb_divmod
   pyquaternion_num_power,        // nb_power
@@ -251,16 +253,22 @@ static PyNumberMethods pyquaternion_as_number = {
   0,                             // nb_and
   0,                             // nb_xor
   0,                             // nb_or
+  #if !defined(NPY_PY3K)
   0,                             // nb_coerce
+  #endif
   0,                             // nb_int
-  0,                             // nb_long
+  0,                             // nb_long or nb_reserved in PY3K
   0,                             // nb_float
+  #if !defined(NPY_PY3K)
   0,                             // nb_oct
   0,                             // nb_hex
+  #endif
   0,                             // nb_inplace_add
   0,                             // nb_inplace_subtract
   0,                             // nb_inplace_multiply
+  #if !defined(NPY_PY3K)
   0,                             // nb_inplace_divide
+  #endif
   0,                             // nb_inplace_remainder
   0,                             // nb_inplace_power
   0,                             // nb_inplace_lshift
