@@ -15,6 +15,7 @@ To install (may require administrator rights):
 
 Example:
 
+```python
  >>> import numpy as np
  >>> import quaternion
  >>> np.quaternion(1,0,0,0)
@@ -29,10 +30,13 @@ Example:
  >>> exp(a)
  array([quaternion(1.69392, -0.78956, -1.18434, -1.57912),
         quaternion(138.909, -25.6861, -29.9671, -34.2481)], dtype=quaternion)
+```
 
 The following ufuncs are implemented:
- add, subtract, multiply, divide, log, exp, power, negative, conjugate,
- copysign, equal, not_equal, less, less_equal, isnan, isinf, isfinite, absolute
+```python
+add, subtract, multiply, divide, log, exp, power, negative, conjugate,
+copysign, equal, not_equal, less, less_equal, isnan, isinf, isfinite, absolute
+```
 
 Quaternion components are stored as doubles.
 
@@ -46,9 +50,3 @@ Real types may be cast to quaternions, giving quaternions with zero for all
 three imaginary components. Complex types may also be cast to quaternions,
 with their single imaginary component becoming the first imaginary component of
 the quaternion. Quaternions may not be cast to real or complex types.
-
-Written at the SciPy 2011 sprints, with help from Mark Weibe.
-
-The basic structure of this package is copied from Mark's half-precision
-floating point package: https://github.com/m-paradox/numpy_half - without this
-and Mark's help I would have had little chance of figuring out how to do this!
