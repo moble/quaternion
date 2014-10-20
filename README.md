@@ -7,11 +7,15 @@ expand the applications of quaternions (as well as to fix a few bugs).
 
 To build:
 
- $ python setup.py build
+```sh
+$ python setup.py build
+```
 
 To install (may require administrator rights):
 
- # python setup.py install
+```sh
+# python setup.py install
+```
 
 Example:
 
@@ -38,7 +42,11 @@ add, subtract, multiply, divide, log, exp, power, negative, conjugate,
 copysign, equal, not_equal, less, less_equal, isnan, isinf, isfinite, absolute
 ```
 
-Quaternion components are stored as doubles.
+Quaternion components are stored as doubles.  Numpy arrays with
+`dtype=quaternion` can be accessed as arrays of doubles without any
+(slow, memory-consuming) copying of data; rather, a `view` of the
+exact same memory space can be created within a microsecond,
+regardless of the shape or size of the quaternion array.
 
 Comparison operations follow the same lexicographic ordering as tuples.
 

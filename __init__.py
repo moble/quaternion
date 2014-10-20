@@ -1,5 +1,4 @@
 import numpy as np
-
 from .numpy_quaternion import quaternion
 
 __doc_title__ = "Quaternion dtype for NumPy"

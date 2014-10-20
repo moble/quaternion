@@ -7,11 +7,45 @@ import quaternion
 import warnings
 import sys
 from numpy.testing import assert_
+import pytest
+
 
 def passer(b):
     pass
 # Change this to strict_assert = assert_ to check for missing tests
 strict_assert = passer
+
+
+
+# Create a nice variety of quaternion objects.  N.B.: Do NOT make
+# two that are identical, or some tests (especially equality) will fail
+q_nan1  = quaternion.quaternion(np.nan,0.,0.,0.)
+q_inf1  = quaternion.quaternion(np.inf,0.,0.,0.)
+q_minf1 = quaternion.quaternion(-np.inf,0.,0.,0.)
+q_0     = quaternion.quaternion(0.,0.,0.,0.)
+q_1     = quaternion.quaternion(1.,0.,0.,0.)
+x       = quaternion.quaternion(0.,1.,0.,0.)
+y       = quaternion.quaternion(0.,0.,1.,0.)
+z       = quaternion.quaternion(0.,0.,0.,1.)
+Q       = quaternion.quaternion(1.1,2.2,3.3,4.4)
+Qneg    = quaternion.quaternion(-1.1,-2.2,-3.3,-4.4)
+Qbar    = quaternion.quaternion(1.1,-2.2,-3.3,-4.4)
+Qlog    = quaternion.quaternion(1.7959088706354, 0.515190292664085,
+                                0.772785438996128, 1.03038058532817)
+Qexp    = quaternion.quaternion(2.81211398529184, -0.392521193481878,
+                                -0.588781790222817, -0.785042386963756)
+Qs = [q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qlog, Qexp,]
+Qs_zero = [q for q in Qs if not q.nonzero()]
+Qs_nonzero = [q for q in Qs if q.nonzero()]
+Qs_nan = [q for q in Qs if q.isnan()]
+Qs_nonnan = [q for q in Qs if not q.isnan()]
+Qs_nonnannonzero = [q for q in Qs if not q.isnan() and q.nonzero()]
+Qs_inf = [q for q in Qs if q.isinf()]
+Qs_noninf = [q for q in Qs if not q.isinf()]
+Qs_noninfnonzero = [q for q in Qs if not q.isinf() and q.nonzero()]
+Qs_finite = [q for q in Qs if q.isfinite()]
+Qs_nonfinite = [q for q in Qs if not q.isfinite()]
+Qs_finitenonzero = [q for q in Qs if q.isfinite() and q.nonzero()]
 
 def test_quaternion_members():
     Q = quaternion.quaternion(1.1,2.2,3.3,4.4)
@@ -22,36 +56,6 @@ def test_quaternion_members():
     assert_(Q.z==4.4)
 
 def test_quaternion_methods():
-    # Create a nice variety of quaternion objects.  N.B.: Do NOT make
-    # two that are identical, or some tests (especially equality) will fail
-    q_nan1  = quaternion.quaternion(np.nan,0.,0.,0.)
-    q_inf1  = quaternion.quaternion(np.inf,0.,0.,0.)
-    q_minf1 = quaternion.quaternion(-np.inf,0.,0.,0.)
-    q_0     = quaternion.quaternion(0.,0.,0.,0.)
-    q_1     = quaternion.quaternion(1.,0.,0.,0.)
-    x       = quaternion.quaternion(0.,1.,0.,0.)
-    y       = quaternion.quaternion(0.,0.,1.,0.)
-    z       = quaternion.quaternion(0.,0.,0.,1.)
-    Q       = quaternion.quaternion(1.1,2.2,3.3,4.4)
-    Qneg    = quaternion.quaternion(-1.1,-2.2,-3.3,-4.4)
-    Qbar    = quaternion.quaternion(1.1,-2.2,-3.3,-4.4)
-    Qlog    = quaternion.quaternion(1.7959088706354, 0.515190292664085,
-                                    0.772785438996128, 1.03038058532817)
-    Qexp    = quaternion.quaternion(2.81211398529184, -0.392521193481878,
-                                    -0.588781790222817, -0.785042386963756)
-    Qs = [q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qlog, Qexp,]
-    Qs_zero = [q for q in Qs if not q.nonzero()]
-    Qs_nonzero = [q for q in Qs if q.nonzero()]
-    Qs_nan = [q for q in Qs if q.isnan()]
-    Qs_nonnan = [q for q in Qs if not q.isnan()]
-    Qs_nonnannonzero = [q for q in Qs if not q.isnan() and q.nonzero()]
-    Qs_inf = [q for q in Qs if q.isinf()]
-    Qs_noninf = [q for q in Qs if not q.isinf()]
-    Qs_noninfnonzero = [q for q in Qs if not q.isinf() and q.nonzero()]
-    Qs_finite = [q for q in Qs if q.isfinite()]
-    Qs_nonfinite = [q for q in Qs if not q.isfinite()]
-    Qs_finitenonzero = [q for q in Qs if q.isfinite() and q.nonzero()]
-
     ## Unary bool returners
     # nonzero
     assert_(not q_0.nonzero()) # Do this one explicitly, to not use circular logic
@@ -260,6 +264,89 @@ def test_quaternion_methods():
         if(q.isfinite() and q.nonzero()):
             assert_( ((q**q_1)-q).abs()<qpower_precision )
     strict_assert(False)
+
+
+def test_getset():
+    # get components/vec
+    for q in Qs_nonnan:
+        assert_(np.array_equal(q.components, np.array([q.w,q.x,q.y,q.z])))
+        assert_(np.array_equal(q.vec, np.array([q.x,q.y,q.z])))
+    # set components/vec from np.array, list, tuple
+    for q in Qs_nonnan:
+        for seq_type in [np.array, list, tuple]:
+            p = np.quaternion(*q.components)
+            r = np.quaternion(*q.components)
+            p.components = seq_type((-5.5, 6.6,-7.7,8.8))
+            r.vec = seq_type((6.6,-7.7,8.8))
+            assert_(np.array_equal(p.components, np.array([-5.5, 6.6,-7.7,8.8])))
+            assert_(np.array_equal(r.components, np.array([q.w, 6.6,-7.7,8.8])))
+    # TypeError when setting components with the wrong type or size of thing
+    for q in Qs:
+        for seq_type in [np.array, list, tuple]:
+            p = np.quaternion(*q.components)
+            r = np.quaternion(*q.components)
+            with pytest.raises(TypeError):
+                p.components = '1.1, 2.2, 3.3, 4.4'
+            with pytest.raises(TypeError):
+                p.components = seq_type([])
+            with pytest.raises(TypeError):
+                p.components = seq_type((-5.5,))
+            with pytest.raises(TypeError):
+                p.components = seq_type((-5.5, 6.6,))
+            with pytest.raises(TypeError):
+                p.components = seq_type((-5.5, 6.6,-7.7,))
+            with pytest.raises(TypeError):
+                p.components = seq_type((-5.5, 6.6,-7.7,8.8,-9.9))
+            with pytest.raises(TypeError):
+                r.vec = '2.2, 3.3, 4.4'
+            with pytest.raises(TypeError):
+                r.vec = seq_type([])
+            with pytest.raises(TypeError):
+                r.vec = seq_type((-5.5,))
+            with pytest.raises(TypeError):
+                r.vec = seq_type((-5.5, 6.6))
+            with pytest.raises(TypeError):
+                r.vec = seq_type((-5.5, 6.6,-7.7,8.8))
+
+def test_arrfuncs():
+    # getitem
+    # setitem
+    # copyswap
+    # copyswapn
+    # compare
+    # argmax
+    # nonzero
+    # fillwithscalar
+    pass
+
+def test_arraydescr():
+    # new
+    # richcompare
+    # hash
+    # repr
+    # str
+    pass
+
+def test_casts():
+    # FLOAT, npy_float
+    # DOUBLE, npy_double
+    # LONGDOUBLE, npy_longdouble
+    # BOOL, npy_bool
+    # BYTE, npy_byte
+    # UBYTE, npy_ubyte
+    # SHORT, npy_short
+    # USHORT, npy_ushort
+    # INT, npy_int
+    # UINT, npy_uint
+    # LONG, npy_long
+    # ULONG, npy_ulong
+    # LONGLONG, npy_longlong
+    # ULONGLONG, npy_ulonglong
+    # CFLOAT, npy_float
+    # CDOUBLE, npy_double
+    # CLONGDOUBLE, npy_longdouble
+    pass
+
 
 
 def test_numpy_array_conversion():

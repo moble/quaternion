@@ -311,32 +311,80 @@ PyMemberDef pyquaternion_members[] = {
 };
 
 // This will be defined as a member function on the quaternion
-// objects, so that calling "components" will return a tuple with the
-// components of the quaternion.
+// objects, so that calling "components" will return a numpy array
+// with the components of the quaternion.
 static PyObject *
 pyquaternion_get_components(PyObject *self, void *closure)
 {
   quaternion *q = &((PyQuaternion *)self)->obval;
-  PyObject *tuple = PyTuple_New(4);
-  PyTuple_SET_ITEM(tuple, 0, PyFloat_FromDouble(q->w));
-  PyTuple_SET_ITEM(tuple, 1, PyFloat_FromDouble(q->x));
-  PyTuple_SET_ITEM(tuple, 2, PyFloat_FromDouble(q->y));
-  PyTuple_SET_ITEM(tuple, 3, PyFloat_FromDouble(q->z));
-  return tuple;
+  int nd = 1;
+  npy_intp dims[1] = { 4 };
+  int typenum = NPY_DOUBLE;
+  PyObject* components = PyArray_SimpleNewFromData(nd, dims, typenum, &(q->w));
+  Py_INCREF(self);
+  PyArray_SetBaseObject((PyArrayObject*)components, self);
+  return components;
 }
 
 // This will be defined as a member function on the quaternion
-// objects, so that calling "components" will return a tuple with the
-// last three components (the vector components) of the quaternion.
-static PyObject *
-pyquaternion_get_imag(PyObject *self, void *closure)
+// objects, so that calling `q.components = [1,2,3,4]`, for example,
+// will set the components appropriately.
+static int
+pyquaternion_set_components(PyObject *self, PyObject *value, void *closure)
 {
   quaternion *q = &((PyQuaternion *)self)->obval;
-  PyObject *tuple = PyTuple_New(3);
-  PyTuple_SET_ITEM(tuple, 0, PyFloat_FromDouble(q->x));
-  PyTuple_SET_ITEM(tuple, 1, PyFloat_FromDouble(q->y));
-  PyTuple_SET_ITEM(tuple, 2, PyFloat_FromDouble(q->z));
-  return tuple;
+  if (value == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Cannot set quaternion to empty value");
+    return -1;
+  }
+  if (! (PySequence_Check(value) && PySequence_Size(value)==4) ) {
+    PyErr_SetString(PyExc_TypeError,
+                    "A quaternion's components must be set to something of length 4");
+    return -1;
+  }
+  q->w = PyFloat_AsDouble(PySequence_GetItem(value, 0));
+  q->x = PyFloat_AsDouble(PySequence_GetItem(value, 1));
+  q->y = PyFloat_AsDouble(PySequence_GetItem(value, 2));
+  q->z = PyFloat_AsDouble(PySequence_GetItem(value, 3));
+  return 0;
+}
+
+// This will be defined as a member function on the quaternion
+// objects, so that calling "vec" will return a numpy array
+// with the last three components of the quaternion.
+static PyObject *
+pyquaternion_get_vec(PyObject *self, void *closure)
+{
+  quaternion *q = &((PyQuaternion *)self)->obval;
+  int nd = 1;
+  npy_intp dims[1] = { 3 };
+  int typenum = NPY_DOUBLE;
+  PyObject* components = PyArray_SimpleNewFromData(nd, dims, typenum, &(q->x));
+  Py_INCREF(self);
+  PyArray_SetBaseObject((PyArrayObject*)components, self);
+  return components;
+}
+
+// This will be defined as a member function on the quaternion
+// objects, so that calling `q.vec = [1,2,3]`, for example,
+// will set the vector components appropriately.
+static int
+pyquaternion_set_vec(PyObject *self, PyObject *value, void *closure)
+{
+  quaternion *q = &((PyQuaternion *)self)->obval;
+  if (value == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Cannot set quaternion to empty value");
+    return -1;
+  }
+  if (! (PySequence_Check(value) && PySequence_Size(value)==3) ) {
+    PyErr_SetString(PyExc_TypeError,
+                    "A quaternion's vector components must be set to something of length 3");
+    return -1;
+  }
+  q->x = PyFloat_AsDouble(PySequence_GetItem(value, 0));
+  q->y = PyFloat_AsDouble(PySequence_GetItem(value, 1));
+  q->z = PyFloat_AsDouble(PySequence_GetItem(value, 2));
+  return 0;
 }
 
 // This collects the methods for getting and setting elements of the
@@ -344,10 +392,10 @@ pyquaternion_get_imag(PyObject *self, void *closure)
 // `tp_getset` field when definining the PyQuaternion_Type
 // below.
 PyGetSetDef pyquaternion_getset[] = {
-  {"components", pyquaternion_get_components, NULL,
-   "The components of the quaternion as a (w,x,y,z) tuple", NULL},
-  {"imag", pyquaternion_get_imag, NULL,
-   "The imaginary part of the quaternion as an (x,y,z) tuple", NULL},
+  {"components", pyquaternion_get_components, pyquaternion_set_components,
+   "The components (w,x,y,z) of the quaternion as a numpy array", NULL},
+  {"vec", pyquaternion_get_vec, pyquaternion_set_vec,
+   "The vector part (x,y,z) of the quaternion as a numpy array", NULL},
   {NULL}
 };
 
@@ -426,6 +474,7 @@ static PyArray_ArrFuncs _PyQuaternion_ArrFuncs;
 static PyObject *
 QUATERNION_getitem(char *ip, PyArrayObject *ap)
 {
+  printf("getitem!\n");
   quaternion q;
   PyObject *tuple;
   PyArray_Descr *descr;
@@ -453,6 +502,7 @@ QUATERNION_getitem(char *ip, PyArrayObject *ap)
 
 static int QUATERNION_setitem(PyObject *op, char *ov, PyArrayObject *ap)
 {
+  printf("setitem!\n");
   quaternion q;
   PyArray_Descr *descr;
 
