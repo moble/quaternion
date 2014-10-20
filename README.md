@@ -1,5 +1,10 @@
 This Python module adds a quaternion dtype to NumPy.
 
+The code was originally based on [code by Martin
+Ling](https://github.com/martinling/numpy_quaternion) (with help from
+Mark Weibe), but has been updated to work with python 3.4, and to
+expand the applications of quaternions (as well as to fix a few bugs).
+
 To build:
 
  $ python setup.py build
