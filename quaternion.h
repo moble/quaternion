@@ -31,7 +31,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-  #endif
+#endif
 
   typedef struct {
     double w;
@@ -72,8 +72,18 @@ extern "C" {
   quaternion quaternion_power(quaternion q, quaternion p);
   quaternion quaternion_power_scalar(quaternion q, double p);
 
-  #ifdef __cplusplus
+  // In-place operations
+  void quaternion_inplace_add(quaternion* q1, quaternion q2);
+  void quaternion_inplace_subtract(quaternion* q1, quaternion q2);
+  void quaternion_inplace_multiply(quaternion* q1, quaternion q2);
+  void quaternion_inplace_multiply_scalar(quaternion* q, double s);
+  void quaternion_inplace_divide(quaternion* q1, quaternion q2);
+  void quaternion_inplace_divide_scalar(quaternion* q, double s);
+  void quaternion_inplace_power(quaternion* q1, quaternion q2);
+  void quaternion_inplace_power_scalar(quaternion* q, double s);
+
+#ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif // __QUATERNION_H__

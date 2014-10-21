@@ -356,4 +356,8 @@ def test_numpy_array_conversion():
 if __name__=='__main__':
     test_quaternion_members()
     test_quaternion_methods()
+    test_quaternion_getset()
+    test_arrfuncs()
+    test_arraydescr()
+    test_casts()
     test_numpy_array_conversion()

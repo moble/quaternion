@@ -43,6 +43,19 @@
 
 #include "quaternion.h"
 
+// This collects some code for the new stateful module properties of py3k
+struct quaternionstate {
+  PyObject *ErrorObject;
+  PyObject *PyQuaternion_Type;
+};
+#if PY_MAJOR_VERSION >= 3
+#define GETSTATE(obj) ((struct quaternionstate*)PyModule_GetState(obj))
+#else
+#define GETSTATE(obj) (&_state)
+static struct quaternionstate _state;
+#endif
+
+
 // The basic python object holding a quaternion
 typedef struct {
   PyObject_HEAD;
@@ -69,7 +82,14 @@ PyQuaternion_FromQuaternion(quaternion q) {
     q = ((PyQuaternion*)o)->obval;              \
   } else {                                      \
     return NULL;                                \
-  }                                             \
+  }
+
+#define PyQuaternion_AsQuaternionPointer(q, o)  \
+  if(PyQuaternion_Check(o)) {                   \
+    q = &((PyQuaternion*)o)->obval;             \
+  } else {                                      \
+    return NULL;                                \
+  }
 
 
 #define UNARY_BOOL_RETURNER(name)                                       \
@@ -140,6 +160,19 @@ QQ_BINARY_QUATERNION_RETURNER(add)
 QQ_BINARY_QUATERNION_RETURNER(subtract)
 QQ_BINARY_QUATERNION_RETURNER(copysign)
 
+#define QQ_BINARY_QUATERNION_INPLACE(name)                              \
+  static PyObject*                                                      \
+  pyquaternion_inplace_##name(PyObject* a, PyObject* b) {               \
+    quaternion* p = {0};                                                \
+    quaternion q = {0};                                                 \
+    PyQuaternion_AsQuaternionPointer(p, a);                             \
+    PyQuaternion_AsQuaternion(q, b);                                    \
+    quaternion_inplace_##name(p,q);                                     \
+    return a;                                                           \
+  }
+QQ_BINARY_QUATERNION_INPLACE(add)
+QQ_BINARY_QUATERNION_INPLACE(subtract)
+
 #define QQ_QS_SQ_BINARY_QUATERNION_RETURNER(name)                       \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
@@ -150,7 +183,7 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
       return PyQuaternion_FromQuaternion(quaternion_##name(p,((PyQuaternion*)b)->obval));       \
     } else if(PyFloat_Check(b)) {                                       \
       return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyFloat_AsDouble(b))); \
-    } else if(PyInt_Check(b)) {                                       \
+    } else if(PyInt_Check(b)) {                                         \
       return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyInt_AsLong(b))); \
     }                                                                   \
     PyErr_SetString(PyExc_TypeError, "Raising quaternion to power of neither float nor quaternion."); \
@@ -159,6 +192,32 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(multiply)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(divide)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(power)
+
+#define QQ_QS_SQ_BINARY_QUATERNION_INPLACE(name)                        \
+  static PyObject*                                                      \
+  pyquaternion_inplace_##name(PyObject* a, PyObject* b) {               \
+    quaternion* p = {0};                                                \
+    if(PyFloat_Check(a) || PyInt_Check(a)) {                            \
+      pyquaternion_inplace_##name(b,a);                                 \
+      return a;                                                         \
+    }                                                                   \
+    PyQuaternion_AsQuaternionPointer(p, a);                             \
+    if(PyQuaternion_Check(b)) {                                         \
+      quaternion_inplace_##name(p,((PyQuaternion*)b)->obval);           \
+      return a;                                                         \
+    } else if(PyFloat_Check(b)) {                                       \
+      quaternion_inplace_##name##_scalar(p,PyFloat_AsDouble(b));        \
+      return a;                                                         \
+    } else if(PyInt_Check(b)) {                                         \
+      quaternion_inplace_##name##_scalar(p,PyInt_AsLong(b));            \
+      return a;                                                         \
+    }                                                                   \
+    PyErr_SetString(PyExc_TypeError, "Raising quaternion to power of neither float nor quaternion."); \
+    return NULL;                                                        \
+  }
+QQ_QS_SQ_BINARY_QUATERNION_INPLACE(multiply)
+QQ_QS_SQ_BINARY_QUATERNION_INPLACE(divide)
+QQ_QS_SQ_BINARY_QUATERNION_INPLACE(power)
 
 
 // This is an array of methods (member functions) that will be
@@ -232,6 +291,7 @@ PyMethodDef pyquaternion_methods[] = {
 };
 
 static PyObject* pyquaternion_num_power(PyObject* a, PyObject* b, PyObject *c) { return pyquaternion_power(a,b); }
+static PyObject* pyquaternion_num_inplace_power(PyObject* a, PyObject* b, PyObject *c) { return pyquaternion_inplace_power(a,b); }
 static PyObject* pyquaternion_num_negative(PyObject* a) { return pyquaternion_negative(a,NULL); }
 static PyObject* pyquaternion_num_positive(PyObject* a) { return pyquaternion_positive(a,NULL); }
 static PyObject* pyquaternion_num_absolute(PyObject* a) { return pyquaternion_absolute(a,NULL); }
@@ -241,57 +301,57 @@ static int pyquaternion_num_nonzero(PyObject* a) {
 }
 
 static PyNumberMethods pyquaternion_as_number = {
-  pyquaternion_add,              // nb_add
-  pyquaternion_subtract,         // nb_subtract
-  pyquaternion_multiply,         // nb_multiply
+  pyquaternion_add,               // nb_add
+  pyquaternion_subtract,          // nb_subtract
+  pyquaternion_multiply,          // nb_multiply
   #if !defined(NPY_PY3K)
-  pyquaternion_divide,           // nb_divide
+  pyquaternion_divide,            // nb_divide
   #endif
-  0,                             // nb_remainder
-  0,                             // nb_divmod
-  pyquaternion_num_power,        // nb_power
-  pyquaternion_num_negative,     // nb_negative
-  pyquaternion_num_positive,     // nb_positive
-  pyquaternion_num_absolute,     // nb_absolute
-  pyquaternion_num_nonzero,      // nb_nonzero
-  0,                             // nb_invert
-  0,                             // nb_lshift
-  0,                             // nb_rshift
-  0,                             // nb_and
-  0,                             // nb_xor
-  0,                             // nb_or
+  0,                              // nb_remainder
+  0,                              // nb_divmod
+  pyquaternion_num_power,         // nb_power
+  pyquaternion_num_negative,      // nb_negative
+  pyquaternion_num_positive,      // nb_positive
+  pyquaternion_num_absolute,      // nb_absolute
+  pyquaternion_num_nonzero,       // nb_nonzero
+  0,                              // nb_invert
+  0,                              // nb_lshift
+  0,                              // nb_rshift
+  0,                              // nb_and
+  0,                              // nb_xor
+  0,                              // nb_or
   #if !defined(NPY_PY3K)
-  0,                             // nb_coerce
+  0,                              // nb_coerce
   #endif
-  0,                             // nb_int
+  0,                              // nb_int
   #if defined(NPY_PY3K)
-  0,                             // nb_reserved
+  0,                              // nb_reserved
   #else
-  0,                             // nb_long
+  0,                              // nb_long
   #endif
-  0,                             // nb_float
+  0,                              // nb_float
   #if !defined(NPY_PY3K)
-  0,                             // nb_oct
-  0,                             // nb_hex
+  0,                              // nb_oct
+  0,                              // nb_hex
   #endif
-  0,                             // nb_inplace_add
-  0,                             // nb_inplace_subtract
-  0,                             // nb_inplace_multiply
+  pyquaternion_inplace_add,       // nb_inplace_add
+  pyquaternion_inplace_subtract,  // nb_inplace_subtract
+  pyquaternion_inplace_multiply,  // nb_inplace_multiply
   #if !defined(NPY_PY3K)
-  0,                             // nb_inplace_divide
+  pyquaternion_inplace_divide,    // nb_inplace_divide
   #endif
-  0,                             // nb_inplace_remainder
-  0,                             // nb_inplace_power
-  0,                             // nb_inplace_lshift
-  0,                             // nb_inplace_rshift
-  0,                             // nb_inplace_and
-  0,                             // nb_inplace_xor
-  0,                             // nb_inplace_or
-  pyquaternion_divide,           // nb_floor_divide
-  pyquaternion_divide,           // nb_true_divide
-  0,                             // nb_inplace_floor_divide
-  0,                             // nb_inplace_true_divide
-  0,                             // nb_index
+  0,                              // nb_inplace_remainder
+  pyquaternion_num_inplace_power, // nb_inplace_power
+  0,                              // nb_inplace_lshift
+  0,                              // nb_inplace_rshift
+  0,                              // nb_inplace_and
+  0,                              // nb_inplace_xor
+  0,                              // nb_inplace_or
+  pyquaternion_divide,            // nb_floor_divide
+  pyquaternion_divide,            // nb_true_divide
+  pyquaternion_inplace_divide,    // nb_inplace_floor_divide
+  pyquaternion_inplace_divide,    // nb_inplace_true_divide
+  0,                              // nb_index
 };
 
 
@@ -335,9 +395,11 @@ pyquaternion_get_components(PyObject *self, void *closure)
 static int
 pyquaternion_set_components(PyObject *self, PyObject *value, void *closure)
 {
+  struct quaternionstate *st;
   quaternion *q = &((PyQuaternion *)self)->obval;
   if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Cannot set quaternion to empty value");
+    st = GETSTATE(self);
+    PyErr_SetString(st->ErrorObject, "Cannot set quaternion to empty value");
     return -1;
   }
   if (! (PySequence_Check(value) && PySequence_Size(value)==4) ) {
@@ -863,7 +925,22 @@ static PyMethodDef QuaternionMethodsPlaceHolder[] = {
   {NULL, NULL, 0, NULL}
 };
 
-#if defined(NPY_PY3K)
+
+
+#if PY_MAJOR_VERSION >= 3
+
+static int quaternion_traverse(PyObject *m, visitproc visit, void *arg) {
+  Py_VISIT(GETSTATE(m)->ErrorObject);
+  Py_VISIT(GETSTATE(m)->PyQuaternion_Type);
+  return 0;
+}
+
+static int quaternion_clear(PyObject *m) {
+  Py_CLEAR(GETSTATE(m)->ErrorObject);
+  Py_CLEAR(GETSTATE(m)->PyQuaternion_Type);
+  return 0;
+}
+
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
     "numpy_quaternion",
@@ -871,82 +948,82 @@ static struct PyModuleDef moduledef = {
     -1,
     QuaternionMethodsPlaceHolder,
     NULL,
-    NULL,
-    NULL,
+    quaternion_traverse,
+    quaternion_clear,
     NULL
 };
-#endif
+
+#define INITERROR return NULL
 
 // This is the initialization function that does the setup
-#if defined(NPY_PY3K)
 PyMODINIT_FUNC PyInit_numpy_quaternion(void) {
+
 #else
+
+#define INITERROR return
+
+// This is the initialization function that does the setup
 PyMODINIT_FUNC initnumpy_quaternion(void) {
+
 #endif
 
+  PyObject *module;
+  struct quaternionstate *st;
   int quaternionNum;
   int arg_types[3];
   PyObject* numpy;
   PyObject* numpy_dict;
 
   // Initialize a (for now, empty) module
-  PyObject *m;
-#if defined(NPY_PY3K)
-  m = PyModule_Create(&moduledef);
+#if PY_MAJOR_VERSION >= 3
+  module = PyModule_Create(&moduledef);
 #else
-  m = Py_InitModule("numpy_quaternion", QuaternionMethodsPlaceHolder);
+  module = Py_InitModule("numpy_quaternion", QuaternionMethodsPlaceHolder);
 #endif
-  if (!m) {
-#if defined(NPY_PY3K)
-    return NULL;
-#else
-    return;
-#endif
+
+  if(module==NULL) {
+    INITERROR;
+  }
+  st = GETSTATE(module);
+  GETSTATE(module)->ErrorObject = PyErr_NewException("quaternion.error", NULL, NULL);
+  if (!GETSTATE(module)->ErrorObject) {
+    Py_DECREF(module);
+    INITERROR;
+  }
+  GETSTATE(module)->PyQuaternion_Type = (PyObject *)&PyQuaternion_Type;
+  /* GETSTATE(module)->PyQuaternion_Type = PyType_Copy(&PyQuaternion_Type); */
+  if (!GETSTATE(module)->PyQuaternion_Type) {
+    Py_DECREF(module);
+    INITERROR;
   }
 
   // Initialize numpy
   import_array();
   if (PyErr_Occurred()) {
-#if defined(NPY_PY3K)
-    return NULL;
-#else
-    return;
-#endif
+    INITERROR;
   }
   import_umath();
   if (PyErr_Occurred()) {
-#if defined(NPY_PY3K)
-    return NULL;
-#else
-    return;
-#endif
+    INITERROR;
   }
   numpy = PyImport_ImportModule("numpy");
   if (!numpy) {
-#if defined(NPY_PY3K)
-    return NULL;
-#else
-    return;
-#endif
+    INITERROR;
   }
   numpy_dict = PyModule_GetDict(numpy);
   if (!numpy_dict) {
-#if defined(NPY_PY3K)
-    return NULL;
-#else
-    return;
-#endif
+    INITERROR;
   }
 
   // Can't set this until we import numpy
   PyQuaternion_Type.tp_base = &PyGenericArrType_Type;
 
   // Register the quaternion array scalar type
-  #if defined(NPY_PY3K)
+#if defined(NPY_PY3K)
   PyQuaternion_Type.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
-  #else
+#else
   PyQuaternion_Type.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES;
-  #endif
+#endif
   PyQuaternion_Type.tp_new = quaternion_arrtype_new;
   PyQuaternion_Type.tp_richcompare = gentype_richcompare;
   PyQuaternion_Type.tp_hash = quaternion_arrtype_hash;
@@ -956,11 +1033,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   if (PyType_Ready(&PyQuaternion_Type) < 0) {
     PyErr_Print();
     PyErr_SetString(PyExc_SystemError, "could not initialize PyQuaternion_Type");
-#if defined(NPY_PY3K)
-    return NULL;
-#else
-    return;
-#endif
+    INITERROR;
   }
 
   // The array functions
@@ -992,11 +1065,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   quaternionNum = PyArray_RegisterDataType(quaternion_descr);
 
   if (quaternionNum < 0) {
-#if defined(NPY_PY3K)
-    return NULL;
-#else
-    return;
-#endif
+    INITERROR;
   }
 
   register_cast_function(NPY_BOOL, quaternionNum, (PyArray_VectorUnaryFunc*)BOOL_to_quaternion);
@@ -1068,11 +1137,11 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_UFUNC(power);
   REGISTER_UFUNC(copysign);
 
-  // Finally, add this quaternion object to the numpy_quaternion module itself
-  PyModule_AddObject(m, "quaternion", (PyObject *)&PyQuaternion_Type);
+  // Finally, add this quaternion object to the quaternion module itself
+  PyModule_AddObject(module, "quaternion", (PyObject *)&PyQuaternion_Type);
 
 #if defined(NPY_PY3K)
-    return m;
+    return module;
 #else
     return;
 #endif

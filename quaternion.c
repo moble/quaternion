@@ -80,6 +80,14 @@ quaternion_add(quaternion q1, quaternion q2)
       };
 }
 
+void quaternion_inplace_add(quaternion* q1, quaternion q2) {
+  q1->w += q2.w;
+  q1->x += q2.x;
+  q1->y += q2.y;
+  q1->z += q2.z;
+  return;
+}
+
 quaternion
 quaternion_subtract(quaternion q1, quaternion q2)
 {
@@ -89,6 +97,14 @@ quaternion_subtract(quaternion q1, quaternion q2)
       q1.y-q2.y,
       q1.z-q2.z,
       };
+}
+
+void quaternion_inplace_subtract(quaternion* q1, quaternion q2) {
+  q1->w -= q2.w;
+  q1->x -= q2.x;
+  q1->y -= q2.y;
+  q1->z -= q2.z;
+  return;
 }
 
 quaternion
@@ -102,16 +118,36 @@ quaternion_multiply(quaternion q1, quaternion q2)
       };
 }
 
+void quaternion_inplace_multiply(quaternion* q1a, quaternion q2) {
+  quaternion q1 = *q1a;
+  q1a->w = q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z;
+  q1a->x = q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y;
+  q1a->y = q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x;
+  q1a->z = q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w;
+  return;
+}
+
 quaternion
 quaternion_divide(quaternion q1, quaternion q2)
 {
-  double s = q2.w*q2.w + q2.x*q2.x + q2.y*q2.y + q2.z*q2.z;
+  double q2norm = q2.w*q2.w + q2.x*q2.x + q2.y*q2.y + q2.z*q2.z;
   return (quaternion) {
-    (  q1.w*q2.w + q1.x*q2.x + q1.y*q2.y + q1.z*q2.z) / s,
-      (- q1.w*q2.x + q1.x*q2.w - q1.y*q2.z + q1.z*q2.y) / s,
-      (- q1.w*q2.y + q1.x*q2.z + q1.y*q2.w - q1.z*q2.x) / s,
-      (- q1.w*q2.z - q1.x*q2.y + q1.y*q2.x + q1.z*q2.w) / s
-      };
+    (  q1.w*q2.w + q1.x*q2.x + q1.y*q2.y + q1.z*q2.z) / q2norm,
+    (- q1.w*q2.x + q1.x*q2.w - q1.y*q2.z + q1.z*q2.y) / q2norm,
+    (- q1.w*q2.y + q1.x*q2.z + q1.y*q2.w - q1.z*q2.x) / q2norm,
+    (- q1.w*q2.z - q1.x*q2.y + q1.y*q2.x + q1.z*q2.w) / q2norm
+  };
+}
+
+void quaternion_inplace_divide(quaternion* q1a, quaternion q2) {
+  double q2norm;
+  quaternion q1 = *q1a;
+  q2norm = q2.w*q2.w + q2.x*q2.x + q2.y*q2.y + q2.z*q2.z;
+  q1a->w = ( q1.w*q2.w + q1.x*q2.x + q1.y*q2.y + q1.z*q2.z)/q2norm;
+  q1a->x = (-q1.w*q2.x + q1.x*q2.w - q1.y*q2.z + q1.z*q2.y)/q2norm;
+  q1a->y = (-q1.w*q2.y + q1.x*q2.z + q1.y*q2.w - q1.z*q2.x)/q2norm;
+  q1a->z = (-q1.w*q2.z - q1.x*q2.y + q1.y*q2.x + q1.z*q2.w)/q2norm;
+  return;
 }
 
 quaternion
@@ -120,10 +156,26 @@ quaternion_multiply_scalar(quaternion q, double s)
   return (quaternion) {s*q.w, s*q.x, s*q.y, s*q.z};
 }
 
+void quaternion_inplace_multiply_scalar(quaternion* q, double s) {
+  q->w *= s;
+  q->x *= s;
+  q->y *= s;
+  q->z *= s;
+  return;
+}
+
 quaternion
 quaternion_divide_scalar(quaternion q, double s)
 {
   return (quaternion) {q.w/s, q.x/s, q.y/s, q.z/s};
+}
+
+void quaternion_inplace_divide_scalar(quaternion* q, double s) {
+  q->w /= s;
+  q->x /= s;
+  q->y /= s;
+  q->z /= s;
+  return;
 }
 
 quaternion
@@ -159,10 +211,22 @@ quaternion_power(quaternion q, quaternion p)
   return quaternion_exp(quaternion_multiply(quaternion_log(q), p));
 }
 
+void quaternion_inplace_power(quaternion* q1, quaternion q2) {
+  quaternion q3 = quaternion_power(*q1,q2);
+  *q1 = q3;
+  return;
+}
+
 quaternion
 quaternion_power_scalar(quaternion q, double p)
 {
   return quaternion_exp(quaternion_multiply_scalar(quaternion_log(q), p));
+}
+
+void quaternion_inplace_power_scalar(quaternion* q, double s) {
+  quaternion q2 = quaternion_power_scalar(*q,s);
+  *q = q2;
+  return;
 }
 
 quaternion
