@@ -885,7 +885,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 
   int quaternionNum;
   int arg_types[3];
-  PyObject* numpy_str;
   PyObject* numpy;
   PyObject* numpy_dict;
 
@@ -921,16 +920,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
     return;
 #endif
   }
-  numpy_str = PyString_FromString("numpy");
-  if (!numpy_str) {
-#if defined(NPY_PY3K)
-    return NULL;
-#else
-    return;
-#endif
-  }
-  numpy = PyImport_Import(numpy_str);
-  Py_DECREF(numpy_str);
+  numpy = PyImport_ImportModule("numpy");
   if (!numpy) {
 #if defined(NPY_PY3K)
     return NULL;
