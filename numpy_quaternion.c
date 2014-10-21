@@ -39,20 +39,25 @@
 #include <numpy/npy_math.h>
 #include <numpy/ufuncobject.h>
 #include "structmember.h"
-#include "numpy/npy_3kcompat.h"
 
 #include "quaternion.h"
 
-// This collects some code for the new stateful module properties of py3k
-struct quaternionstate {
-  PyObject *ErrorObject;
-  PyObject *PyQuaternion_Type;
-};
+
+// The following definitions, along with `#define NPY_PY3K 1`, can
+// also be found in the header <numpy/npy_3kcompat.h>.
 #if PY_MAJOR_VERSION >= 3
-#define GETSTATE(obj) ((struct quaternionstate*)PyModule_GetState(obj))
+#define PyUString_FromString PyUnicode_FromString
+static NPY_INLINE int PyInt_Check(PyObject *op) {
+    int overflow = 0;
+    if (!PyLong_Check(op)) {
+        return 0;
+    }
+    PyLong_AsLongAndOverflow(op, &overflow);
+    return (overflow == 0);
+}
+#define PyInt_AsLong PyLong_AsLong
 #else
-#define GETSTATE(obj) (&_state)
-static struct quaternionstate _state;
+#define PyUString_FromString PyString_FromString
 #endif
 
 
@@ -304,7 +309,7 @@ static PyNumberMethods pyquaternion_as_number = {
   pyquaternion_add,               // nb_add
   pyquaternion_subtract,          // nb_subtract
   pyquaternion_multiply,          // nb_multiply
-  #if !defined(NPY_PY3K)
+  #if PY_MAJOR_VERSION < 3
   pyquaternion_divide,            // nb_divide
   #endif
   0,                              // nb_remainder
@@ -320,24 +325,24 @@ static PyNumberMethods pyquaternion_as_number = {
   0,                              // nb_and
   0,                              // nb_xor
   0,                              // nb_or
-  #if !defined(NPY_PY3K)
+  #if PY_MAJOR_VERSION < 3
   0,                              // nb_coerce
   #endif
   0,                              // nb_int
-  #if defined(NPY_PY3K)
+  #if PY_MAJOR_VERSION >= 3
   0,                              // nb_reserved
   #else
   0,                              // nb_long
   #endif
   0,                              // nb_float
-  #if !defined(NPY_PY3K)
+  #if PY_MAJOR_VERSION < 3
   0,                              // nb_oct
   0,                              // nb_hex
   #endif
   pyquaternion_inplace_add,       // nb_inplace_add
   pyquaternion_inplace_subtract,  // nb_inplace_subtract
   pyquaternion_inplace_multiply,  // nb_inplace_multiply
-  #if !defined(NPY_PY3K)
+  #if PY_MAJOR_VERSION < 3
   pyquaternion_inplace_divide,    // nb_inplace_divide
   #endif
   0,                              // nb_inplace_remainder
@@ -395,11 +400,9 @@ pyquaternion_get_components(PyObject *self, void *closure)
 static int
 pyquaternion_set_components(PyObject *self, PyObject *value, void *closure)
 {
-  struct quaternionstate *st;
   quaternion *q = &((PyQuaternion *)self)->obval;
   if (value == NULL) {
-    st = GETSTATE(self);
-    PyErr_SetString(st->ErrorObject, "Cannot set quaternion to empty value");
+    PyErr_SetString(PyExc_ValueError, "Cannot set quaternion to empty value");
     return -1;
   }
   if (! (PySequence_Check(value) && PySequence_Size(value)==4) ) {
@@ -470,7 +473,7 @@ PyGetSetDef pyquaternion_getset[] = {
 // Note that many of the slots below will be filled later, after the
 // corresponding functions are defined.
 static PyTypeObject PyQuaternion_Type = {
-  #if defined(NPY_PY3K)
+  #if PY_MAJOR_VERSION >= 3
   PyVarObject_HEAD_INIT(NULL, 0)
   #else
   PyObject_HEAD_INIT(NULL)
@@ -483,7 +486,7 @@ static PyTypeObject PyQuaternion_Type = {
   0,                                          // tp_print
   0,                                          // tp_getattr
   0,                                          // tp_setattr
-  #if defined(NPY_PY3K)
+  #if PY_MAJOR_VERSION >= 3
   0,                                          // tp_reserved
   #else
   0,                                          // tp_compare
@@ -929,18 +932,6 @@ static PyMethodDef QuaternionMethodsPlaceHolder[] = {
 
 #if PY_MAJOR_VERSION >= 3
 
-static int quaternion_traverse(PyObject *m, visitproc visit, void *arg) {
-  Py_VISIT(GETSTATE(m)->ErrorObject);
-  Py_VISIT(GETSTATE(m)->PyQuaternion_Type);
-  return 0;
-}
-
-static int quaternion_clear(PyObject *m) {
-  Py_CLEAR(GETSTATE(m)->ErrorObject);
-  Py_CLEAR(GETSTATE(m)->PyQuaternion_Type);
-  return 0;
-}
-
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
     "numpy_quaternion",
@@ -948,8 +939,8 @@ static struct PyModuleDef moduledef = {
     -1,
     QuaternionMethodsPlaceHolder,
     NULL,
-    quaternion_traverse,
-    quaternion_clear,
+    NULL,
+    NULL,
     NULL
 };
 
@@ -968,7 +959,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 #endif
 
   PyObject *module;
-  struct quaternionstate *st;
   int quaternionNum;
   int arg_types[3];
   PyObject* numpy;
@@ -982,18 +972,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 #endif
 
   if(module==NULL) {
-    INITERROR;
-  }
-  st = GETSTATE(module);
-  GETSTATE(module)->ErrorObject = PyErr_NewException("quaternion.error", NULL, NULL);
-  if (!GETSTATE(module)->ErrorObject) {
-    Py_DECREF(module);
-    INITERROR;
-  }
-  GETSTATE(module)->PyQuaternion_Type = (PyObject *)&PyQuaternion_Type;
-  /* GETSTATE(module)->PyQuaternion_Type = PyType_Copy(&PyQuaternion_Type); */
-  if (!GETSTATE(module)->PyQuaternion_Type) {
-    Py_DECREF(module);
     INITERROR;
   }
 
@@ -1019,7 +997,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   PyQuaternion_Type.tp_base = &PyGenericArrType_Type;
 
   // Register the quaternion array scalar type
-#if defined(NPY_PY3K)
+#if PY_MAJOR_VERSION >= 3
   PyQuaternion_Type.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
 #else
   PyQuaternion_Type.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES;
@@ -1140,7 +1118,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   // Finally, add this quaternion object to the quaternion module itself
   PyModule_AddObject(module, "quaternion", (PyObject *)&PyQuaternion_Type);
 
-#if defined(NPY_PY3K)
+#if PY_MAJOR_VERSION >= 3
     return module;
 #else
     return;
