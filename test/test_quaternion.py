@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
 from __future__ import division
-from numpy import *
 import numpy as np
 import quaternion
+from numpy import *
 import warnings
 import sys
 import pytest
+
 
 def passer(b):
     pass
 # Change this to strict_assert = assert_ to check for missing tests
 strict_assert = passer
-
 
 
 # Create a nice variety of quaternion objects.  N.B.: Do NOT make
@@ -267,7 +267,7 @@ def test_quaternion_methods():
     strict_assert(False)
 
 
-def test_getset():
+def test_quaternion_getset():
     # get components/vec
     for q in Qs_nonnan:
         assert np.array_equal(q.components, np.array([q.w,q.x,q.y,q.z]))
@@ -354,10 +354,18 @@ def test_numpy_array_conversion():
     pass
 
 if __name__=='__main__':
+    print("quaternion_members")
     test_quaternion_members()
+    print("quaternion_methods")
     test_quaternion_methods()
+    print("qaternion_getset")
     test_quaternion_getset()
+    print("arrfuncs")
     test_arrfuncs()
+    print("arraydescr")
     test_arraydescr()
+    print("casts")
     test_casts()
+    print("numpy_array_conversion")
     test_numpy_array_conversion()
+    print("Finished")

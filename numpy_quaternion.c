@@ -82,18 +82,22 @@ PyQuaternion_FromQuaternion(quaternion q) {
 }
 
 // TODO: Add list/tuple conversions
-#define PyQuaternion_AsQuaternion(q, o)         \
-  if(PyQuaternion_Check(o)) {                   \
-    q = ((PyQuaternion*)o)->obval;              \
-  } else {                                      \
-    return NULL;                                \
+#define PyQuaternion_AsQuaternion(q, o)                                 \
+  if(PyQuaternion_Check(o)) {                                           \
+    q = ((PyQuaternion*)o)->obval;                                      \
+  } else {                                                              \
+    PyErr_SetString(PyExc_TypeError,                                    \
+                    "Input object is not a quaternion.");               \
+    return NULL;                                                        \
   }
 
-#define PyQuaternion_AsQuaternionPointer(q, o)  \
-  if(PyQuaternion_Check(o)) {                   \
-    q = &((PyQuaternion*)o)->obval;             \
-  } else {                                      \
-    return NULL;                                \
+#define PyQuaternion_AsQuaternionPointer(q, o)                          \
+  if(PyQuaternion_Check(o)) {                                           \
+    q = &((PyQuaternion*)o)->obval;                                     \
+  } else {                                                              \
+    PyErr_SetString(PyExc_TypeError,                                    \
+                    "Input object is not a quaternion.");               \
+    return NULL;                                                        \
   }
 
 
@@ -467,18 +471,107 @@ PyGetSetDef pyquaternion_getset[] = {
   {NULL}
 };
 
+
+
+static PyObject *
+pyquaternion_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  PyQuaternion* self;
+  self = (PyQuaternion *)type->tp_alloc(type, 0);
+  return (PyObject *)self;
+}
+
+static int
+pyquaternion_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+  // "A good rule of thumb is that for immutable types, all
+  // initialization should take place in `tp_new`, while for mutable
+  // types, most initialization should be deferred to `tp_init`."
+  // ---Python 2.7.8 docs
+  quaternion* q;
+  q = &(((PyQuaternion*)self)->obval);
+  if (kwds && PyDict_Size(kwds)) {
+    PyErr_SetString(PyExc_TypeError,
+                    "quaternion constructor takes no keyword arguments");
+    return -1;
+  }
+
+  if (!PyArg_ParseTuple(args, "dddd", &q->w, &q->x, &q->y, &q->z)) {
+    PyErr_SetString(PyExc_TypeError,
+                    "quaternion constructor takes four double (float) arguments");
+    return -1;
+  }
+
+  return 0;
+}
+
+static PyObject*
+pyquaternion_richcompare(PyObject* a, PyObject* b, int op)
+{
+  quaternion x = {0};
+  quaternion y = {0};
+  int result = 0;
+  PyQuaternion_AsQuaternion(x,a);
+  PyQuaternion_AsQuaternion(y,b);
+  #define COMPARISONOP(py,op) case py: result = quaternion_##op(x,y); break;
+  switch (op) {
+    COMPARISONOP(Py_LT,less)
+    COMPARISONOP(Py_LE,less_equal)
+    COMPARISONOP(Py_EQ,equal)
+    COMPARISONOP(Py_NE,not_equal)
+    COMPARISONOP(Py_GT,greater)
+    COMPARISONOP(Py_GE,greater_equal)
+  };
+  #undef COMPARISONOP
+  return PyBool_FromLong(result);
+}
+
+
+static long
+pyquaternion_hash(PyObject *o)
+{
+  quaternion q = ((PyQuaternion *)o)->obval;
+  long value = 0x456789;
+  value = (10000004 * value) ^ _Py_HashDouble(q.w);
+  value = (10000004 * value) ^ _Py_HashDouble(q.x);
+  value = (10000004 * value) ^ _Py_HashDouble(q.y);
+  value = (10000004 * value) ^ _Py_HashDouble(q.z);
+  if (value == -1)
+    value = -2;
+  return value;
+}
+
+static PyObject *
+pyquaternion_repr(PyObject *o)
+{
+  char str[128];
+  quaternion q = ((PyQuaternion *)o)->obval;
+  sprintf(str, "quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
+  return PyUString_FromString(str);
+}
+
+static PyObject *
+pyquaternion_str(PyObject *o)
+{
+  char str[128];
+  quaternion q = ((PyQuaternion *)o)->obval;
+  sprintf(str, "quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
+  return PyUString_FromString(str);
+}
+
+
 // This establishes the quaternion as a python object (not yet a numpy
 // scalar type).  The name may be a little counterintuitive; the idea
 // is that this will be a type that can be used as an array dtype.
 // Note that many of the slots below will be filled later, after the
 // corresponding functions are defined.
 static PyTypeObject PyQuaternion_Type = {
-  #if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= 3
   PyVarObject_HEAD_INIT(NULL, 0)
-  #else
+#else
   PyObject_HEAD_INIT(NULL)
   0,                                          // ob_size
-  #endif
+#endif
   "quaternion",                               // tp_name
   sizeof(PyQuaternion),                       // tp_basicsize
   0,                                          // tp_itemsize
@@ -486,40 +579,44 @@ static PyTypeObject PyQuaternion_Type = {
   0,                                          // tp_print
   0,                                          // tp_getattr
   0,                                          // tp_setattr
-  #if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= 3
   0,                                          // tp_reserved
-  #else
+#else
   0,                                          // tp_compare
-  #endif
-  0,                                          // tp_repr
+#endif
+  pyquaternion_repr,                          // tp_repr
   &pyquaternion_as_number,                    // tp_as_number
   0,                                          // tp_as_sequence
   0,                                          // tp_as_mapping
-  0,                                          // tp_hash
+  pyquaternion_hash,                          // tp_hash
   0,                                          // tp_call
-  0,                                          // tp_str
+  pyquaternion_str,                           // tp_str
   0,                                          // tp_getattro
   0,                                          // tp_setattro
   0,                                          // tp_as_buffer
-  0,                                          // tp_flags
+#if PY_MAJOR_VERSION >= 3
+  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   // tp_flags
+#else
+  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES, // tp_flags
+#endif
   0,                                          // tp_doc
   0,                                          // tp_traverse
   0,                                          // tp_clear
-  0,                                          // tp_richcompare
+  pyquaternion_richcompare,                   // tp_richcompare
   0,                                          // tp_weaklistoffset
   0,                                          // tp_iter
   0,                                          // tp_iternext
   pyquaternion_methods,                       // tp_methods
   pyquaternion_members,                       // tp_members
   pyquaternion_getset,                        // tp_getset
-  0,                                          // tp_base
+  0,                                          // tp_base; will be reset to &PyGenericArrType_Type after numpy import
   0,                                          // tp_dict
   0,                                          // tp_descr_get
   0,                                          // tp_descr_set
   0,                                          // tp_dictoffset
-  0,                                          // tp_init
+  pyquaternion_init,                          // tp_init
   0,                                          // tp_alloc
-  0,                                          // tp_new
+  pyquaternion_new,                           // tp_new
   0,                                          // tp_free
   0,                                          // tp_is_gc
   0,                                          // tp_bases
@@ -528,9 +625,9 @@ static PyTypeObject PyQuaternion_Type = {
   0,                                          // tp_subclasses
   0,                                          // tp_weaklist
   0,                                          // tp_del
-  #if PY_VERSION_HEX >= 0x02060000
+#if PY_VERSION_HEX >= 0x02060000
   0,                                          // tp_version_tag
-  #endif
+#endif
 };
 
 // Functions implementing internal features. Not all of these function
@@ -545,6 +642,7 @@ QUATERNION_getitem(char *ip, PyArrayObject *ap)
   quaternion q;
   PyObject *tuple;
   PyArray_Descr *descr;
+  printf("#################\n###################\nI'm inside getitem...\n###############\n##############\n");
 
   if ((ap == NULL) || PyArray_ISBEHAVED_RO(ap)) {
     q = *((quaternion *)ip);
@@ -571,6 +669,7 @@ static int QUATERNION_setitem(PyObject *op, char *ov, PyArrayObject *ap)
 {
   quaternion q;
   PyArray_Descr *descr;
+  printf("#################\n###################\nI'm inside setitem...\n###############\n##############\n");
 
   // if (PyArray_IsScalar(op, Quaternion)) {
   if (PyQuaternion_Check(op)) {
@@ -770,67 +869,10 @@ static void register_cast_function(int sourceType, int destType, PyArray_VectorU
 }
 
 
-
 // This is the crucial feature that will make a quaternion into a
 // built-in numpy data type.  We will describe its features below.
 PyArray_Descr* quaternion_descr;
 
-static PyObject *
-quaternion_arrtype_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-{
-  quaternion q;
-
-  if (!PyArg_ParseTuple(args, "dddd", &q.w, &q.x, &q.y, &q.z))
-    return NULL;
-
-  return PyArray_Scalar(&q, quaternion_descr, NULL);
-}
-
-static PyObject *
-gentype_richcompare(PyObject *self, PyObject *other, int cmp_op)
-{
-  PyObject *arr, *ret;
-
-  arr = PyArray_FromScalar(self, NULL);
-  if (arr == NULL) {
-    return NULL;
-  }
-  ret = Py_TYPE(arr)->tp_richcompare(arr, other, cmp_op);
-  Py_DECREF(arr);
-  return ret;
-}
-
-static long
-quaternion_arrtype_hash(PyObject *o)
-{
-  quaternion q = ((PyQuaternion *)o)->obval;
-  long value = 0x456789;
-  value = (10000004 * value) ^ _Py_HashDouble(q.w);
-  value = (10000004 * value) ^ _Py_HashDouble(q.x);
-  value = (10000004 * value) ^ _Py_HashDouble(q.y);
-  value = (10000004 * value) ^ _Py_HashDouble(q.z);
-  if (value == -1)
-    value = -2;
-  return value;
-}
-
-static PyObject *
-quaternion_arrtype_repr(PyObject *o)
-{
-  char str[128];
-  quaternion q = ((PyQuaternion *)o)->obval;
-  sprintf(str, "quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
-  return PyUString_FromString(str);
-}
-
-static PyObject *
-quaternion_arrtype_str(PyObject *o)
-{
-  char str[128];
-  quaternion q = ((PyQuaternion *)o)->obval;
-  sprintf(str, "quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
-  return PyUString_FromString(str);
-}
 
 // This function generates a view of the quaternion array as a float
 // array.  I'm just not sure where to put it...
@@ -993,36 +1035,24 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
     INITERROR;
   }
 
-  // Can't set this until we import numpy
-  PyQuaternion_Type.tp_base = &PyGenericArrType_Type;
-
-  // Register the quaternion array scalar type
-#if PY_MAJOR_VERSION >= 3
-  PyQuaternion_Type.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
-#else
-  PyQuaternion_Type.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES;
-#endif
-  PyQuaternion_Type.tp_new = quaternion_arrtype_new;
-  PyQuaternion_Type.tp_richcompare = gentype_richcompare;
-  PyQuaternion_Type.tp_hash = quaternion_arrtype_hash;
-  PyQuaternion_Type.tp_repr = quaternion_arrtype_repr;
-  PyQuaternion_Type.tp_str = quaternion_arrtype_str;
+  // Register the quaternion array base type.  Couldn't do this until
+  // after we imported numpy (above)
   PyQuaternion_Type.tp_base = &PyGenericArrType_Type;
   if (PyType_Ready(&PyQuaternion_Type) < 0) {
     PyErr_Print();
-    PyErr_SetString(PyExc_SystemError, "could not initialize PyQuaternion_Type");
+    PyErr_SetString(PyExc_SystemError, "Could not initialize PyQuaternion_Type.");
     INITERROR;
   }
 
   // The array functions
   PyArray_InitArrFuncs(&_PyQuaternion_ArrFuncs);
-  _PyQuaternion_ArrFuncs.getitem = (PyArray_GetItemFunc*)QUATERNION_getitem;
-  _PyQuaternion_ArrFuncs.setitem = (PyArray_SetItemFunc*)QUATERNION_setitem;
+  _PyQuaternion_ArrFuncs.nonzero = (PyArray_NonzeroFunc*)QUATERNION_nonzero;
   _PyQuaternion_ArrFuncs.copyswap = (PyArray_CopySwapFunc*)QUATERNION_copyswap;
   _PyQuaternion_ArrFuncs.copyswapn = (PyArray_CopySwapNFunc*)QUATERNION_copyswapn;
+  _PyQuaternion_ArrFuncs.setitem = (PyArray_SetItemFunc*)QUATERNION_setitem;
+  _PyQuaternion_ArrFuncs.getitem = (PyArray_GetItemFunc*)QUATERNION_getitem;
   _PyQuaternion_ArrFuncs.compare = (PyArray_CompareFunc*)QUATERNION_compare;
   _PyQuaternion_ArrFuncs.argmax = (PyArray_ArgFunc*)QUATERNION_argmax;
-  _PyQuaternion_ArrFuncs.nonzero = (PyArray_NonzeroFunc*)QUATERNION_nonzero;
   _PyQuaternion_ArrFuncs.fillwithscalar = (PyArray_FillWithScalarFunc*)QUATERNION_fillwithscalar;
 
   // The quaternion array descr

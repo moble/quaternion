@@ -13,16 +13,16 @@ expand the applications of quaternions (as well as to fix a few bugs).
 The only requirements are python and numpy.  The code is [routinely
 tested](https://travis-ci.org/moble/numpy_quaternion) on python
 versions 2.6, 2.7, 3.2, 3.3, and 3.4, so any of these should be
-acceptable.  Numpy versions 1.7 and newer should also work, but only
-some fairly recent version is tested for each python, depending on
-what [Travis-CI](https://travis-ci.org/) is currently using.
+acceptable.  Numpy versions 1.7 and newer should also work, but the
+tests are only run on a recent version of numpy (1.9, as of this
+writing).
 
-I highly recommend the
-[anaconda](https://store.continuum.io/cshop/anaconda/) installation,
-which is easy, free, and generally the best way to stay up-to-date
-with python.  It installs into your user directory (no root password
-needed), can easily be uninstalled, and doesn't interfere in any way
-with your system python.
+The [anaconda](https://store.continuum.io/cshop/anaconda/)
+installation is highly recommended.  This is easy, free, and generally
+the best way to stay up-to-date with python.  It installs into your
+user directory (no root password needed), can easily be uninstalled,
+and doesn't interfere in any way with your system python -- in
+addition to numerous other advantages.
 
 To install with anaconda or virtualenv (which will just go into your
 user directory), simply run
