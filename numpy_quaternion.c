@@ -474,7 +474,6 @@ static PyArray_ArrFuncs _PyQuaternion_ArrFuncs;
 static PyObject *
 QUATERNION_getitem(char *ip, PyArrayObject *ap)
 {
-  printf("getitem!\n");
   quaternion q;
   PyObject *tuple;
   PyArray_Descr *descr;
@@ -502,7 +501,6 @@ QUATERNION_getitem(char *ip, PyArrayObject *ap)
 
 static int QUATERNION_setitem(PyObject *op, char *ov, PyArrayObject *ap)
 {
-  printf("setitem!\n");
   quaternion q;
   PyArray_Descr *descr;
 
