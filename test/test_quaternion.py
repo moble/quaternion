@@ -6,9 +6,7 @@ import numpy as np
 import quaternion
 import warnings
 import sys
-from numpy.testing import assert_
 import pytest
-
 
 def passer(b):
     pass
@@ -49,143 +47,143 @@ Qs_finitenonzero = [q for q in Qs if q.isfinite() and q.nonzero()]
 
 def test_quaternion_members():
     Q = quaternion.quaternion(1.1,2.2,3.3,4.4)
-    assert_(Q.real==1.1)
-    assert_(Q.w==1.1)
-    assert_(Q.x==2.2)
-    assert_(Q.y==3.3)
-    assert_(Q.z==4.4)
+    assert Q.real==1.1
+    assert Q.w==1.1
+    assert Q.x==2.2
+    assert Q.y==3.3
+    assert Q.z==4.4
 
 def test_quaternion_methods():
     ## Unary bool returners
     # nonzero
-    assert_(not q_0.nonzero()) # Do this one explicitly, to not use circular logic
-    assert_(q_1.nonzero()) # Do this one explicitly, to not use circular logic
+    assert not q_0.nonzero() # Do this one explicitly, to not use circular logic
+    assert q_1.nonzero() # Do this one explicitly, to not use circular logic
     for q in Qs_zero:
-        assert_(not q.nonzero())
+        assert not q.nonzero()
     for q in Qs_nonzero:
-        assert_(q.nonzero())
+        assert q.nonzero()
     # isnan
-    assert_(not q_0.isnan()) # Do this one explicitly, to not use circular logic
-    assert_(q_nan1.isnan()) # Do this one explicitly, to not use circular logic
+    assert not q_0.isnan() # Do this one explicitly, to not use circular logic
+    assert q_nan1.isnan() # Do this one explicitly, to not use circular logic
     for q in Qs_nan:
-        assert_(q.isnan())
+        assert q.isnan()
     for q in Qs_nonnan:
-        assert_(not q.isnan())
+        assert not q.isnan()
     # isinf
-    assert_(not q_0.isinf()) # Do this one explicitly, to not use circular logic
-    assert_(q_inf1.isinf()) # Do this one explicitly, to not use circular logic
+    assert not q_0.isinf() # Do this one explicitly, to not use circular logic
+    assert q_inf1.isinf() # Do this one explicitly, to not use circular logic
     for q in Qs_inf:
-        assert_(q.isinf())
+        assert q.isinf()
     for q in Qs_noninf:
-        assert_(not q.isinf())
+        assert not q.isinf()
     # isfinite
-    assert_(not q_nan1.isfinite()) # Do this one explicitly, to not use circular logic
-    assert_(not q_inf1.isfinite()) # Do this one explicitly, to not use circular logic
-    assert_(not q_minf1.isfinite()) # Do this one explicitly, to not use circular logic
-    assert_(q_0.isfinite()) # Do this one explicitly, to not use circular logic
+    assert not q_nan1.isfinite() # Do this one explicitly, to not use circular logic
+    assert not q_inf1.isfinite() # Do this one explicitly, to not use circular logic
+    assert not q_minf1.isfinite() # Do this one explicitly, to not use circular logic
+    assert q_0.isfinite() # Do this one explicitly, to not use circular logic
     for q in Qs_nonfinite:
-        assert_(not q.isfinite())
+        assert not q.isfinite()
     for q in Qs_finite:
-        assert_(q.isfinite())
+        assert q.isfinite()
 
 
     ## Binary bool returners
     # equal
     for q in Qs_nonnan:
-        assert_(q==q) # self equality
+        assert q==q # self equality
         for p in Qs: # non-self inequality
-            assert_((q is p) or (not (q==p)))
+            assert (q is p) or (not (q==p))
     for q in Qs:
         for p in Qs_nan:
-            assert_(not q==p) # nan should never equal anything
+            assert not q==p # nan should never equal anything
     # not_equal
     for q in Qs_nonnan:
-        assert_(not (q!=q)) # self non-not_equality
+        assert not (q!=q) # self non-not_equality
         for p in Qs_nonnan: # non-self not_equality
-            assert_((q is p) or (q!=p))
+            assert (q is p) or (q!=p)
     for q in Qs:
         for p in Qs_nan:
-            assert_(q!=p) # nan should never equal anything
+            assert q!=p # nan should never equal anything
     # less, less_equal, greater, greater_equal
     for p in Qs:
         for q in Qs_nan:
-            assert_(not p<q)
-            assert_(not q<p)
-            assert_(not p<=q)
-            assert_(not q<=p)
-            assert_(not p.greater(q))
-            assert_(not q.greater(p))
-            assert_(not p.greater_equal(q))
-            assert_(not q.greater_equal(p))
+            assert not p<q
+            assert not q<p
+            assert not p<=q
+            assert not q<=p
+            assert not p.greater(q)
+            assert not q.greater(p)
+            assert not p.greater_equal(q)
+            assert not q.greater_equal(p)
     for p in Qs_nonnan:
-        assert_((p<q_inf1) or (p is q_inf1))
-        assert_((p<=q_inf1))
-        assert_((q_minf1<p) or (p is q_minf1))
-        assert_((q_minf1<=p))
-        assert_((q_inf1.greater(p)) or (p is q_inf1))
-        assert_((q_inf1.greater_equal(p)))
-        assert_((p.greater(q_minf1)) or (p is q_minf1))
-        assert_((p.greater_equal(q_minf1)))
+        assert (p<q_inf1) or (p is q_inf1)
+        assert (p<=q_inf1)
+        assert (q_minf1<p) or (p is q_minf1)
+        assert (q_minf1<=p)
+        assert (q_inf1.greater(p)) or (p is q_inf1)
+        assert (q_inf1.greater_equal(p))
+        assert (p.greater(q_minf1)) or (p is q_minf1)
+        assert (p.greater_equal(q_minf1))
     for p in [q_1, x, y, z, Q, Qbar]:
-        assert_(q_0<p)
-        assert_(q_0<=p)
-        assert_(p.greater(q_0))
-        assert_(p.greater_equal(q_0))
+        assert q_0<p
+        assert q_0<=p
+        assert p.greater(q_0)
+        assert p.greater_equal(q_0)
     for p in [Qneg]:
-        assert_(p<q_0)
-        assert_(p<=q_0)
-        assert_(q_0.greater(p))
-        assert_(q_0.greater_equal(p))
+        assert p<q_0
+        assert p<=q_0
+        assert q_0.greater(p)
+        assert q_0.greater_equal(p)
     for p in [x, y, z]:
-        assert_(p<q_1)
-        assert_(p<=q_1)
-        assert_(q_1.greater(p))
-        assert_(q_1.greater_equal(p))
+        assert p<q_1
+        assert p<=q_1
+        assert q_1.greater(p)
+        assert q_1.greater_equal(p)
     for p in [Qlog, Qexp]:
-        assert_(q_1<p)
-        assert_(q_1<=p)
-        assert_(p.greater(q_1))
-        assert_(p.greater_equal(q_1))
+        assert q_1<p
+        assert q_1<=p
+        assert p.greater(q_1)
+        assert p.greater_equal(q_1)
 
     ## Unary float returners
     # absolute
     for q in Qs_nan:
-        assert_(np.isnan(q.abs()))
+        assert np.isnan(q.abs())
     for q in Qs_inf:
-        assert_(np.isinf(q.abs()))
+        assert np.isinf(q.abs())
     for q,a in [(q_0,0.0), (q_1, 1.0), (x,1.0), (y,1.0), (z,1.0),
                 (Q,   np.sqrt(Q.w**2+Q.x**2+Q.y**2+Q.z**2)),
                 (Qbar,np.sqrt(Q.w**2+Q.x**2+Q.y**2+Q.z**2))]:
-        assert_(q.abs() == a)
+        assert q.abs() == a
     # norm
     for q in Qs_nan:
-        assert_(np.isnan(q.norm()))
+        assert np.isnan(q.norm())
     for q in Qs_inf:
-        assert_(np.isinf(q.norm()))
+        assert np.isinf(q.norm())
     for q,a in [(q_0,0.0), (q_1, 1.0), (x,1.0), (y,1.0), (z,1.0),
                 (Q,   Q.w**2+Q.x**2+Q.y**2+Q.z**2),
                 (Qbar,Q.w**2+Q.x**2+Q.y**2+Q.z**2)]:
-        assert_(q.norm() == a)
+        assert q.norm() == a
 
 
     ## Unary quaternion returners
     # negative
-    assert_(-Q == Qneg)
+    assert -Q == Qneg
     for q in Qs_finite:
-        assert_(-q==-1.0*q)
+        assert -q==-1.0*q
     for q in Qs_nonnan:
-        assert_(-(-q)==q)
+        assert -(-q)==q
     # conjugate
-    assert_(Q.conjugate() == Qbar)
+    assert Q.conjugate() == Qbar
     for q in Qs_nonnan:
-        assert_(q.conjugate() == q.conj())
-        assert_(q.conjugate().conjugate() == q)
+        assert q.conjugate() == q.conj()
+        assert q.conjugate().conjugate() == q
     # log, exp
     qlogexp_precision = 4.e-15
-    assert_((Q.log()-Qlog).abs() < qlogexp_precision)
-    assert_((Q.exp()-Qexp).abs() < qlogexp_precision)
-    assert_((Q.log().exp()-Q).abs() < qlogexp_precision)
-    assert_((Q.exp().log()-Q).abs() > qlogexp_precision) # Note order of operations!
+    assert (Q.log()-Qlog).abs() < qlogexp_precision
+    assert (Q.exp()-Qexp).abs() < qlogexp_precision
+    assert (Q.log().exp()-Q).abs() < qlogexp_precision
+    assert (Q.exp().log()-Q).abs() > qlogexp_precision # Note order of operations!
     strict_assert(False) # logs of basis vectors
     strict_assert(False) # logs of interesting scalars * basis vectors
 
@@ -194,14 +192,14 @@ def test_quaternion_methods():
     # add
     for q in Qs_nonnan:
         for p in Qs_nonnan:
-            assert_(q+p==quaternion.quaternion(q.w+p.w,q.x+p.x,q.y+p.y,q.z+p.z)
+            assert (q+p==quaternion.quaternion(q.w+p.w,q.x+p.x,q.y+p.y,q.z+p.z)
                     or (q is q_inf1 and p is q_minf1)
                     or (p is q_inf1 and q is q_minf1))
     strict_assert(False) # Check nans and (q_inf1+q_minf1) and (q_minf1+q_inf1)
     # subtract
     for q in Qs_finite:
         for p in Qs_finite:
-            assert_(q-p==quaternion.quaternion(q.w-p.w,q.x-p.x,q.y-p.y,q.z-p.z))
+            assert q-p==quaternion.quaternion(q.w-p.w,q.x-p.x,q.y-p.y,q.z-p.z)
     strict_assert(False) # Check non-finite
     # copysign
     strict_assert(False)
@@ -209,68 +207,71 @@ def test_quaternion_methods():
     ## Quaternion-quaternion or quaternion-scalar binary quaternion returners
     # multiply
     for q in Qs_finite: # General quaternion mult. would use inf*0.0
-        assert_(q*q_1==q)
+        assert q*q_1==q
     for q in Qs_finite: # General quaternion mult. would use inf*0.0
-        assert_(q*1.0==q)
+        assert q*1.0==q
     for s in [-2.3,-1.2,-1.0,1.0,1.2,2.3]:
         for q in Qs_finite:
-            assert_(q*s==quaternion.quaternion(s*q.w,s*q.x,s*q.y,s*q.z))
-            assert_(s*q==q*s)
+            assert q*s==quaternion.quaternion(s*q.w,s*q.x,s*q.y,s*q.z)
+            assert s*q==q*s
     for q in Qs_finite:
-        assert_(0.0*q==q_0)
-        assert_(0.0*q==q*0.0)
+        assert 0.0*q==q_0
+        assert 0.0*q==q*0.0
     for q in [q_1, x, y, z]:
-        assert_(q_1*q==q)
-        assert_(q*q_1==q)
-    assert_(x*x==-q_1)
-    assert_(x*y==z)
-    assert_(x*z==-y)
-    assert_(y*x==-z)
-    assert_(y*y==-q_1)
-    assert_(y*z==x)
-    assert_(z*x==y)
-    assert_(z*y==-x)
-    assert_(z*z==-q_1)
+        assert q_1*q==q
+        assert q*q_1==q
+    assert x*x==-q_1
+    assert x*y==z
+    assert x*z==-y
+    assert y*x==-z
+    assert y*y==-q_1
+    assert y*z==x
+    assert z*x==y
+    assert z*y==-x
+    assert z*z==-q_1
     # divide
     for q in Qs_finitenonzero:
-        assert_( ((q/q)-q_1).abs()<np.finfo(float).eps )
+        assert  ((q/q)-q_1).abs()<np.finfo(float).eps
     for q in Qs_nonnan:
-        assert_( q/1.0==q )
+        assert  q/1.0==q
     strict_assert(False) # Division by non-unit scalar
     strict_assert(False) # Each of the 16 basic products
     for q in [q_1, x, y, z]:
-        assert_(q_1/q==q.conj())
-        assert_(q/q_1==q)
-    assert_(x/x==q_1)
-    assert_(x/y==-z)
-    assert_(x/z==y)
-    assert_(y/x==z)
-    assert_(y/y==q_1)
-    assert_(y/z==-x)
-    assert_(z/x==-y)
-    assert_(z/y==x)
-    assert_(z/z==q_1)
+        assert q_1/q==q.conj()
+        assert q/q_1==q
+    assert x/x==q_1
+    assert x/y==-z
+    assert x/z==y
+    assert y/x==z
+    assert y/y==q_1
+    assert y/z==-x
+    assert z/x==-y
+    assert z/y==x
+    assert z/z==q_1
     # power
-    qpower_precision = 4.e-14
+    qpower_precision = 4.e-13
     for q in Qs:
         if(q.isfinite() and q.nonzero()):
-            assert_( (q**1.0-q).abs()<qpower_precision )
-            assert_( (q**2.0-q*q).abs()<qpower_precision )
+            assert  (((q**0.5)*(q**0.5))-q).abs()<qpower_precision
+            assert  (q**1.0-q).abs()<qpower_precision
+            assert  (q**2.0-q*q).abs()<qpower_precision
+            assert  (q**2-q*q).abs()<qpower_precision
+            assert  (q**3-q*q*q).abs()<qpower_precision
     qinverse_precision = 5.e-16
     for q in Qs:
         if(q.isfinite() and q.nonzero()):
-            assert_( ((q**-1.0)*q - q_1).abs()<qinverse_precision )
+            assert  ((q**-1.0)*q - q_1).abs()<qinverse_precision
     for q in Qs:
         if(q.isfinite() and q.nonzero()):
-            assert_( ((q**q_1)-q).abs()<qpower_precision )
+            assert  ((q**q_1)-q).abs()<qpower_precision
     strict_assert(False)
 
 
 def test_getset():
     # get components/vec
     for q in Qs_nonnan:
-        assert_(np.array_equal(q.components, np.array([q.w,q.x,q.y,q.z])))
-        assert_(np.array_equal(q.vec, np.array([q.x,q.y,q.z])))
+        assert np.array_equal(q.components, np.array([q.w,q.x,q.y,q.z]))
+        assert np.array_equal(q.vec, np.array([q.x,q.y,q.z]))
     # set components/vec from np.array, list, tuple
     for q in Qs_nonnan:
         for seq_type in [np.array, list, tuple]:
@@ -278,8 +279,8 @@ def test_getset():
             r = np.quaternion(*q.components)
             p.components = seq_type((-5.5, 6.6,-7.7,8.8))
             r.vec = seq_type((6.6,-7.7,8.8))
-            assert_(np.array_equal(p.components, np.array([-5.5, 6.6,-7.7,8.8])))
-            assert_(np.array_equal(r.components, np.array([q.w, 6.6,-7.7,8.8])))
+            assert np.array_equal(p.components, np.array([-5.5, 6.6,-7.7,8.8]))
+            assert np.array_equal(r.components, np.array([q.w, 6.6,-7.7,8.8]))
     # TypeError when setting components with the wrong type or size of thing
     for q in Qs:
         for seq_type in [np.array, list, tuple]:

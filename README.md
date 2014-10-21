@@ -14,7 +14,7 @@ $ python setup.py build
 To install (may require administrator rights):
 
 ```sh
-# python setup.py install
+$ python setup.py install
 ```
 
 Example:

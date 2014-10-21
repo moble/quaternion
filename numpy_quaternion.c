@@ -150,7 +150,10 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
       return PyQuaternion_FromQuaternion(quaternion_##name(p,((PyQuaternion*)b)->obval));       \
     } else if(PyFloat_Check(b)) {                                       \
       return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyFloat_AsDouble(b))); \
+    } else if(PyInt_Check(b)) {                                       \
+      return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyInt_AsLong(b))); \
     }                                                                   \
+    PyErr_SetString(PyExc_TypeError, "Raising quaternion to power of neither float nor quaternion."); \
     return NULL;                                                        \
   }
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(multiply)
