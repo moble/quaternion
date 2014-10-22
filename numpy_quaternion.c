@@ -867,7 +867,6 @@ static void register_cast_function(int sourceType, int destType, PyArray_VectorU
 // built-in numpy data type.  We will describe its features below.
 PyArray_Descr* quaternion_descr;
 
-
 // This function generates a view of the quaternion array as a float
 // array.  I'm just not sure where to put it...
 // {"float_array", pyquaternion_get_float_array, NULL,
@@ -1055,6 +1054,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   quaternion_descr->kind = 'q';
   quaternion_descr->type = 'j';
   quaternion_descr->byteorder = '=';
+  quaternion_descr->flags = 0;
   quaternion_descr->type_num = 0; // assigned at registration
   quaternion_descr->elsize = 8*4;
   quaternion_descr->alignment = 8;
@@ -1062,6 +1062,8 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   quaternion_descr->fields = NULL;
   quaternion_descr->names = NULL;
   quaternion_descr->f = &_PyQuaternion_ArrFuncs;
+  quaternion_descr->metadata = NULL;
+  quaternion_descr->c_metadata = NULL;
 
   Py_INCREF(&PyQuaternion_Type);
   quaternionNum = PyArray_RegisterDataType(quaternion_descr);
