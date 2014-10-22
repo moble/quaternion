@@ -23,7 +23,11 @@ def as_float_array(a):
     array, but is otherwise the same shape.
 
     """
-    return a.view(np.float).reshape(a.shape+(4,))
+    # print("\nIn as_float_array a.dtype={0}".format(a.dtype))
+    av = a.view(np.float)
+    av = av.reshape(a.shape+(4,))
+    return av
+    # return a.view(np.float).reshape(a.shape+(4,))
 def as_quat_array(a):
     """View a float array as an array of quaternions
 
@@ -34,6 +38,12 @@ def as_quat_array(a):
     divisible by four (or better yet *is* 4).
 
     """
+    # print("\nIn as_quat_array a.dtype={0}".format(a.dtype))
+    av = a.view(np.quaternion)
     if(a.shape[-1]==4) :
-        return a.view(np.quaternion).reshape(a.shape[:-1])
-    return a.view(np.quaternion).reshape(a.shape[:-1]+(a.shape[-1]//4,))
+        av = av.reshape(a.shape[:-1])
+        # return a.view(np.quaternion).reshape(a.shape[:-1])
+    else :
+        av = av.reshape(a.shape[:-1]+(a.shape[-1]//4,))
+        # return a.view(np.quaternion).reshape(a.shape[:-1]+(a.shape[-1]//4,))
+    return av

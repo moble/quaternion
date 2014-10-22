@@ -18,11 +18,11 @@ tests are only run on a recent version of numpy (1.9, as of this
 writing).
 
 The [anaconda](https://store.continuum.io/cshop/anaconda/)
-installation is highly recommended.  This is easy, free, and generally
-the best way to stay up-to-date with python.  It installs into your
-user directory (no root password needed), can easily be uninstalled,
-and doesn't interfere in any way with your system python -- in
-addition to numerous other advantages.
+installation comes highly recommended.  This is easy, free, and
+generally the best way to stay up-to-date with python.  It installs
+into your user directory (no root password needed), can easily be
+uninstalled, and doesn't interfere in any way with your system python
+-- in addition to numerous other advantages.
 
 To install with anaconda or virtualenv (which will just go into your
 user directory), simply run
@@ -31,8 +31,8 @@ user directory), simply run
 $ python setup.py install
 ```
 
-With other flavors of python, you can install to the user directory
-with
+With other installations of python, you can install to the user
+directory with
 
 ```sh
 $ python setup.py install --user
