@@ -359,9 +359,27 @@ def test_quaternion_getset(Qs):
 #     pass
 
 
+def test_numpy_array_conversion(Qs):
+    "Check conversions between array as quaternions and array as floats"
+    # First, just check 1-d array
+    Q = Qs[Qs_nonnan][:12] # Select first 3x4=12 non-nan elements in Qs
+    q = quaternion.as_float_array(Q) # View as array of floats
+    assert q.shape==(12,4) # This is the expected shape
+    for j in range(12):
+        for k in range(4): # Check each component individually
+            assert q[j][k] == Q[j].components[k]
+    assert np.array_equal( quaternion.as_quat_array(q), Q )
 
-# def test_numpy_array_conversion():
-#     pass
+    P = Q.reshape(3,4) # Reshape into 3x4 array of quaternions
+    p = quaternion.as_float_array(P) # View as array of floats
+    assert p.shape==(3,4,4) # This is the expected shape
+    for j in range(3):
+        for k in range(4):
+            for l in range(4): # Check each component individually
+                assert p[j][k][l] == Q[4*j+k].components[l]
+    assert np.array_equal( quaternion.as_quat_array(p), P )
+
+
 
 if __name__=='__main__':
     print("quaternion_members")
