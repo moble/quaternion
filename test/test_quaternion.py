@@ -7,7 +7,8 @@ from numpy import *
 import warnings
 import sys
 import pytest
-
+import gc
+gc.collect()
 
 def passer(b):
     pass
@@ -37,7 +38,7 @@ def Qs():
                                     0.772785438996128, 1.03038058532817)
     Qexp    = quaternion.quaternion(2.81211398529184, -0.392521193481878,
                                     -0.588781790222817, -0.785042386963756)
-    return np.array([q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qlog, Qexp,])
+    return np.array([q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qlog, Qexp,], dtype=np.quaternion)
 q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qlog, Qexp, = range(len(Qs()))
 Qs_zero = [i for i in range(len(Qs())) if not Qs()[i].nonzero()]
 Qs_nonzero = [i for i in range(len(Qs())) if Qs()[i].nonzero()]
@@ -53,6 +54,7 @@ Qs_finitenonzero = [i for i in range(len(Qs())) if Qs()[i].isfinite() and Qs()[i
 
 
 def test_quaternion_members():
+    gc.collect()
     Q = quaternion.quaternion(1.1,2.2,3.3,4.4)
     assert Q.real==1.1
     assert Q.w==1.1
@@ -63,6 +65,7 @@ def test_quaternion_members():
 
 ## Unary bool returners
 def test_quaternion_nonzero(Qs):
+    gc.collect()
     assert not Qs[q_0].nonzero() # Do this one explicitly, to not use circular logic
     assert Qs[q_1].nonzero() # Do this one explicitly, to not use circular logic
     for q in Qs[Qs_zero]:
@@ -70,6 +73,7 @@ def test_quaternion_nonzero(Qs):
     for q in Qs[Qs_nonzero]:
         assert q.nonzero()
 def test_quaternion_isnan(Qs):
+    gc.collect()
     assert not Qs[q_0].isnan() # Do this one explicitly, to not use circular logic
     assert not Qs[q_1].isnan() # Do this one explicitly, to not use circular logic
     assert Qs[q_nan1].isnan() # Do this one explicitly, to not use circular logic
@@ -78,6 +82,7 @@ def test_quaternion_isnan(Qs):
     for q in Qs[Qs_nonnan]:
         assert not q.isnan()
 def test_quaternion_isinf(Qs):
+    gc.collect()
     assert not Qs[q_0].isinf() # Do this one explicitly, to not use circular logic
     assert not Qs[q_1].isinf() # Do this one explicitly, to not use circular logic
     assert Qs[q_inf1].isinf() # Do this one explicitly, to not use circular logic
@@ -87,6 +92,7 @@ def test_quaternion_isinf(Qs):
     for q in Qs[Qs_noninf]:
         assert not q.isinf()
 def test_quaternion_isfinite(Qs):
+    gc.collect()
     assert not Qs[q_nan1].isfinite() # Do this one explicitly, to not use circular logic
     assert not Qs[q_inf1].isfinite() # Do this one explicitly, to not use circular logic
     assert not Qs[q_minf1].isfinite() # Do this one explicitly, to not use circular logic
@@ -99,6 +105,7 @@ def test_quaternion_isfinite(Qs):
 
 ## Binary bool returners
 def test_quaternion_equal(Qs):
+    gc.collect()
     for j in Qs_nonnan:
         assert Qs[j]==Qs[j] # self equality
         for k in range(len(Qs)): # non-self inequality
@@ -155,6 +162,7 @@ def test_quaternion_richcompare(Qs):
         assert Qs[q_1]<=p
         assert p.greater(Qs[q_1])
         assert p.greater_equal(Qs[q_1])
+
 
 ## Unary float returners
 def test_quaternion_absolute(Qs):
@@ -217,7 +225,8 @@ def test_quaternion_subtract(Qs):
 def test_quaternion_copysign(Qs):
     strict_assert(False)
 
-    ## Quaternion-quaternion or quaternion-scalar binary quaternion returners
+
+## Quaternion-quaternion or quaternion-scalar binary quaternion returners
 def test_quaternion_multiply(Qs):
     for q in Qs[Qs_finite]: # General quaternion mult. would use inf*0.0
         assert q*Qs[q_1]==q
@@ -278,6 +287,7 @@ def test_quaternion_power(Qs):
 
 
 def test_quaternion_getset(Qs):
+    gc.collect()
     # get components/vec
     for q in Qs[Qs_nonnan]:
         assert np.array_equal(q.components, np.array([q.w,q.x,q.y,q.z]))
@@ -319,16 +329,53 @@ def test_quaternion_getset(Qs):
             with pytest.raises(TypeError):
                 r.vec = seq_type((-5.5, 6.6,-7.7,8.8))
 
-# def test_arrfuncs():
-#     # getitem
-#     # setitem
-#     # copyswap
-#     # copyswapn
-#     # compare
-#     # argmax
-#     # nonzero
-#     # fillwithscalar
-#     pass
+
+def test_arrfuncs():
+    # nonzero
+    # copyswap
+    # copyswapn
+    # getitem
+    # setitem
+    # compare
+    # argmax
+    # fillwithscalar
+    pass
+
+def test_setitem_quat(Qs):
+    gc.collect()
+    Ps = Qs[:]
+    # setitem from quaternion
+    for j in range(len(Ps)):
+        Ps[j] = np.quaternion(1.3,2.4,3.5,4.7)
+        for k in range(j):
+            assert Ps[k] == np.quaternion(1.3,2.4,3.5,4.7)
+        for k in range(j+1, len(Ps)):
+            assert Ps[k] == Qs[k]
+    # setitem from np.array, list, or tuple
+    for seq_type in [np.array, list, tuple]:
+        Ps = Qs[:]
+        with pytest.raises(TypeError):
+            Ps[0] = seq_type(())
+        with pytest.raises(TypeError):
+            Ps[0] = seq_type((1.3,))
+        with pytest.raises(TypeError):
+            Ps[0] = seq_type((1.3,2.4,))
+        with pytest.raises(TypeError):
+            Ps[0] = seq_type((1.3,2.4,3.5))
+        with pytest.raises(TypeError):
+            Ps[0] = seq_type((1.3,2.4,3.5,4.7,5.9))
+        with pytest.raises(TypeError):
+            Ps[0] = seq_type((1.3,2.4,3.5,4.7,5.9, np.nan))
+        for j in range(len(Ps)):
+            Ps[j] = seq_type((1.3,2.4,3.5,4.7))
+            for k in range(j):
+                assert Ps[k] == np.quaternion(1.3,2.4,3.5,4.7)
+                for k in range(j+1, len(Ps)):
+                    assert Ps[k] == Qs[k]
+    with pytest.raises(TypeError):
+        Ps[0] = 's'
+    with pytest.raises(TypeError):
+        Ps[0] = 's'
 
 # def test_arraydescr():
 #     # new
@@ -336,7 +383,7 @@ def test_quaternion_getset(Qs):
 #     # hash
 #     # repr
 #     # str
-#     pass
+
 
 # def test_casts():
 #     # FLOAT, npy_float
@@ -356,20 +403,29 @@ def test_quaternion_getset(Qs):
 #     # CFLOAT, npy_float
 #     # CDOUBLE, npy_double
 #     # CLONGDOUBLE, npy_longdouble
-#     pass
 
 
 def test_numpy_array_conversion(Qs):
     "Check conversions between array as quaternions and array as floats"
+    gc.collect()
     # First, just check 1-d array
     Q = Qs[Qs_nonnan][:12] # Select first 3x4=12 non-nan elements in Qs
+    assert Q.dtype == np.dtype(np.quaternion)
     q = quaternion.as_float_array(Q) # View as array of floats
+    assert q.dtype == np.dtype(np.float)
     assert q.shape==(12,4) # This is the expected shape
     for j in range(12):
         for k in range(4): # Check each component individually
             assert q[j][k] == Q[j].components[k]
-    assert np.array_equal( quaternion.as_quat_array(q), Q )
-
+    assert np.array_equal( quaternion.as_quat_array(q), Q ) # Check that we can go backwards
+    # Next, see how that works if I flatten the q array
+    q = q.flatten()
+    assert q.dtype == np.dtype(np.float)
+    assert q.shape==(48,)
+    for j in range(48):
+        assert q[j] == Q[j//4].components[j%4]
+    assert np.array_equal( quaternion.as_quat_array(q), Q ) # Check that we can go backwards
+    # Finally, reshape into 2-d array, and re-check
     P = Q.reshape(3,4) # Reshape into 3x4 array of quaternions
     p = quaternion.as_float_array(P) # View as array of floats
     assert p.shape==(3,4,4) # This is the expected shape
@@ -377,8 +433,7 @@ def test_numpy_array_conversion(Qs):
         for k in range(4):
             for l in range(4): # Check each component individually
                 assert p[j][k][l] == Q[4*j+k].components[l]
-    assert np.array_equal( quaternion.as_quat_array(p), P )
-
+    assert np.array_equal( quaternion.as_quat_array(p), P ) # Check that we can go backwards
 
 
 if __name__=='__main__':

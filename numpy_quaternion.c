@@ -635,19 +635,15 @@ static PyTypeObject PyQuaternion_Type = {
 // nonzero, copyswap, copyswapn, setitem, getitem, and cast.
 static PyArray_ArrFuncs _PyQuaternion_ArrFuncs;
 
-// This function doesn't seem to do anything...
-static PyObject *
-QUATERNION_getitem(char *ip, PyArrayObject *ap)
+static npy_bool
+QUATERNION_nonzero (char *ip, PyArrayObject *ap)
 {
   quaternion q;
-  PyObject *tuple;
-  PyArray_Descr *descr;
-  printf("#################\n###################\nI'm inside getitem...\n###############\n##############\n");
-
-  if ((ap == NULL) || PyArray_ISBEHAVED_RO(ap)) {
-    q = *((quaternion *)ip);
+  if (ap == NULL || PyArray_ISBEHAVED_RO(ap)) {
+    q = *(quaternion *)ip;
   }
   else {
+    PyArray_Descr *descr;
     descr = PyArray_DescrFromType(NPY_DOUBLE);
     descr->f->copyswap(&q.w, ip, !PyArray_ISNOTSWAPPED(ap), NULL);
     descr->f->copyswap(&q.x, ip+8, !PyArray_ISNOTSWAPPED(ap), NULL);
@@ -655,52 +651,7 @@ QUATERNION_getitem(char *ip, PyArrayObject *ap)
     descr->f->copyswap(&q.z, ip+24, !PyArray_ISNOTSWAPPED(ap), NULL);
     Py_DECREF(descr);
   }
-
-  tuple = PyTuple_New(4);
-  PyTuple_SET_ITEM(tuple, 0, PyFloat_FromDouble(q.w));
-  PyTuple_SET_ITEM(tuple, 1, PyFloat_FromDouble(q.x));
-  PyTuple_SET_ITEM(tuple, 2, PyFloat_FromDouble(q.y));
-  PyTuple_SET_ITEM(tuple, 3, PyFloat_FromDouble(q.z));
-
-  return tuple;
-}
-
-static int QUATERNION_setitem(PyObject *op, char *ov, PyArrayObject *ap)
-{
-  quaternion q;
-  PyArray_Descr *descr;
-  printf("#################\n###################\nI'm inside setitem...\n###############\n##############\n");
-
-  // if (PyArray_IsScalar(op, Quaternion)) {
-  if (PyQuaternion_Check(op)) {
-    q = ((PyQuaternion *)op)->obval;
-  }
-  else {
-    q.w = PyFloat_AsDouble(PyTuple_GetItem(op, 0));
-    q.x = PyFloat_AsDouble(PyTuple_GetItem(op, 1));
-    q.y = PyFloat_AsDouble(PyTuple_GetItem(op, 2));
-    q.z = PyFloat_AsDouble(PyTuple_GetItem(op, 3));
-  }
-  if (PyErr_Occurred()) {
-    if (PySequence_Check(op)) {
-      PyErr_Clear();
-      PyErr_SetString(PyExc_ValueError,
-                      "setting an array element with a sequence.");
-    }
-    return -1;
-  }
-  if (ap == NULL || PyArray_ISBEHAVED(ap))
-    *((quaternion *)ov)=q;
-  else {
-    descr = PyArray_DescrFromType(NPY_DOUBLE);
-    descr->f->copyswap(ov, &q.w, !PyArray_ISNOTSWAPPED(ap), NULL);
-    descr->f->copyswap(ov+8, &q.x, !PyArray_ISNOTSWAPPED(ap), NULL);
-    descr->f->copyswap(ov+16, &q.y, !PyArray_ISNOTSWAPPED(ap), NULL);
-    descr->f->copyswap(ov+24, &q.z, !PyArray_ISNOTSWAPPED(ap), NULL);
-    Py_DECREF(descr);
-  }
-
-  return 0;
+  return (npy_bool) !quaternion_equal(q, (quaternion) {0,0,0,0});
 }
 
 static void
@@ -727,8 +678,70 @@ QUATERNION_copyswapn(quaternion *dst, npy_intp dstride,
   Py_DECREF(descr);
 }
 
+static int QUATERNION_setitem(PyObject* item, void* data, void* ap)
+{
+  quaternion q = {0};
+  if(PyQuaternion_Check(item)) {
+    memcpy(data,&(((PyQuaternion *)item)->obval),sizeof(quaternion));
+  } else if(PySequence_Check(item) && PySequence_Length(item)==4) {
+    q.w = PyFloat_AsDouble(PySequence_GetItem(item, 0));
+    q.x = PyFloat_AsDouble(PySequence_GetItem(item, 1));
+    q.y = PyFloat_AsDouble(PySequence_GetItem(item, 2));
+    q.z = PyFloat_AsDouble(PySequence_GetItem(item, 3));
+  } else {
+    PyErr_SetString(PyExc_TypeError,
+                    "Unknown input to QUATERNION_setitem");
+    return -1;
+  }
+  return 0;
+
+  /* quaternion q; */
+  /* PyArray_Descr *descr; */
+
+  /* // if (PyArray_IsScalar(op, Quaternion)) { */
+  /* if (PyQuaternion_Check(op)) { */
+  /*   q = ((PyQuaternion *)op)->obval; */
+  /* } else { */
+  /*   q.w = PyFloat_AsDouble(PyTuple_GetItem(op, 0)); */
+  /*   q.x = PyFloat_AsDouble(PyTuple_GetItem(op, 1)); */
+  /*   q.y = PyFloat_AsDouble(PyTuple_GetItem(op, 2)); */
+  /*   q.z = PyFloat_AsDouble(PyTuple_GetItem(op, 3)); */
+  /* } */
+  /* if (PyErr_Occurred()) { */
+  /*   if (PySequence_Check(op)) { */
+  /*     PyErr_Clear(); */
+  /*     PyErr_SetString(PyExc_ValueError, */
+  /*                     "setting an array element with a sequence."); */
+  /*   } */
+  /*   return -1; */
+  /* } */
+  /* if (ap == NULL || PyArray_ISBEHAVED(ap)) { */
+  /*   *((quaternion *)ov)=q; */
+  /* } else { */
+  /*   descr = PyArray_DescrFromType(NPY_DOUBLE); */
+  /*   descr->f->copyswap(ov, &q.w, !PyArray_ISNOTSWAPPED(ap), NULL); */
+  /*   descr->f->copyswap(ov+8, &q.x, !PyArray_ISNOTSWAPPED(ap), NULL); */
+  /*   descr->f->copyswap(ov+16, &q.y, !PyArray_ISNOTSWAPPED(ap), NULL); */
+  /*   descr->f->copyswap(ov+24, &q.z, !PyArray_ISNOTSWAPPED(ap), NULL); */
+  /*   Py_DECREF(descr); */
+  /* } */
+
+  /* return 0; */
+}
+
+// When a numpy array of dtype=quaternion is indexed, this function is
+// called, returning a new quaternion object with a copy of the
+// data... sometimes...
+static PyObject *
+QUATERNION_getitem(void* data, void* arr)
+{
+  quaternion q;
+  memcpy(&q,data,sizeof(quaternion));
+  return PyQuaternion_FromQuaternion(q);
+}
+
 static int
-QUATERNION_compare (quaternion *pa, quaternion *pb, PyArrayObject *NPY_UNUSED(ap))
+QUATERNION_compare(quaternion *pa, quaternion *pb, PyArrayObject *NPY_UNUSED(ap))
 {
   quaternion a = *pa, b = *pb;
   npy_bool anan, bnan;
@@ -778,25 +791,6 @@ QUATERNION_argmax(quaternion *ip, npy_intp n, npy_intp *max_ind, PyArrayObject *
     }
   }
   return 0;
-}
-
-static npy_bool
-QUATERNION_nonzero (char *ip, PyArrayObject *ap)
-{
-  quaternion q;
-  if (ap == NULL || PyArray_ISBEHAVED_RO(ap)) {
-    q = *(quaternion *)ip;
-  }
-  else {
-    PyArray_Descr *descr;
-    descr = PyArray_DescrFromType(NPY_DOUBLE);
-    descr->f->copyswap(&q.w, ip, !PyArray_ISNOTSWAPPED(ap), NULL);
-    descr->f->copyswap(&q.x, ip+8, !PyArray_ISNOTSWAPPED(ap), NULL);
-    descr->f->copyswap(&q.y, ip+16, !PyArray_ISNOTSWAPPED(ap), NULL);
-    descr->f->copyswap(&q.z, ip+24, !PyArray_ISNOTSWAPPED(ap), NULL);
-    Py_DECREF(descr);
-  }
-  return (npy_bool) !quaternion_equal(q, (quaternion) {0,0,0,0});
 }
 
 static void
