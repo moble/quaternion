@@ -23,7 +23,6 @@ def as_float_array(a):
     array, but is otherwise the same shape.
 
     """
-    print("\nIn as_float_array a.dtype={0}".format(a.dtype))
     assert a.dtype == np.dtype(np.quaternion)
     av = a.view(np.float)
     av = av.reshape(a.shape+(4,))
@@ -39,7 +38,6 @@ def as_quat_array(a):
     divisible by four (or better yet *is* 4).
 
     """
-    print("\nIn as_quat_array a.dtype={0}".format(a.dtype))
     assert a.dtype == np.dtype(np.float)
     av = a.view(np.quaternion)
     if(a.shape[-1]==4) :
@@ -49,3 +47,15 @@ def as_quat_array(a):
         av = av.reshape(a.shape[:-1]+(a.shape[-1]//4,))
         # return a.view(np.quaternion).reshape(a.shape[:-1]+(a.shape[-1]//4,))
     return av
+def as_spinor_array(a):
+    """View a quaternion array as spinors in two-complex representation
+
+    This function is relatively slow and scales poorly, because memory
+    copying is apparently involved -- I think it's due to the
+    "advanced indexing" required to swap the columns.
+
+    """
+    assert a.dtype == np.dtype(np.quaternion)
+    # I'm not sure why it has to be so complicated, but all of these steps
+    # appear to be necessary in this case.
+    return a.view(np.float).reshape(a.shape+(4,))[...,[0,3,2,1]].ravel().view(np.complex).reshape(a.shape+(2,))

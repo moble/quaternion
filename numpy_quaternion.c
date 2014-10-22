@@ -382,43 +382,19 @@ PyMemberDef pyquaternion_members[] = {
   {NULL}
 };
 
-// This will be defined as a member function on the quaternion
-// objects, so that calling "components" will return a numpy array
-// with the components of the quaternion.
+// The quaternion can be conveniently separated into two complex
+// numbers, which we call 'part a' and 'part b'.  These are useful in
+// writing Wigner's D matrices directly in terms of quaternions.  This
+// is essentially the column-vector presentation of spinors.
 static PyObject *
-pyquaternion_get_components(PyObject *self, void *closure)
+pyquaternion_get_part_a(PyObject *self, void *closure)
 {
-  quaternion *q = &((PyQuaternion *)self)->obval;
-  int nd = 1;
-  npy_intp dims[1] = { 4 };
-  int typenum = NPY_DOUBLE;
-  PyObject* components = PyArray_SimpleNewFromData(nd, dims, typenum, &(q->w));
-  Py_INCREF(self);
-  PyArray_SetBaseObject((PyArrayObject*)components, self);
-  return components;
+  return (PyObject*) PyComplex_FromDoubles(((PyQuaternion *)self)->obval.w, ((PyQuaternion *)self)->obval.z);
 }
-
-// This will be defined as a member function on the quaternion
-// objects, so that calling `q.components = [1,2,3,4]`, for example,
-// will set the components appropriately.
-static int
-pyquaternion_set_components(PyObject *self, PyObject *value, void *closure)
+static PyObject *
+pyquaternion_get_part_b(PyObject *self, void *closure)
 {
-  quaternion *q = &((PyQuaternion *)self)->obval;
-  if (value == NULL) {
-    PyErr_SetString(PyExc_ValueError, "Cannot set quaternion to empty value");
-    return -1;
-  }
-  if (! (PySequence_Check(value) && PySequence_Size(value)==4) ) {
-    PyErr_SetString(PyExc_TypeError,
-                    "A quaternion's components must be set to something of length 4");
-    return -1;
-  }
-  q->w = PyFloat_AsDouble(PySequence_GetItem(value, 0));
-  q->x = PyFloat_AsDouble(PySequence_GetItem(value, 1));
-  q->y = PyFloat_AsDouble(PySequence_GetItem(value, 2));
-  q->z = PyFloat_AsDouble(PySequence_GetItem(value, 3));
-  return 0;
+  return (PyObject*) PyComplex_FromDoubles(((PyQuaternion *)self)->obval.y, ((PyQuaternion *)self)->obval.x);
 }
 
 // This will be defined as a member function on the quaternion
@@ -459,15 +435,58 @@ pyquaternion_set_vec(PyObject *self, PyObject *value, void *closure)
   return 0;
 }
 
+// This will be defined as a member function on the quaternion
+// objects, so that calling "components" will return a numpy array
+// with the components of the quaternion.
+static PyObject *
+pyquaternion_get_components(PyObject *self, void *closure)
+{
+  quaternion *q = &((PyQuaternion *)self)->obval;
+  int nd = 1;
+  npy_intp dims[1] = { 4 };
+  int typenum = NPY_DOUBLE;
+  PyObject* components = PyArray_SimpleNewFromData(nd, dims, typenum, &(q->w));
+  Py_INCREF(self);
+  PyArray_SetBaseObject((PyArrayObject*)components, self);
+  return components;
+}
+
+// This will be defined as a member function on the quaternion
+// objects, so that calling `q.components = [1,2,3,4]`, for example,
+// will set the components appropriately.
+static int
+pyquaternion_set_components(PyObject *self, PyObject *value, void *closure)
+{
+  quaternion *q = &((PyQuaternion *)self)->obval;
+  if (value == NULL) {
+    PyErr_SetString(PyExc_ValueError, "Cannot set quaternion to empty value");
+    return -1;
+  }
+  if (! (PySequence_Check(value) && PySequence_Size(value)==4) ) {
+    PyErr_SetString(PyExc_TypeError,
+                    "A quaternion's components must be set to something of length 4");
+    return -1;
+  }
+  q->w = PyFloat_AsDouble(PySequence_GetItem(value, 0));
+  q->x = PyFloat_AsDouble(PySequence_GetItem(value, 1));
+  q->y = PyFloat_AsDouble(PySequence_GetItem(value, 2));
+  q->z = PyFloat_AsDouble(PySequence_GetItem(value, 3));
+  return 0;
+}
+
 // This collects the methods for getting and setting elements of the
 // quaternion.  This is packaged up here, and will be used in the
 // `tp_getset` field when definining the PyQuaternion_Type
 // below.
 PyGetSetDef pyquaternion_getset[] = {
-  {"components", pyquaternion_get_components, pyquaternion_set_components,
-   "The components (w,x,y,z) of the quaternion as a numpy array", NULL},
+  {"a", pyquaternion_get_part_a, NULL,
+   "The complex number (w+i*z)", NULL},
+  {"b", pyquaternion_get_part_b, NULL,
+   "The complex number (y+i*x)", NULL},
   {"vec", pyquaternion_get_vec, pyquaternion_set_vec,
    "The vector part (x,y,z) of the quaternion as a numpy array", NULL},
+  {"components", pyquaternion_get_components, pyquaternion_set_components,
+   "The components (w,x,y,z) of the quaternion as a numpy array", NULL},
   {NULL}
 };
 
@@ -1037,7 +1056,9 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
     INITERROR;
   }
 
-  // The array functions
+  // The array functions, to be used below.  This InitArrFuncs
+  // function is a convenient way to set all the fields to zero
+  // initially, so we don't get undefined behavior.
   PyArray_InitArrFuncs(&_PyQuaternion_ArrFuncs);
   _PyQuaternion_ArrFuncs.nonzero = (PyArray_NonzeroFunc*)QUATERNION_nonzero;
   _PyQuaternion_ArrFuncs.copyswap = (PyArray_CopySwapFunc*)QUATERNION_copyswap;
