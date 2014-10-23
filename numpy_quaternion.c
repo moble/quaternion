@@ -713,39 +713,6 @@ static int QUATERNION_setitem(PyObject* item, void* data, void* ap)
     return -1;
   }
   return 0;
-
-  /* quaternion q; */
-  /* PyArray_Descr *descr; */
-
-  /* // if (PyArray_IsScalar(op, Quaternion)) { */
-  /* if (PyQuaternion_Check(op)) { */
-  /*   q = ((PyQuaternion *)op)->obval; */
-  /* } else { */
-  /*   q.w = PyFloat_AsDouble(PyTuple_GetItem(op, 0)); */
-  /*   q.x = PyFloat_AsDouble(PyTuple_GetItem(op, 1)); */
-  /*   q.y = PyFloat_AsDouble(PyTuple_GetItem(op, 2)); */
-  /*   q.z = PyFloat_AsDouble(PyTuple_GetItem(op, 3)); */
-  /* } */
-  /* if (PyErr_Occurred()) { */
-  /*   if (PySequence_Check(op)) { */
-  /*     PyErr_Clear(); */
-  /*     PyErr_SetString(PyExc_ValueError, */
-  /*                     "setting an array element with a sequence."); */
-  /*   } */
-  /*   return -1; */
-  /* } */
-  /* if (ap == NULL || PyArray_ISBEHAVED(ap)) { */
-  /*   *((quaternion *)ov)=q; */
-  /* } else { */
-  /*   descr = PyArray_DescrFromType(NPY_DOUBLE); */
-  /*   descr->f->copyswap(ov, &q.w, !PyArray_ISNOTSWAPPED(ap), NULL); */
-  /*   descr->f->copyswap(ov+8, &q.x, !PyArray_ISNOTSWAPPED(ap), NULL); */
-  /*   descr->f->copyswap(ov+16, &q.y, !PyArray_ISNOTSWAPPED(ap), NULL); */
-  /*   descr->f->copyswap(ov+24, &q.z, !PyArray_ISNOTSWAPPED(ap), NULL); */
-  /*   Py_DECREF(descr); */
-  /* } */
-
-  /* return 0; */
 }
 
 // When a numpy array of dtype=quaternion is indexed, this function is
