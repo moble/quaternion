@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from __future__ import division
+from __future__ import print_function, division, absolute_import
 import numpy as np
 import quaternion
 from numpy import *
