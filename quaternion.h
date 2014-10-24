@@ -40,6 +40,10 @@ extern "C" {
     double z;
   } quaternion;
 
+  // Constructor-ish
+  quaternion quaternion_create_from_spherical_coords(double vartheta, double varphi);
+  quaternion quaternion_create_from_euler_angles(double alpha, double beta, double gamma);
+
   // Unary bool returners
   int quaternion_nonzero(quaternion q);
   int quaternion_isnan(quaternion q);

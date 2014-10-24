@@ -947,9 +947,42 @@ BINARY_SCALAR_UFUNC(divide, quaternion)
 BINARY_SCALAR_UFUNC(power, quaternion)
 
 
-// This will just be an empty place-holder to start things out
-static PyMethodDef QuaternionMethodsPlaceHolder[] = {
+// Used to create unit rotor from spherical coordinates, this can be
+// imported directly from quaternion.numpy_quaternion
+static PyObject*
+quaternion_from_spherical_coords(PyObject *self, PyObject *args )
+{
+  double vartheta, varphi;
+  PyQuaternion* Q = (PyQuaternion*)PyQuaternion_Type.tp_alloc(&PyQuaternion_Type,0);
+  if (!PyArg_ParseTuple(args, "dd", &vartheta, &varphi)) {
+    return NULL;
+  }
+  Q->obval = quaternion_create_from_spherical_coords(vartheta, varphi);
+  return (PyObject*)Q;
+}
+
+// Used to create unit rotor from Euler angles, this can be imported
+// directly from quaternion.numpy_quaternion
+static PyObject*
+quaternion_from_euler_angles(PyObject *self, PyObject *args )
+{
+  double alpha, beta, gamma;
+  PyQuaternion* Q = (PyQuaternion*)PyQuaternion_Type.tp_alloc(&PyQuaternion_Type,0);
+  if (!PyArg_ParseTuple(args, "ddd", &alpha, &beta, &gamma)) {
+    return NULL;
+  }
+  Q->obval = quaternion_create_from_euler_angles(alpha, beta, gamma);
+  return (PyObject*)Q;
+}
+
+// This contains assorted other top-level methods for the module
+static PyMethodDef QuaternionMethods[] = {
+  {"from_spherical_coords", quaternion_from_spherical_coords, METH_VARARGS,
+   "Generate unit quaternion from spherical coordinates"},
+  {"from_euler_angles", quaternion_from_euler_angles, METH_VARARGS,
+   "Generate unit quaternion from Euler angles"},
   {NULL, NULL, 0, NULL}
+  /* {NULL, NULL, 0, NULL} */
 };
 
 
@@ -961,7 +994,7 @@ static struct PyModuleDef moduledef = {
     "numpy_quaternion",
     NULL,
     -1,
-    QuaternionMethodsPlaceHolder,
+    QuaternionMethods,
     NULL,
     NULL,
     NULL,
@@ -992,7 +1025,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 #if PY_MAJOR_VERSION >= 3
   module = PyModule_Create(&moduledef);
 #else
-  module = Py_InitModule("numpy_quaternion", QuaternionMethodsPlaceHolder);
+  module = Py_InitModule("numpy_quaternion", QuaternionMethods);
 #endif
 
   if(module==NULL) {
