@@ -1,11 +1,11 @@
 from __future__ import division, print_function, absolute_import, unicode_literals
 import numpy as np
-from .numpy_quaternion import quaternion, from_spherical_coords, from_euler_angles
+from .numpy_quaternion import quaternion #, from_spherical_coords, from_euler_angles
 
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 
-__all__ = ['quaternion', 'from_spherical_coords', 'from_euler_angles']
+__all__ = ['quaternion']#, 'from_spherical_coords', 'from_euler_angles']
 
 if 'quaternion' in np.__dict__:
     raise RuntimeError('The NumPy package already has a quaternion type')

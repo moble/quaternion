@@ -706,6 +706,7 @@ static int QUATERNION_setitem(PyObject* item, void* data, void* ap)
   if(PyQuaternion_Check(item)) {
     memcpy(data,&(((PyQuaternion *)item)->obval),sizeof(quaternion));
   } else if(PySequence_Check(item) && PySequence_Length(item)==4) {
+    printf("setitem branch 2\n");
     q.w = PyFloat_AsDouble(PySequence_GetItem(item, 0));
     q.x = PyFloat_AsDouble(PySequence_GetItem(item, 1));
     q.y = PyFloat_AsDouble(PySequence_GetItem(item, 2));

@@ -61,21 +61,21 @@ def test_quaternion_members():
     assert Q.y==3.3
     assert Q.z==4.4
 
-def test_from_spherical_coords():
-    random.seed(1843)
-    random_angles = [[random.uniform(-np.pi, np.pi), random.uniform(-np.pi, np.pi)]
-                     for i in range(5000)]
-    for vartheta, varphi in random_angles:
-        assert abs((np.quaternion(0,0,0,varphi/2.).exp() * np.quaternion(0,0,vartheta/2.,0).exp())
-                   - quaternion.from_spherical_coords(vartheta,varphi)) < 1.e-15
+# def test_from_spherical_coords():
+#     random.seed(1843)
+#     random_angles = [[random.uniform(-np.pi, np.pi), random.uniform(-np.pi, np.pi)]
+#                      for i in range(5000)]
+#     for vartheta, varphi in random_angles:
+#         assert abs((np.quaternion(0,0,0,varphi/2.).exp() * np.quaternion(0,0,vartheta/2.,0).exp())
+#                    - quaternion.from_spherical_coords(vartheta,varphi)) < 1.e-15
 
-def test_from_euler_angles():
-    random.seed(1843)
-    random_angles = [[random.uniform(-np.pi, np.pi), random.uniform(-np.pi, np.pi), random.uniform(-np.pi, np.pi)]
-                     for i in range(5000)]
-    for alpha,beta,gamma in random_angles:
-        assert abs((np.quaternion(0,0,0,alpha/2.).exp() * np.quaternion(0,0,beta/2.,0).exp() * np.quaternion(0,0,0,gamma/2.).exp())
-                   - quaternion.from_euler_angles(alpha, beta, gamma)) < 1.e-15
+# def test_from_euler_angles():
+#     random.seed(1843)
+#     random_angles = [[random.uniform(-np.pi, np.pi), random.uniform(-np.pi, np.pi), random.uniform(-np.pi, np.pi)]
+#                      for i in range(5000)]
+#     for alpha,beta,gamma in random_angles:
+#         assert abs((np.quaternion(0,0,0,alpha/2.).exp() * np.quaternion(0,0,beta/2.,0).exp() * np.quaternion(0,0,0,gamma/2.).exp())
+#                    - quaternion.from_euler_angles(alpha, beta, gamma)) < 1.e-15
 
 
 ## Unary bool returners
@@ -373,6 +373,7 @@ def test_setitem_quat(Qs):
         for k in range(j+1, len(Ps)):
             assert Ps[k] == Qs[k]
     # setitem from np.array, list, or tuple
+    print("")
     for seq_type in [np.array, list, tuple]:
         Ps = Qs[:]
         with pytest.raises(TypeError):
@@ -388,6 +389,7 @@ def test_setitem_quat(Qs):
         with pytest.raises(TypeError):
             Ps[0] = seq_type((1.3,2.4,3.5,4.7,5.9, np.nan))
         for j in range(len(Ps)):
+            print("Trying to set from sequence")
             Ps[j] = seq_type((1.3,2.4,3.5,4.7))
             for k in range(j):
                 assert Ps[k] == np.quaternion(1.3,2.4,3.5,4.7)
