@@ -206,6 +206,13 @@ quaternion_exp(quaternion q)
 }
 
 quaternion
+quaternion_normalized(quaternion q)
+{
+  double q_abs = quaternion_absolute(q);
+  return (quaternion) {q.w/q_abs, q.x/q_abs, q.y/q_abs, q.z/q_abs};
+}
+
+quaternion
 quaternion_power(quaternion q, quaternion p)
 {
   return quaternion_exp(quaternion_multiply(quaternion_log(q), p));

@@ -150,6 +150,7 @@ UNARY_QUATERNION_RETURNER(negative)
 UNARY_QUATERNION_RETURNER(conjugate)
 UNARY_QUATERNION_RETURNER(log)
 UNARY_QUATERNION_RETURNER(exp)
+UNARY_QUATERNION_RETURNER(normalized)
 static PyObject*
 pyquaternion_positive(PyObject* self, PyObject* b) {
     Py_INCREF(self);
@@ -279,6 +280,8 @@ PyMethodDef pyquaternion_methods[] = {
    "Return the logarithm (base e) of the quaternion"},
   {"exp", pyquaternion_exp, METH_NOARGS,
    "Return the exponential of the quaternion (e**q)"},
+  {"normalized", pyquaternion_normalized, METH_NOARGS,
+   "Return a normalized copy of the quaternion"},
 
   // Quaternion-quaternion binary quaternion returners
   // {"add", pyquaternion_add, METH_O,

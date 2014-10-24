@@ -60,6 +60,7 @@ extern "C" {
   quaternion quaternion_conjugate(quaternion q);
   quaternion quaternion_log(quaternion q);
   quaternion quaternion_exp(quaternion q);
+  quaternion quaternion_normalized(quaternion q);
   // Quaternion-quaternion binary quaternion returners
   quaternion quaternion_add(quaternion q1, quaternion q2);
   quaternion quaternion_subtract(quaternion q1, quaternion q2);

@@ -21,23 +21,24 @@ strict_assert = passer
 
 @pytest.fixture
 def Qs():
-    q_nan1  = quaternion.quaternion(np.nan,0.,0.,0.)
-    q_inf1  = quaternion.quaternion(np.inf,0.,0.,0.)
-    q_minf1 = quaternion.quaternion(-np.inf,0.,0.,0.)
-    q_0     = quaternion.quaternion(0.,0.,0.,0.)
-    q_1     = quaternion.quaternion(1.,0.,0.,0.)
-    x       = quaternion.quaternion(0.,1.,0.,0.)
-    y       = quaternion.quaternion(0.,0.,1.,0.)
-    z       = quaternion.quaternion(0.,0.,0.,1.)
-    Q       = quaternion.quaternion(1.1,2.2,3.3,4.4)
-    Qneg    = quaternion.quaternion(-1.1,-2.2,-3.3,-4.4)
-    Qbar    = quaternion.quaternion(1.1,-2.2,-3.3,-4.4)
-    Qlog    = quaternion.quaternion(1.7959088706354, 0.515190292664085,
-                                    0.772785438996128, 1.03038058532817)
-    Qexp    = quaternion.quaternion(2.81211398529184, -0.392521193481878,
-                                    -0.588781790222817, -0.785042386963756)
-    return np.array([q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qlog, Qexp,], dtype=np.quaternion)
-q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qlog, Qexp, = range(len(Qs()))
+    q_nan1      = quaternion.quaternion(np.nan,0.,0.,0.)
+    q_inf1      = quaternion.quaternion(np.inf,0.,0.,0.)
+    q_minf1     = quaternion.quaternion(-np.inf,0.,0.,0.)
+    q_0         = quaternion.quaternion(0.,0.,0.,0.)
+    q_1         = quaternion.quaternion(1.,0.,0.,0.)
+    x           = quaternion.quaternion(0.,1.,0.,0.)
+    y           = quaternion.quaternion(0.,0.,1.,0.)
+    z           = quaternion.quaternion(0.,0.,0.,1.)
+    Q           = quaternion.quaternion(1.1,2.2,3.3,4.4)
+    Qneg        = quaternion.quaternion(-1.1,-2.2,-3.3,-4.4)
+    Qbar        = quaternion.quaternion(1.1,-2.2,-3.3,-4.4)
+    Qnormalized = quaternion.quaternion(0.18257418583505539,0.36514837167011077,0.54772255750516607,0.73029674334022154)
+    Qlog        = quaternion.quaternion(1.7959088706354, 0.515190292664085,
+                                        0.772785438996128, 1.03038058532817)
+    Qexp        = quaternion.quaternion(2.81211398529184, -0.392521193481878,
+                                        -0.588781790222817, -0.785042386963756)
+    return np.array([q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qnormalized, Qlog, Qexp,], dtype=np.quaternion)
+q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qnormalized, Qlog, Qexp, = range(len(Qs()))
 Qs_zero = [i for i in range(len(Qs())) if not Qs()[i].nonzero()]
 Qs_nonzero = [i for i in range(len(Qs())) if Qs()[i].nonzero()]
 Qs_nan = [i for i in range(len(Qs())) if Qs()[i].isnan()]
@@ -197,7 +198,10 @@ def test_quaternion_log_exp(Qs):
     assert (Qs[Q].exp().log()-Qs[Q]).abs() > qlogexp_precision # Note order of operations!
     strict_assert(False) # logs of basis vectors
     strict_assert(False) # logs of interesting scalars * basis vectors
-
+def test_quaternion_normalized(Qs):
+    assert Qs[Q].normalized() == Qs[Qnormalized]
+    for q in Qs[Qs_finitenonzero]:
+        assert abs(q.normalized().abs()-1.0) < 1.e-15
 
 ## Quaternion-quaternion binary quaternion returners
 def test_quaternion_add(Qs):
