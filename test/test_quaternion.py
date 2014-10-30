@@ -61,6 +61,12 @@ def test_quaternion_members():
     assert Q.y==3.3
     assert Q.z==4.4
 
+def test_constants():
+    assert quaternion.one == np.quaternion(1.0,0.0,0.0,0.0)
+    assert quaternion.x == np.quaternion(0.0,1.0,0.0,0.0)
+    assert quaternion.y == np.quaternion(0.0,0.0,1.0,0.0)
+    assert quaternion.z == np.quaternion(0.0,0.0,0.0,1.0)
+
 def test_from_spherical_coords():
     random.seed(1843)
     random_angles = [[random.uniform(-np.pi, np.pi), random.uniform(-np.pi, np.pi)]
@@ -215,6 +221,7 @@ def test_quaternion_log_exp(Qs):
     assert (Qs[Q].exp().log()-Qs[Q]).abs() > qlogexp_precision # Note order of operations!
     strict_assert(False) # logs of basis vectors
     strict_assert(False) # logs of interesting scalars * basis vectors
+    strict_assert(False) # logs of negative scalars
 def test_quaternion_normalized(Qs):
     assert Qs[Q].normalized() == Qs[Qnormalized]
     for q in Qs[Qs_finitenonzero]:
@@ -296,7 +303,7 @@ def test_quaternion_power(Qs):
         assert  ((q**-1.0)*q - Qs[q_1]).abs()<qinverse_precision
     for q in Qs[Qs_finitenonzero]:
         assert  ((q**Qs[q_1])-q).abs()<qpower_precision
-    strict_assert(False)
+    strict_assert(False) # Try more edge cases
 
 
 def test_quaternion_getset(Qs):
@@ -352,6 +359,34 @@ def test_quaternion_getset(Qs):
                 r.vec = seq_type((-5.5, 6.6,-7.7,8.8))
 
 
+def test_metrics(Qs):
+    # Check invariance under overall rotations: d(R1, R2) = d(R3*R1, R3*R2) = d(R1*R3, R2*R3)
+    strict_assert(False)
+
+def test_slerp(Qs):
+    slerp_precision = 4.e-15
+    ones = [quaternion.one, quaternion.x, quaternion.y, quaternion.z, -quaternion.x, -quaternion.y, -quaternion.z]
+    # Check extremes
+    for Q1 in ones:
+        assert quaternion.rotation_chordal_distance( quaternion.slerp(Q1, Q1, 0.0), Q1 ) < slerp_precision
+        assert quaternion.rotation_chordal_distance( quaternion.slerp(Q1, Q1, 1.0), Q1 ) < slerp_precision
+        assert quaternion.rotation_chordal_distance( quaternion.slerp(Q1, -Q1, 0.0), Q1 ) < slerp_precision
+        assert quaternion.rotation_chordal_distance( quaternion.slerp(Q1, -Q1, 1.0), Q1 ) < slerp_precision
+        for Q2 in ones:
+            assert quaternion.rotation_chordal_distance( quaternion.slerp(Q1, Q2, 0.0), Q1 ) < slerp_precision
+            assert quaternion.rotation_chordal_distance( quaternion.slerp(Q1, Q2, 1.0), Q2 ) < slerp_precision
+            assert quaternion.rotation_chordal_distance( quaternion.slerp(Q1, -Q2, 0.0), Q1 ) < slerp_precision
+            assert quaternion.rotation_chordal_distance( quaternion.slerp(Q1, -Q2, 1.0), -Q2 ) < slerp_precision
+            assert quaternion.rotation_chordal_distance( quaternion.slerp(Q2, Q1, 0.0), Q2 ) < slerp_precision
+            assert quaternion.rotation_chordal_distance( quaternion.slerp(Q2, Q1, 1.0), Q1 ) < slerp_precision
+    # Test simple increases in each dimension
+    for Q2 in ones[1:]:
+        for t in np.linspace(0.0, 1.0, num=100, endpoint=True):
+            assert quaternion.rotation_chordal_distance( quaternion.slerp(quaternion.one, Q2, t),
+                                                         (np.cos(np.pi*t/2)*quaternion.one + np.sin(np.pi*t/2)*Q2) ) < slerp_precision
+    # Test that (slerp of rotated rotors) is (rotated slerp of rotors)
+    strict_assert(False)
+
 def test_arrfuncs():
     # nonzero
     # copyswap
@@ -373,7 +408,6 @@ def test_setitem_quat(Qs):
         for k in range(j+1, len(Ps)):
             assert Ps[k] == Qs[k]
     # setitem from np.array, list, or tuple
-    print("")
     for seq_type in [np.array, list, tuple]:
         Ps = Qs[:]
         with pytest.raises(TypeError):
@@ -389,7 +423,6 @@ def test_setitem_quat(Qs):
         with pytest.raises(TypeError):
             Ps[0] = seq_type((1.3,2.4,3.5,4.7,5.9, np.nan))
         for j in range(len(Ps)):
-            print("Trying to set from sequence")
             Ps[j] = seq_type((1.3,2.4,3.5,4.7))
             for k in range(j):
                 assert Ps[k] == np.quaternion(1.3,2.4,3.5,4.7)

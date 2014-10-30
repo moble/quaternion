@@ -87,6 +87,13 @@ extern "C" {
   void quaternion_inplace_power(quaternion* q1, quaternion q2);
   void quaternion_inplace_power_scalar(quaternion* q, double s);
 
+  // Associated functions
+  double rotor_intrinsic_distance(quaternion q1, quaternion q2);
+  double rotor_chordal_distance(quaternion q1, quaternion q2);
+  double rotation_intrinsic_distance(quaternion q1, quaternion q2);
+  double rotation_chordal_distance(quaternion q1, quaternion q2);
+  quaternion slerp(quaternion q1, quaternion q2, double tau);
+
 #ifdef __cplusplus
 }
 #endif

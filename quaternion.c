@@ -28,7 +28,8 @@
  */
 
 #include "quaternion.h"
-#include "math.h"
+#include <math.h>
+#include <stdio.h>
 
 #define _QUAT_EPS 1e-14
 
@@ -200,14 +201,20 @@ void quaternion_inplace_divide_scalar(quaternion* q, double s) {
 quaternion
 quaternion_log(quaternion q)
 {
-  double sumvsq = q.x*q.x + q.y*q.y + q.z*q.z;
-  double vnorm = sqrt(sumvsq);
-  if (vnorm > _QUAT_EPS) {
-    double m = sqrt(q.w*q.w + sumvsq);
-    double s = acos(q.w/m) / vnorm;
-    return (quaternion) {log(m), s*q.x, s*q.y, s*q.z};
+  double b = sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
+  if(fabs(b) <= _QUAT_EPS*fabs(q.w)) {
+    if(q.w<0.0) {
+      fprintf(stderr, "Input quaternion(%.15g, %.15g, %.15g, %.15g) has no unique logarithm; returning one arbitrarily.", q.w, q.x, q.y, q.z);
+      if(fabs(q.w+1)>_QUAT_EPS) {
+        return (quaternion) {log(-q.w), M_PI, 0., 0.};
+      }
+      return (quaternion) {0., M_PI, 0., 0.};
+    }
+    return (quaternion) {log(q.w), 0., 0., 0.};
   } else {
-    return (quaternion) {0, 0, 0, 0};
+    double v = atan2(b, q.w);
+    double f = v/b;
+    return (quaternion) { log(q.w*q.w+b*b)/2.0, f*q.x, f*q.y, f*q.z };
   }
 }
 
@@ -348,4 +355,50 @@ quaternion_greater_equal(quaternion q1, quaternion q2)
   // Note that the final possibility is 1, whereas in
   // `quaternion_greater` it was 0.  This distinction correctly
   // accounts for equality.
+}
+
+
+
+double
+rotor_intrinsic_distance(quaternion q1, quaternion q2)
+{
+  return 2*quaternion_absolute(quaternion_log(quaternion_divide(q1,q2)));
+}
+
+double
+rotor_chordal_distance(quaternion q1, quaternion q2)
+{
+  return quaternion_absolute(quaternion_subtract(q1,q2));
+}
+
+#define SQRT_TWO 1.414213562373096
+
+double
+rotation_intrinsic_distance(quaternion q1, quaternion q2)
+{
+  if(rotor_chordal_distance(q1,q2)<=SQRT_TWO) {
+    return 2*quaternion_absolute(quaternion_log(quaternion_divide(q1,q2)));
+  } else {
+    return 2*quaternion_absolute(quaternion_log(quaternion_divide(q1,quaternion_negative(q2))));
+  }
+}
+
+double
+rotation_chordal_distance(quaternion q1, quaternion q2)
+{
+  if(rotor_chordal_distance(q1,q2)<=SQRT_TWO) {
+    return quaternion_absolute(quaternion_subtract(q1,q2));
+  } else {
+    return quaternion_absolute(quaternion_add(q1,q2));
+  }
+}
+
+quaternion
+slerp(quaternion q1, quaternion q2, double tau)
+{
+  if(rotor_chordal_distance(q1,q2)<=SQRT_TWO) {
+    return quaternion_multiply( quaternion_power_scalar(quaternion_divide(q2,q1), tau), q1);
+  } else {
+    return quaternion_multiply( quaternion_power_scalar(quaternion_divide(quaternion_negative(q2),q1), tau), q1);
+  }
 }

@@ -706,7 +706,6 @@ static int QUATERNION_setitem(PyObject* item, void* data, void* ap)
   if(PyQuaternion_Check(item)) {
     memcpy(data,&(((PyQuaternion *)item)->obval),sizeof(quaternion));
   } else if(PySequence_Check(item) && PySequence_Length(item)==4) {
-    printf("setitem branch 2\n");
     q.w = PyFloat_AsDouble(PySequence_GetItem(item, 0));
     q.x = PyFloat_AsDouble(PySequence_GetItem(item, 1));
     q.y = PyFloat_AsDouble(PySequence_GetItem(item, 2));
@@ -976,14 +975,82 @@ quaternion_from_euler_angles(PyObject *self, PyObject *args )
   return (PyObject*)Q;
 }
 
+static PyObject*
+pyquaternion_rotor_intrinsic_distance(PyObject *self, PyObject *args)
+{
+  PyObject* Q1 = {0};
+  PyObject* Q2 = {0};
+  if (!PyArg_ParseTuple(args, "OO", &Q1, &Q2)) {
+    return NULL;
+  }
+  return PyFloat_FromDouble(rotor_intrinsic_distance(((PyQuaternion*)Q1)->obval, ((PyQuaternion*)Q2)->obval));
+}
+
+static PyObject*
+pyquaternion_rotor_chordal_distance(PyObject *self, PyObject *args)
+{
+  PyObject* Q1 = {0};
+  PyObject* Q2 = {0};
+  if (!PyArg_ParseTuple(args, "OO", &Q1, &Q2)) {
+    return NULL;
+  }
+  return PyFloat_FromDouble(rotor_chordal_distance(((PyQuaternion*)Q1)->obval, ((PyQuaternion*)Q2)->obval));
+}
+
+static PyObject*
+pyquaternion_rotation_intrinsic_distance(PyObject *self, PyObject *args)
+{
+  PyObject* Q1 = {0};
+  PyObject* Q2 = {0};
+  if (!PyArg_ParseTuple(args, "OO", &Q1, &Q2)) {
+    return NULL;
+  }
+  return PyFloat_FromDouble(rotation_intrinsic_distance(((PyQuaternion*)Q1)->obval, ((PyQuaternion*)Q2)->obval));
+}
+
+static PyObject*
+pyquaternion_rotation_chordal_distance(PyObject *self, PyObject *args)
+{
+  PyObject* Q1 = {0};
+  PyObject* Q2 = {0};
+  if (!PyArg_ParseTuple(args, "OO", &Q1, &Q2)) {
+    return NULL;
+  }
+  return PyFloat_FromDouble(rotation_chordal_distance(((PyQuaternion*)Q1)->obval, ((PyQuaternion*)Q2)->obval));
+}
+
+// Interface to the module-level slerp function
+static PyObject*
+pyquaternion_slerp(PyObject *self, PyObject *args)
+{
+  double tau;
+  PyObject* Q1 = {0};
+  PyObject* Q2 = {0};
+  PyQuaternion* Q = (PyQuaternion*)PyQuaternion_Type.tp_alloc(&PyQuaternion_Type,0);
+  if (!PyArg_ParseTuple(args, "OOd", &Q1, &Q2, &tau)) {
+    return NULL;
+  }
+  Q->obval = slerp(((PyQuaternion*)Q1)->obval, ((PyQuaternion*)Q2)->obval, tau);
+  return (PyObject*)Q;
+}
+
 // This contains assorted other top-level methods for the module
 static PyMethodDef QuaternionMethods[] = {
   {"from_spherical_coords", quaternion_from_spherical_coords, METH_VARARGS,
    "Generate unit quaternion from spherical coordinates"},
   {"from_euler_angles", quaternion_from_euler_angles, METH_VARARGS,
    "Generate unit quaternion from Euler angles"},
+  {"rotor_intrinsic_distance", pyquaternion_rotor_intrinsic_distance, METH_VARARGS,
+   "Distance measure intrinsic to rotor manifold"},
+  {"rotor_chordal_distance", pyquaternion_rotor_chordal_distance, METH_VARARGS,
+   "Distance measure from embedding of rotor manifold"},
+  {"rotation_intrinsic_distance", pyquaternion_rotation_intrinsic_distance, METH_VARARGS,
+   "Distance measure intrinsic to rotation manifold"},
+  {"rotation_chordal_distance", pyquaternion_rotation_chordal_distance, METH_VARARGS,
+   "Distance measure from embedding of rotation manifold"},
+  {"slerp", pyquaternion_slerp, METH_VARARGS,
+   "Interpolate linearly along the geodesic between two rotors"},
   {NULL, NULL, 0, NULL}
-  /* {NULL, NULL, 0, NULL} */
 };
 
 
