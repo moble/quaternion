@@ -5,6 +5,7 @@ from .numpy_quaternion import (quaternion, from_spherical_coords, from_euler_ang
                                rotation_intrinsic_distance, rotation_chordal_distance,
                                slerp)
 
+
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 

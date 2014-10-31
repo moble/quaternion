@@ -415,7 +415,7 @@ def test_metrics(Rs):
         # Rotation distances from -self should be 0
         assert quaternion.rotation_chordal_distance(R,-R)==0.0
         assert quaternion.rotation_intrinsic_distance(R,-R)==0.0
-    # We expect the chordal distance to be smaller (or equal, if the distance is zero)
+    # We expect the chordal distance to be smaller than the intrinsic distance (or equal, if the distance is zero)
     for R in Rs:
         assert (quaternion.rotor_chordal_distance(quaternion.one,R) < quaternion.rotor_intrinsic_distance(quaternion.one,R)
                 or R==quaternion.one)
