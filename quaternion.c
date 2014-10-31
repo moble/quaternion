@@ -204,7 +204,7 @@ quaternion_log(quaternion q)
   double b = sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
   if(fabs(b) <= _QUAT_EPS*fabs(q.w)) {
     if(q.w<0.0) {
-      fprintf(stderr, "Input quaternion(%.15g, %.15g, %.15g, %.15g) has no unique logarithm; returning one arbitrarily.", q.w, q.x, q.y, q.z);
+      // fprintf(stderr, "Input quaternion(%.15g, %.15g, %.15g, %.15g) has no unique logarithm; returning one arbitrarily.", q.w, q.x, q.y, q.z);
       if(fabs(q.w+1)>_QUAT_EPS) {
         return (quaternion) {log(-q.w), M_PI, 0., 0.};
       }

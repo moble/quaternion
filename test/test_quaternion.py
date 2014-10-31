@@ -52,6 +52,14 @@ Qs_finite = [i for i in range(len(Qs())) if Qs()[i].isfinite()]
 Qs_nonfinite = [i for i in range(len(Qs())) if not Qs()[i].isfinite()]
 Qs_finitenonzero = [i for i in range(len(Qs())) if Qs()[i].isfinite() and Qs()[i].nonzero()]
 
+@pytest.fixture
+def Rs():
+    ones = [0,-1.,1.]
+    rs = [np.quaternion(w,x,y,z).normalized() for w in ones for x in ones for y in ones for z in ones][1:]
+    random.seed(1842)
+    rs = rs + [r.normalized() for r in [np.quaternion(random.uniform(-1,1), random.uniform(-1,1),
+                                                      random.uniform(-1,1), random.uniform(-1,1) )] for i in range(20)]
+    return np.array(rs)
 
 def test_quaternion_members():
     Q = quaternion.quaternion(1.1,2.2,3.3,4.4)
@@ -358,10 +366,71 @@ def test_quaternion_getset(Qs):
             with pytest.raises(TypeError):
                 r.vec = seq_type((-5.5, 6.6,-7.7,8.8))
 
-
-def test_metrics(Qs):
+def test_metrics(Rs):
+    metric_precision = 4.e-15
+    # Check non-negativity
+    for R1 in Rs:
+        for R2 in Rs:
+            assert quaternion.rotor_chordal_distance(R1,R2)>=0.
+            assert quaternion.rotor_intrinsic_distance(R1,R2)>=0.
+            assert quaternion.rotation_chordal_distance(R1,R2)>=0.
+            assert quaternion.rotation_intrinsic_distance(R1,R2)>=0.
+    # Check discernibility
+    for R1 in Rs:
+        for R2 in Rs:
+            assert bool(quaternion.rotor_chordal_distance(R1,R2)>0.) != bool(R1==R2)
+            assert bool(quaternion.rotor_intrinsic_distance(R1,R2)>0.) != bool(R1==R2)
+            assert bool(quaternion.rotation_chordal_distance(R1,R2)>0.) != bool(R1==R2 or R1==-R2)
+            assert bool(quaternion.rotation_intrinsic_distance(R1,R2)>0.) != bool(R1==R2 or R1==-R2)
+    # Check symmetry
+    for R1 in Rs:
+        for R2 in Rs:
+            assert abs(quaternion.rotor_chordal_distance(R1,R2)-quaternion.rotor_chordal_distance(R2,R1)) < metric_precision
+            assert abs(quaternion.rotor_intrinsic_distance(R1,R2)-quaternion.rotor_intrinsic_distance(R2,R1)) < metric_precision
+            assert abs(quaternion.rotation_chordal_distance(R1,R2)-quaternion.rotation_chordal_distance(R2,R1)) < metric_precision
+            assert abs(quaternion.rotation_intrinsic_distance(R1,R2)-quaternion.rotation_intrinsic_distance(R2,R1)) < metric_precision
+    # Check triangle inequality
+    for R1 in Rs:
+        for R2 in Rs:
+            for R3 in Rs:
+                assert quaternion.rotor_chordal_distance(R1, R3) - metric_precision \
+                    <= (quaternion.rotor_chordal_distance(R1,R2) +quaternion.rotor_chordal_distance(R2,R3))
+                assert quaternion.rotor_chordal_distance(R1, R3) - metric_precision \
+                    <= (quaternion.rotor_chordal_distance(R1, R2) + quaternion.rotor_chordal_distance(R2, R3))
+                assert quaternion.rotation_intrinsic_distance(R1, R3) - metric_precision \
+                    <= (quaternion.rotation_intrinsic_distance(R1, R2) + quaternion.rotation_intrinsic_distance(R2, R3))
+                assert quaternion.rotation_intrinsic_distance(R1, R3) - metric_precision \
+                    <= (quaternion.rotation_intrinsic_distance(R1, R2) + quaternion.rotation_intrinsic_distance(R2, R3))
+    # Check distances from self or -self
+    for R in Rs:
+        # All distances from self should be 0.0
+        assert quaternion.rotor_chordal_distance(R,R)==0.0
+        assert quaternion.rotor_intrinsic_distance(R,R)==0.0
+        assert quaternion.rotation_chordal_distance(R,R)==0.0
+        assert quaternion.rotation_intrinsic_distance(R,R)==0.0
+        # Chordal rotor distance from -self should be 2
+        assert abs(quaternion.rotor_chordal_distance(R,-R) - 2.0) < metric_precision
+        # Intrinsic rotor distance from -self should be 2pi
+        assert abs(quaternion.rotor_intrinsic_distance(R,-R) - 2.0*np.pi) < metric_precision
+        # Rotation distances from -self should be 0
+        assert quaternion.rotation_chordal_distance(R,-R)==0.0
+        assert quaternion.rotation_intrinsic_distance(R,-R)==0.0
+    # We expect the chordal distance to be smaller (or equal, if the distance is zero)
+    for R in Rs:
+        assert (quaternion.rotor_chordal_distance(quaternion.one,R) < quaternion.rotor_intrinsic_distance(quaternion.one,R)
+                or R==quaternion.one)
     # Check invariance under overall rotations: d(R1, R2) = d(R3*R1, R3*R2) = d(R1*R3, R2*R3)
-    strict_assert(False)
+    for R1 in Rs:
+        for R2 in Rs:
+            for R3 in Rs:
+                assert abs( quaternion.rotor_chordal_distance(R1, R2)
+                            - quaternion.rotor_chordal_distance(R3*R1, R3*R2) ) < metric_precision
+                assert abs( quaternion.rotor_chordal_distance(R1, R2)
+                            - quaternion.rotor_chordal_distance(R1*R3, R2*R3) ) < metric_precision
+                assert abs( quaternion.rotation_intrinsic_distance(R1, R2)
+                            - quaternion.rotation_intrinsic_distance(R3*R1, R3*R2) ) < metric_precision
+                assert abs( quaternion.rotation_intrinsic_distance(R1, R2)
+                            - quaternion.rotation_intrinsic_distance(R1*R3, R2*R3) ) < metric_precision
 
 def test_slerp(Qs):
     slerp_precision = 4.e-15
