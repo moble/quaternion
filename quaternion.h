@@ -62,6 +62,7 @@ extern "C" {
   // Unary quaternion returners
   quaternion quaternion_negative(quaternion q);
   quaternion quaternion_conjugate(quaternion q);
+  quaternion quaternion_inverse(quaternion q);
   quaternion quaternion_log(quaternion q);
   quaternion quaternion_exp(quaternion q);
   quaternion quaternion_normalized(quaternion q);

@@ -315,6 +315,8 @@ def test_quaternion_power(Qs):
     for q in Qs[Qs_finitenonzero]:
         assert  ((q**-1.0)*q - Qs[q_1]).abs()<qinverse_precision
     for q in Qs[Qs_finitenonzero]:
+        assert  ((q**-1)*q - Qs[q_1]).abs()<qinverse_precision
+    for q in Qs[Qs_finitenonzero]:
         assert  ((q**Qs[q_1])-q).abs()<qpower_precision
     strict_assert(False) # Try more edge cases
 
@@ -371,7 +373,7 @@ def test_quaternion_getset(Qs):
             with pytest.raises(TypeError):
                 r.vec = seq_type((-5.5, 6.6,-7.7,8.8))
 
-@pytest.mark.skipif(os.environ.get('FAST'), reason="Takes too long")
+@pytest.mark.skipif(os.environ.get('FAST'), reason="Takes ~10 seconds")
 def test_metrics(Rs):
     metric_precision = 4.e-15
     # Check non-negativity
@@ -562,6 +564,9 @@ def test_ufuncs(Rs, Qs):
                         np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
     assert np.allclose( np.abs( Qs[Qs_finitenonzero]**Qs[Qs_finitenonzero]
                                 - np.array([q1**q2 for q1,q2 in zip(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero])]) ),
+                        np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
+    assert np.allclose( np.abs( ~Qs[Qs_finitenonzero]
+                                - np.array([q.inverse() for q in Qs[Qs_finitenonzero]]) ),
                         np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
 
 def test_numpy_array_conversion(Qs):

@@ -275,6 +275,13 @@ quaternion_conjugate(quaternion q)
 }
 
 quaternion
+quaternion_inverse(quaternion q)
+{
+  double norm = quaternion_norm(q);
+  return (quaternion) {q.w/norm, -q.x/norm, -q.y/norm, -q.z/norm};
+}
+
+quaternion
 quaternion_copysign(quaternion q1, quaternion q2)
 {
   return (quaternion) {

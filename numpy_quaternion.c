@@ -148,6 +148,7 @@ UNARY_FLOAT_RETURNER(norm)
   }
 UNARY_QUATERNION_RETURNER(negative)
 UNARY_QUATERNION_RETURNER(conjugate)
+UNARY_QUATERNION_RETURNER(inverse)
 UNARY_QUATERNION_RETURNER(log)
 UNARY_QUATERNION_RETURNER(exp)
 UNARY_QUATERNION_RETURNER(normalized)
@@ -282,6 +283,8 @@ PyMethodDef pyquaternion_methods[] = {
    "Return the complex conjugate of the quaternion"},
   {"conj", pyquaternion_conjugate, METH_NOARGS,
    "Return the complex conjugate of the quaternion"},
+  {"inverse", pyquaternion_inverse, METH_NOARGS,
+   "Return the inverse of the quaternion"},
   {"log", pyquaternion_log, METH_NOARGS,
    "Return the logarithm (base e) of the quaternion"},
   {"exp", pyquaternion_exp, METH_NOARGS,
@@ -313,6 +316,7 @@ static PyObject* pyquaternion_num_inplace_power(PyObject* a, PyObject* b, PyObje
 static PyObject* pyquaternion_num_negative(PyObject* a) { return pyquaternion_negative(a,NULL); }
 static PyObject* pyquaternion_num_positive(PyObject* a) { return pyquaternion_positive(a,NULL); }
 static PyObject* pyquaternion_num_absolute(PyObject* a) { return pyquaternion_absolute(a,NULL); }
+static PyObject* pyquaternion_num_inverse(PyObject* a) { return pyquaternion_inverse(a,NULL); }
 static int pyquaternion_num_nonzero(PyObject* a) {
   quaternion q = ((PyQuaternion*)a)->obval;
   return quaternion_nonzero(q);
@@ -332,7 +336,8 @@ static PyNumberMethods pyquaternion_as_number = {
   pyquaternion_num_positive,      // nb_positive
   pyquaternion_num_absolute,      // nb_absolute
   pyquaternion_num_nonzero,       // nb_nonzero
-  0,                              // nb_invert
+  pyquaternion_num_inverse,       // nb_invert
+  /* 0,                              // nb_invert */
   0,                              // nb_lshift
   0,                              // nb_rshift
   0,                              // nb_and
@@ -896,9 +901,9 @@ PyArray_Descr* quaternion_descr;
 // This is a macro that will be used to define the various basic unary
 // quaternion functions, so that they can be applied quickly to a
 // numpy array of quaternions.
-#define UNARY_UFUNC(name, ret_type)                             \
+#define UNARY_GEN_UFUNC(ufunc_name, func_name, ret_type)        \
   static void                                                   \
-  quaternion_##name##_ufunc(char** args, npy_intp* dimensions,  \
+  quaternion_##ufunc_name##_ufunc(char** args, npy_intp* dimensions,    \
                             npy_intp* steps, void* data) {      \
     char *ip1 = args[0], *op1 = args[1];                        \
     npy_intp is1 = steps[0], os1 = steps[1];                    \
@@ -906,7 +911,9 @@ PyArray_Descr* quaternion_descr;
     npy_intp i;                                                 \
     for(i = 0; i < n; i++, ip1 += is1, op1 += os1){             \
       const quaternion in1 = *(quaternion *)ip1;                \
-      *((ret_type *)op1) = quaternion_##name(in1);};}
+      *((ret_type *)op1) = quaternion_##func_name(in1);};}
+#define UNARY_UFUNC(name, ret_type) \
+  UNARY_GEN_UFUNC(name, name, ret_type)
 // And these all do the work mentioned above, using the macro
 UNARY_UFUNC(isnan, npy_bool)
 UNARY_UFUNC(isinf, npy_bool)
@@ -916,6 +923,7 @@ UNARY_UFUNC(log, quaternion)
 UNARY_UFUNC(exp, quaternion)
 UNARY_UFUNC(negative, quaternion)
 UNARY_UFUNC(conjugate, quaternion)
+UNARY_GEN_UFUNC(invert, inverse, quaternion)
 
 // This is a macro that will be used to define the various basic binary
 // quaternion functions, so that they can be applied quickly to a
@@ -1219,6 +1227,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_UFUNC(exp);
   REGISTER_UFUNC(negative);
   REGISTER_UFUNC(conjugate);
+  REGISTER_UFUNC(invert);
 
   // quat, quat -> bool
   arg_types[2] = NPY_BOOL;
