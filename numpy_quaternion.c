@@ -183,11 +183,11 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
 QQ_BINARY_QUATERNION_INPLACE(add)
 QQ_BINARY_QUATERNION_INPLACE(subtract)
 
-#define QQ_QS_SQ_BINARY_QUATERNION_RETURNER(name)                       \
+#define QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(fake_name, name)       \
   static PyObject*                                                      \
-  pyquaternion_##name(PyObject* a, PyObject* b) {                       \
+  pyquaternion_##fake_name(PyObject* a, PyObject* b) {                  \
     quaternion p = {0};                                                 \
-    if(PyFloat_Check(a)) { return pyquaternion_##name(b,a); }           \
+    if(PyFloat_Check(a)) { return pyquaternion_##fake_name(b,a); }      \
     PyQuaternion_AsQuaternion(p, a);                                    \
     if(PyQuaternion_Check(b)) {                                         \
       return PyQuaternion_FromQuaternion(quaternion_##name(p,((PyQuaternion*)b)->obval));       \
@@ -199,16 +199,19 @@ QQ_BINARY_QUATERNION_INPLACE(subtract)
     PyErr_SetString(PyExc_TypeError, "Raising quaternion to power of neither float nor quaternion."); \
     return NULL;                                                        \
   }
+#define QQ_QS_SQ_BINARY_QUATERNION_RETURNER(name) QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(name, name)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(multiply)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(divide)
+/* QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(true_divide, divide) */
+/* QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(floor_divide, divide) */
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(power)
 
-#define QQ_QS_SQ_BINARY_QUATERNION_INPLACE(name)                        \
+#define QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(fake_name, name)        \
   static PyObject*                                                      \
-  pyquaternion_inplace_##name(PyObject* a, PyObject* b) {               \
+  pyquaternion_inplace_##fake_name(PyObject* a, PyObject* b) {          \
     quaternion* p = {0};                                                \
     if(PyFloat_Check(a) || PyInt_Check(a)) {                            \
-      pyquaternion_inplace_##name(b,a);                                 \
+      pyquaternion_inplace_##fake_name(b,a);                            \
       return a;                                                         \
     }                                                                   \
     PyQuaternion_AsQuaternionPointer(p, a);                             \
@@ -225,8 +228,11 @@ QQ_QS_SQ_BINARY_QUATERNION_RETURNER(power)
     PyErr_SetString(PyExc_TypeError, "Raising quaternion to power of neither float nor quaternion."); \
     return NULL;                                                        \
   }
+#define QQ_QS_SQ_BINARY_QUATERNION_INPLACE(name) QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(name, name)
 QQ_QS_SQ_BINARY_QUATERNION_INPLACE(multiply)
 QQ_QS_SQ_BINARY_QUATERNION_INPLACE(divide)
+/* QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(true_divide, divide) */
+/* QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(floor_divide, divide) */
 QQ_QS_SQ_BINARY_QUATERNION_INPLACE(power)
 
 
@@ -914,9 +920,9 @@ UNARY_UFUNC(conjugate, quaternion)
 // This is a macro that will be used to define the various basic binary
 // quaternion functions, so that they can be applied quickly to a
 // numpy array of quaternions.
-#define BINARY_GEN_UFUNC(name, func_name, arg_type, ret_type)           \
+#define BINARY_GEN_UFUNC(ufunc_name, func_name, arg_type, ret_type)     \
   static void                                                           \
-  quaternion_##func_name##_ufunc(char** args, npy_intp* dimensions,     \
+  quaternion_##ufunc_name##_ufunc(char** args, npy_intp* dimensions,    \
                                  npy_intp* steps, void* data) {         \
     char *ip1 = args[0], *ip2 = args[1], *op1 = args[2];                \
     npy_intp is1 = steps[0], is2 = steps[1], os1 = steps[2];            \
@@ -930,12 +936,14 @@ UNARY_UFUNC(conjugate, quaternion)
 #define BINARY_UFUNC(name, ret_type)                    \
   BINARY_GEN_UFUNC(name, name, quaternion, ret_type)
 #define BINARY_SCALAR_UFUNC(name, ret_type)                     \
-  BINARY_GEN_UFUNC(name, name##_scalar, npy_double, ret_type)
+  BINARY_GEN_UFUNC(name##_scalar, name##_scalar, npy_double, ret_type)
 // And these all do the work mentioned above, using the macros
 BINARY_UFUNC(add, quaternion)
 BINARY_UFUNC(subtract, quaternion)
 BINARY_UFUNC(multiply, quaternion)
 BINARY_UFUNC(divide, quaternion)
+BINARY_GEN_UFUNC(true_divide, divide, quaternion, quaternion)
+BINARY_GEN_UFUNC(floor_divide, divide, quaternion, quaternion)
 BINARY_UFUNC(power, quaternion)
 BINARY_UFUNC(copysign, quaternion)
 BINARY_UFUNC(equal, npy_bool)
@@ -944,6 +952,8 @@ BINARY_UFUNC(less, npy_bool)
 BINARY_UFUNC(less_equal, npy_bool)
 BINARY_SCALAR_UFUNC(multiply, quaternion)
 BINARY_SCALAR_UFUNC(divide, quaternion)
+BINARY_GEN_UFUNC(true_divide_scalar, divide_scalar, npy_double, quaternion)
+BINARY_GEN_UFUNC(floor_divide_scalar, divide_scalar, npy_double, quaternion)
 BINARY_SCALAR_UFUNC(power, quaternion)
 
 
@@ -1222,6 +1232,8 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   arg_types[2] = quaternion_descr->type_num;
   REGISTER_SCALAR_UFUNC(multiply);
   REGISTER_SCALAR_UFUNC(divide);
+  REGISTER_SCALAR_UFUNC(true_divide);
+  REGISTER_SCALAR_UFUNC(floor_divide);
   REGISTER_SCALAR_UFUNC(power);
 
   // quat, quat -> quat
@@ -1230,6 +1242,8 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_UFUNC(subtract);
   REGISTER_UFUNC(multiply);
   REGISTER_UFUNC(divide);
+  REGISTER_UFUNC(true_divide);
+  REGISTER_UFUNC(floor_divide);
   REGISTER_UFUNC(power);
   REGISTER_UFUNC(copysign);
 

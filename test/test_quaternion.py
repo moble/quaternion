@@ -6,6 +6,7 @@ import quaternion
 from numpy import *
 import warnings
 import sys
+import os
 import random
 import pytest
 
@@ -227,7 +228,11 @@ def test_quaternion_log_exp(Qs):
     assert (Qs[Q].exp()-Qs[Qexp]).abs() < qlogexp_precision
     assert (Qs[Q].log().exp()-Qs[Q]).abs() < qlogexp_precision
     assert (Qs[Q].exp().log()-Qs[Q]).abs() > qlogexp_precision # Note order of operations!
-    strict_assert(False) # logs of basis vectors
+    assert quaternion.one.log() == quaternion.zero
+    assert quaternion.x.log() == (np.pi/2)*quaternion.x
+    assert quaternion.y.log() == (np.pi/2)*quaternion.y
+    assert quaternion.z.log() == (np.pi/2)*quaternion.z
+    assert (-quaternion.one).log() == (np.pi)*quaternion.x
     strict_assert(False) # logs of interesting scalars * basis vectors
     strict_assert(False) # logs of negative scalars
 def test_quaternion_normalized(Qs):
@@ -366,6 +371,7 @@ def test_quaternion_getset(Qs):
             with pytest.raises(TypeError):
                 r.vec = seq_type((-5.5, 6.6,-7.7,8.8))
 
+@pytest.mark.skipif(os.environ.get('FAST'), reason="Takes too long")
 def test_metrics(Rs):
     metric_precision = 4.e-15
     # Check non-negativity
@@ -529,6 +535,34 @@ def test_setitem_quat(Qs):
 #     # CDOUBLE, npy_double
 #     # CLONGDOUBLE, npy_longdouble
 
+def test_ufuncs(Rs, Qs):
+    assert np.allclose( np.abs(Rs), np.ones(Rs.shape), atol=1.e-14, rtol=1.e-15)
+    assert np.allclose( np.abs( np.log(Rs) - np.array([r.log() for r in Rs]) ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+    assert np.allclose( np.abs( np.exp(Rs) - np.array([r.exp() for r in Rs]) ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+    assert np.allclose( np.abs( Rs - Rs ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+    assert np.allclose( np.abs( Rs + (-Rs) ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+    assert np.allclose( np.abs( np.conjugate(Rs) - np.array([r.conjugate() for r in Rs]) ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+    assert np.all( Rs == Rs )
+    assert np.all( Rs <= Rs )
+    for i in range(10):
+        x = random.uniform(-10, 10)
+        assert np.allclose( np.abs( Rs*x - np.array([r*x for r in Rs]) ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+        # assert np.allclose( np.abs( x*Rs - np.array([r*x for r in Rs]) ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+        strict_assert(False)
+        assert np.allclose( np.abs( Rs/x - np.array([r/x for r in Rs]) ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+        assert np.allclose( np.abs( Rs**x - np.array([r**x for r in Rs]) ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+    assert np.allclose( np.abs( Qs[Qs_finite]+Qs[Qs_finite] - np.array([q1+q2 for q1,q2 in zip(Qs[Qs_finite], Qs[Qs_finite])]) ),
+                        np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
+    assert np.allclose( np.abs( Qs[Qs_finite]-Qs[Qs_finite] - np.array([q1-q2 for q1,q2 in zip(Qs[Qs_finite], Qs[Qs_finite])]) ),
+                        np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
+    assert np.allclose( np.abs( Qs[Qs_finite]*Qs[Qs_finite] - np.array([q1*q2 for q1,q2 in zip(Qs[Qs_finite], Qs[Qs_finite])]) ),
+                        np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
+    assert np.allclose( np.abs( Qs[Qs_finitenonzero]/Qs[Qs_finitenonzero]
+                                - np.array([q1/q2 for q1,q2 in zip(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero])]) ),
+                        np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
+    assert np.allclose( np.abs( Qs[Qs_finitenonzero]**Qs[Qs_finitenonzero]
+                                - np.array([q1**q2 for q1,q2 in zip(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero])]) ),
+                        np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
 
 def test_numpy_array_conversion(Qs):
     "Check conversions between array as quaternions and array as floats"

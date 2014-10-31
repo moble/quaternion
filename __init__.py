@@ -18,6 +18,7 @@ if 'quaternion' in np.__dict__:
 np.quaternion = quaternion
 np.typeDict['quaternion'] = np.dtype(quaternion)
 
+zero = np.quaternion(0,0,0,0)
 one = np.quaternion(1,0,0,0)
 x = np.quaternion(0,1,0,0)
 y = np.quaternion(0,0,1,0)
