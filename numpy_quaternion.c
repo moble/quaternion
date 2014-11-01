@@ -1054,7 +1054,7 @@ pyquaternion_slerp(PyObject *self, PyObject *args)
 
 // Interface to the module-level slerp function
 static PyObject*
-pyquaternion_squad_once(PyObject *self, PyObject *args)
+pyquaternion_squad_evaluate(PyObject *self, PyObject *args)
 {
   double tau_i;
   PyObject* q_i = {0};
@@ -1065,10 +1065,54 @@ pyquaternion_squad_once(PyObject *self, PyObject *args)
   if (!PyArg_ParseTuple(args, "dOOOO", &tau_i, &q_i, &a_i, &b_ip1, &q_ip1)) {
     return NULL;
   }
-  Q->obval = squad_once(tau_i,
+  Q->obval = squad_evaluate(tau_i,
                         ((PyQuaternion*)q_i)->obval, ((PyQuaternion*)a_i)->obval,
                         ((PyQuaternion*)b_ip1)->obval, ((PyQuaternion*)q_ip1)->obval);
   return (PyObject*)Q;
+}
+
+// This will be used to create the ufunc needed for `squad`, which
+// evaluates the interpolant at a point.  The method for doing this
+// was pieced together from examples given on the page
+// <http://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
+static void
+squad_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
+{
+  npy_intp i;
+  double tau_i;
+  quaternion *q_i, *a_i, *b_ip1, *q_ip1;
+
+  npy_intp is1=steps[0];
+  npy_intp is2=steps[1];
+  npy_intp is3=steps[2];
+  npy_intp is4=steps[3];
+  npy_intp is5=steps[4];
+  npy_intp os=steps[5];
+  npy_intp n=dimensions[0];
+
+  char *i1=args[0];
+  char *i2=args[1];
+  char *i3=args[2];
+  char *i4=args[3];
+  char *i5=args[4];
+  char *op=args[5];
+
+  for (i = 0; i < n; i++) {
+    tau_i = *(double *)i1;
+    q_i = (quaternion*)i2;
+    a_i = (quaternion*)i3;
+    b_ip1 = (quaternion*)i4;
+    q_ip1 = (quaternion*)i5;
+
+    *((quaternion *)op) = squad_evaluate(tau_i, *q_i, *a_i, *b_ip1, *q_ip1);
+
+    i1 += is1;
+    i2 += is2;
+    i3 += is3;
+    i4 += is4;
+    i5 += is5;
+    op += os;
+  }
 }
 
 // This contains assorted other top-level methods for the module
@@ -1087,7 +1131,7 @@ static PyMethodDef QuaternionMethods[] = {
    "Distance measure from embedding of rotation manifold"},
   {"slerp", pyquaternion_slerp, METH_VARARGS,
    "Interpolate linearly along the geodesic between two rotors"},
-  {"squad_once", pyquaternion_squad_once, METH_VARARGS,
+  {"squad_evaluate", pyquaternion_squad_evaluate, METH_VARARGS,
    "Interpolate linearly along the geodesic between two rotors"},
   {NULL, NULL, 0, NULL}
 };
@@ -1123,8 +1167,11 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 #endif
 
   PyObject *module;
+  PyObject *module_dict;
+  PyObject *squad_evaluate_ufunc;
   int quaternionNum;
-  int arg_types[5];
+  int arg_types[3];
+  PyArray_Descr* arg_dtypes[6];
   PyObject* numpy;
   PyObject* numpy_dict;
 
@@ -1289,14 +1336,27 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
    * `PyUFunc_RegisterLoopForType`.  I should also do this for the
    * various other methods defined above. */
 
-  /* // double, quat, quat, quat, quat -> quat */
-  /* arg_types[0] = NPY_BOOL; */
-  /* arg_types[1] = quaternion_descr->type_num; */
-  /* arg_types[2] = quaternion_descr->type_num; */
-  /* arg_types[3] = quaternion_descr->type_num; */
-  /* arg_types[4] = quaternion_descr->type_num; */
-  /* arg_types[5] = quaternion_descr->type_num; */
-  /* REGISTER_UFUNC(squad_once); */
+  // Create a custom ufunc and register it for loops.  The method for
+  // doing this was pieced together from examples given on the page
+  // <http://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
+  arg_dtypes[0] = PyArray_DescrFromType(NPY_DOUBLE);
+  arg_dtypes[1] = quaternion_descr;
+  arg_dtypes[2] = quaternion_descr;
+  arg_dtypes[3] = quaternion_descr;
+  arg_dtypes[4] = quaternion_descr;
+  arg_dtypes[5] = quaternion_descr;
+  squad_evaluate_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, 5, 1,
+                                                 PyUFunc_None, "squad_loop",
+                                                 "Calculate squad from arrays of (tau, q_i, a_i, b_ip1, q_ip1)", 0);
+  PyUFunc_RegisterLoopForDescr((PyUFuncObject*)squad_evaluate_ufunc,
+                               quaternion_descr,
+                               &squad_loop,
+                               arg_dtypes,
+                               NULL);
+  module_dict = PyModule_GetDict(module);
+  PyDict_SetItemString(module_dict, "squad_loop", squad_evaluate_ufunc);
+  Py_DECREF(squad_evaluate_ufunc);
+
 
   // Finally, add this quaternion object to the quaternion module itself
   PyModule_AddObject(module, "quaternion", (PyObject *)&PyQuaternion_Type);

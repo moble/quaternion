@@ -3,30 +3,6 @@ from __future__ import print_function, division, absolute_import
 import numpy as np
 import quaternion
 
-## Allow the code to function without numba, but discourage it
-## strongly.
-try:
-    from numbapro import njit, jit
-except ImportError:
-    try:
-        from numba import njit, jit
-    except ImportError:
-        import warnings
-        warning_text = \
-            "\n\n" + "!"*53 + "\n" + \
-            "Could not import from either numbapro or numba.\n" + \
-            "This means that the code will run MUCH more slowly.\n" + \
-            "You probably REALLY want to install numba / numbapro." + \
-            "\n" + "!"*53 + "\n"
-        warnings.warn(warning_text)
-        def _identity_decorator_outer(*args, **kwargs):
-            def _identity_decorator_inner(fn):
-                return fn
-            return _identity_decorator_inner
-        njit = _identity_decorator_outer
-        jit = _identity_decorator_outer
-
-# @njit
 def squad(R_in, t_in, t_out):
     """Spherical "quadrangular" interpolation of rotors with a cubic spline
 
@@ -62,21 +38,18 @@ def squad(R_in, t_in, t_out):
     # though the difference is probably totally washed out here.  In
     # any case, it might be useful to test again.
     #
-    AB = np.array(
-        [R_in * np.exp(( np.log((~R_in)*np.roll(R_in,-1))
-                         + np.log((~np.roll(R_in,1))*R_in)*((np.roll(t_in,-1)-t_in)/(t_in-np.roll(t_in,1)))
-                         - np.log((~R_in)*np.roll(R_in,-1))*2 )*0.25),
-         np.roll(R_in,-1) * np.exp(( np.log((~np.roll(R_in,-1))*np.roll(R_in,-2))
-                                     *((np.roll(t_in,-1)-t_in)/(np.roll(t_in,-2)-np.roll(t_in,-1)))
-                                     + np.log((~R_in)*np.roll(R_in,-1))
-                                     - np.log((~R_in)*np.roll(R_in,-1))*2 )*-0.25)])
+    A = R_in * np.exp(( np.log((~R_in)*np.roll(R_in,-1))
+                        + np.log((~np.roll(R_in,1))*R_in)*((np.roll(t_in,-1)-t_in)/(t_in-np.roll(t_in,1)))
+                        - np.log((~R_in)*np.roll(R_in,-1))*2 )*0.25)
+    B = np.roll(R_in,-1) * np.exp(( np.log((~np.roll(R_in,-1))*np.roll(R_in,-2))
+                                    *((np.roll(t_in,-1)-t_in)/(np.roll(t_in,-2)-np.roll(t_in,-1)))
+                                    + np.log((~R_in)*np.roll(R_in,-1))
+                                    - np.log((~R_in)*np.roll(R_in,-1))*2 )*-0.25)
 
-    # Finally, we use the coefficients at the corresponding t_out
-    # indices to compute the squad interpolant
-    R_out = np.empty(t_out.shape, dtype=np.quaternion)
+    # Use the coefficients at the corresponding t_out indices to
+    # compute the squad interpolant
     tau = (t_out-t_in[i_in_for_out]) / ((np.roll(t_in,-1)-t_in)[i_in_for_out])
-    for j,k in enumerate(i_in_for_out):
-        R_out[j] = quaternion.squad_once(tau[j], R_in[k], AB[0,k], AB[1,k], np.roll(R_in,-1)[k])
+    R_out = quaternion.squad_loop(tau, R_in[i_in_for_out], A[i_in_for_out], B[i_in_for_out], np.roll(R_in,-1)[i_in_for_out])
 
     # Correct the first one and last two time steps
 

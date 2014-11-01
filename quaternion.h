@@ -94,7 +94,7 @@ extern "C" {
   double rotation_intrinsic_distance(quaternion q1, quaternion q2);
   double rotation_chordal_distance(quaternion q1, quaternion q2);
   quaternion slerp(quaternion q1, quaternion q2, double tau);
-  quaternion squad_once(double tau_i, quaternion q_i, quaternion a_i, quaternion b_ip1, quaternion q_ip1);
+  quaternion squad_evaluate(double tau_i, quaternion q_i, quaternion a_i, quaternion b_ip1, quaternion q_ip1);
 
 #ifdef __cplusplus
 }

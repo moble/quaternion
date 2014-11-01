@@ -3,7 +3,7 @@ import numpy as np
 from .numpy_quaternion import (quaternion, from_spherical_coords, from_euler_angles,
                                rotor_intrinsic_distance, rotor_chordal_distance,
                                rotation_intrinsic_distance, rotation_chordal_distance,
-                               slerp, squad_once)
+                               slerp, squad_evaluate, squad_loop)
 # from .squad import squad
 
 __doc_title__ = "Quaternion dtype for NumPy"
@@ -12,7 +12,7 @@ __doc__ = "Adds a quaternion dtype to NumPy."
 __all__ = ['quaternion', 'from_spherical_coords', 'from_euler_angles',
            'rotor_intrinsic_distance', 'rotor_chordal_distance',
            'rotation_intrinsic_distance', 'rotation_chordal_distance',
-           'slerp', 'squad_once',
+           'slerp', 'squad_evaluate',
            'one', 'x', 'y', 'z']
 
 if 'quaternion' in np.__dict__:
