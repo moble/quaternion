@@ -71,14 +71,14 @@ def squad(R_in, t_in, t_out):
                                      + np.log((~R_in)*np.roll(R_in,-1))
                                      - np.log((~R_in)*np.roll(R_in,-1))*2 )*-0.25)])
 
-    # Correct the first one and last two time steps of AB
-
-
     # Finally, we use the coefficients at the corresponding t_out
     # indices to compute the squad interpolant
     R_out = np.empty(t_out.shape, dtype=np.quaternion)
     tau = (t_out-t_in[i_in_for_out]) / ((np.roll(t_in,-1)-t_in)[i_in_for_out])
-    for i in range(len(t_out)):
-        R_out[i] = quaternion.squad_once(tau[i], R_in[i], AB[0,i], AB[1,i], np.roll(R_in,-1)[i])
+    for j,k in enumerate(i_in_for_out):
+        R_out[j] = quaternion.squad_once(tau[j], R_in[k], AB[0,k], AB[1,k], np.roll(R_in,-1)[k])
+
+    # Correct the first one and last two time steps
+
 
     return R_out

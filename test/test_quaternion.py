@@ -440,6 +440,7 @@ def test_metrics(Rs):
                 assert abs( quaternion.rotation_intrinsic_distance(R1, R2)
                             - quaternion.rotation_intrinsic_distance(R1*R3, R2*R3) ) < metric_precision
 
+
 def test_slerp(Rs):
     slerp_precision = 4.e-15
     ones = [quaternion.one, quaternion.x, quaternion.y, quaternion.z, -quaternion.x, -quaternion.y, -quaternion.z]
@@ -467,20 +468,25 @@ def test_slerp(Rs):
             for t in np.linspace(0.0, 1.0, num=100, endpoint=True):
                 assert quaternion.rotation_chordal_distance( R*quaternion.slerp(quaternion.one, Q2, t),
                                                              quaternion.slerp(R*quaternion.one, R*Q2, t) ) < slerp_precision
+
+
 def test_squad(Rs):
     import quaternion.squad
     squad_precision = 4.e-15
     ones = [quaternion.one, quaternion.x, quaternion.y, quaternion.z, -quaternion.x, -quaternion.y, -quaternion.z]
+    t_in = np.linspace(0.0, 1.0, num=13, endpoint=True)
+    t_out = np.linspace(0.0, 1.0, num=37, endpoint=True)
     for R in ones[1:]:
-        t_in = np.linspace(0.0, 1.0, num=10, endpoint=True)
         R_in = np.array([quaternion.slerp(quaternion.one, R, t) for t in t_in])
+
         # squad interpolated onto the inputs should be the identity
         assert np.all( np.abs( quaternion.squad.squad(R_in, t_in, t_in) - R_in ) < squad_precision )
+
         # squad should be the same as slerp for linear interpolation
-        t_out = np.linspace(0.0, 1.0, num=37, endpoint=True)
         R_out_squad = quaternion.squad.squad(R_in, t_in, t_out)
         R_out_slerp = np.array([quaternion.slerp(quaternion.one, R, t) for t in t_out])
         assert np.all( np.abs( R_out_squad - R_out_slerp ) < squad_precision )
+
 
 def test_arrfuncs():
     # nonzero
@@ -577,6 +583,11 @@ def test_ufuncs(Rs, Qs):
                         np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
     assert np.allclose( np.abs( Qs[Qs_finite]*Qs[Qs_finite] - np.array([q1*q2 for q1,q2 in zip(Qs[Qs_finite], Qs[Qs_finite])]) ),
                         np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
+    for Q in Qs[Qs_finite]:
+        assert np.allclose( np.abs( Qs[Qs_finite]*Q - np.array([q1*Q for q1 in Qs[Qs_finite]]) ),
+                            np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
+        # assert np.allclose( np.abs( Q*Qs[Qs_finite] - np.array([Q*q1 for q1 in Qs[Qs_finite]]) ),
+        #                     np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
     assert np.allclose( np.abs( Qs[Qs_finitenonzero]/Qs[Qs_finitenonzero]
                                 - np.array([q1/q2 for q1,q2 in zip(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero])]) ),
                         np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
