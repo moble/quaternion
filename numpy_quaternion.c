@@ -1052,6 +1052,25 @@ pyquaternion_slerp(PyObject *self, PyObject *args)
   return (PyObject*)Q;
 }
 
+// Interface to the module-level slerp function
+static PyObject*
+pyquaternion_squad_once(PyObject *self, PyObject *args)
+{
+  double tau_i;
+  PyObject* q_i = {0};
+  PyObject* a_i = {0};
+  PyObject* b_ip1 = {0};
+  PyObject* q_ip1 = {0};
+  PyQuaternion* Q = (PyQuaternion*)PyQuaternion_Type.tp_alloc(&PyQuaternion_Type,0);
+  if (!PyArg_ParseTuple(args, "dOOOO", &tau_i, &q_i, &a_i, &b_ip1, &q_ip1)) {
+    return NULL;
+  }
+  Q->obval = squad_once(tau_i,
+                        ((PyQuaternion*)q_i)->obval, ((PyQuaternion*)a_i)->obval,
+                        ((PyQuaternion*)b_ip1)->obval, ((PyQuaternion*)q_ip1)->obval);
+  return (PyObject*)Q;
+}
+
 // This contains assorted other top-level methods for the module
 static PyMethodDef QuaternionMethods[] = {
   {"from_spherical_coords", quaternion_from_spherical_coords, METH_VARARGS,
@@ -1067,6 +1086,8 @@ static PyMethodDef QuaternionMethods[] = {
   {"rotation_chordal_distance", pyquaternion_rotation_chordal_distance, METH_VARARGS,
    "Distance measure from embedding of rotation manifold"},
   {"slerp", pyquaternion_slerp, METH_VARARGS,
+   "Interpolate linearly along the geodesic between two rotors"},
+  {"squad_once", pyquaternion_squad_once, METH_VARARGS,
    "Interpolate linearly along the geodesic between two rotors"},
   {NULL, NULL, 0, NULL}
 };
@@ -1103,7 +1124,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 
   PyObject *module;
   int quaternionNum;
-  int arg_types[3];
+  int arg_types[5];
   PyObject* numpy;
   PyObject* numpy_dict;
 
@@ -1218,10 +1239,12 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_UFUNC(isfinite);
 
   // quat -> double
+  arg_types[0] = quaternion_descr->type_num;
   arg_types[1] = NPY_DOUBLE;
   REGISTER_UFUNC(absolute);
 
   // quat -> quat
+  arg_types[0] = quaternion_descr->type_num;
   arg_types[1] = quaternion_descr->type_num;
   REGISTER_UFUNC(log);
   REGISTER_UFUNC(exp);
@@ -1230,6 +1253,8 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_UFUNC(invert);
 
   // quat, quat -> bool
+  arg_types[0] = quaternion_descr->type_num;
+  arg_types[1] = quaternion_descr->type_num;
   arg_types[2] = NPY_BOOL;
   REGISTER_UFUNC(equal);
   REGISTER_UFUNC(not_equal);
@@ -1237,6 +1262,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_UFUNC(less_equal);
 
   // quat, double -> quat
+  arg_types[0] = quaternion_descr->type_num;
   arg_types[1] = NPY_DOUBLE;
   arg_types[2] = quaternion_descr->type_num;
   REGISTER_SCALAR_UFUNC(multiply);
@@ -1246,7 +1272,9 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_SCALAR_UFUNC(power);
 
   // quat, quat -> quat
+  arg_types[0] = quaternion_descr->type_num;
   arg_types[1] = quaternion_descr->type_num;
+  arg_types[2] = quaternion_descr->type_num;
   REGISTER_UFUNC(add);
   REGISTER_UFUNC(subtract);
   REGISTER_UFUNC(multiply);
@@ -1255,6 +1283,20 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_UFUNC(floor_divide);
   REGISTER_UFUNC(power);
   REGISTER_UFUNC(copysign);
+
+  /* I think before I do the following, I'll have to update numpy_dict
+   * somehow, presumably with something related to
+   * `PyUFunc_RegisterLoopForType`.  I should also do this for the
+   * various other methods defined above. */
+
+  /* // double, quat, quat, quat, quat -> quat */
+  /* arg_types[0] = NPY_BOOL; */
+  /* arg_types[1] = quaternion_descr->type_num; */
+  /* arg_types[2] = quaternion_descr->type_num; */
+  /* arg_types[3] = quaternion_descr->type_num; */
+  /* arg_types[4] = quaternion_descr->type_num; */
+  /* arg_types[5] = quaternion_descr->type_num; */
+  /* REGISTER_UFUNC(squad_once); */
 
   // Finally, add this quaternion object to the quaternion module itself
   PyModule_AddObject(module, "quaternion", (PyObject *)&PyQuaternion_Type);

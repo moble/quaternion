@@ -409,3 +409,11 @@ slerp(quaternion q1, quaternion q2, double tau)
     return quaternion_multiply( quaternion_power_scalar(quaternion_divide(quaternion_negative(q2),q1), tau), q1);
   }
 }
+
+quaternion
+squad_once(double tau_i, quaternion q_i, quaternion a_i, quaternion b_ip1, quaternion q_ip1)
+{
+  return slerp(slerp(q_i, q_ip1, tau_i),
+               slerp(a_i, b_ip1, tau_i),
+               2*tau_i*(1-tau_i));
+}

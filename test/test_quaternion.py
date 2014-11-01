@@ -440,7 +440,7 @@ def test_metrics(Rs):
                 assert abs( quaternion.rotation_intrinsic_distance(R1, R2)
                             - quaternion.rotation_intrinsic_distance(R1*R3, R2*R3) ) < metric_precision
 
-def test_slerp(Qs):
+def test_slerp(Rs):
     slerp_precision = 4.e-15
     ones = [quaternion.one, quaternion.x, quaternion.y, quaternion.z, -quaternion.x, -quaternion.y, -quaternion.z]
     # Check extremes
@@ -462,7 +462,25 @@ def test_slerp(Qs):
             assert quaternion.rotation_chordal_distance( quaternion.slerp(quaternion.one, Q2, t),
                                                          (np.cos(np.pi*t/2)*quaternion.one + np.sin(np.pi*t/2)*Q2) ) < slerp_precision
     # Test that (slerp of rotated rotors) is (rotated slerp of rotors)
-    strict_assert(False)
+    for R in Rs:
+        for Q2 in ones[1:]:
+            for t in np.linspace(0.0, 1.0, num=100, endpoint=True):
+                assert quaternion.rotation_chordal_distance( R*quaternion.slerp(quaternion.one, Q2, t),
+                                                             quaternion.slerp(R*quaternion.one, R*Q2, t) ) < slerp_precision
+def test_squad(Rs):
+    import quaternion.squad
+    squad_precision = 4.e-15
+    ones = [quaternion.one, quaternion.x, quaternion.y, quaternion.z, -quaternion.x, -quaternion.y, -quaternion.z]
+    for R in ones[1:]:
+        t_in = np.linspace(0.0, 1.0, num=10, endpoint=True)
+        R_in = np.array([quaternion.slerp(quaternion.one, R, t) for t in t_in])
+        # squad interpolated onto the inputs should be the identity
+        assert np.all( np.abs( quaternion.squad.squad(R_in, t_in, t_in) - R_in ) < squad_precision )
+        # squad should be the same as slerp for linear interpolation
+        t_out = np.linspace(0.0, 1.0, num=37, endpoint=True)
+        R_out_squad = quaternion.squad.squad(R_in, t_in, t_out)
+        R_out_slerp = np.array([quaternion.slerp(quaternion.one, R, t) for t in t_out])
+        assert np.all( np.abs( R_out_squad - R_out_slerp ) < squad_precision )
 
 def test_arrfuncs():
     # nonzero
