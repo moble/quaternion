@@ -27,16 +27,6 @@ except ImportError:
         jit = _identity_decorator_outer
 
 @njit
-def _find_closest(t_in, t_out, idx):
-    # This code was adapted from http://stackoverflow.com/a/8929827/1194883
-    idx = np.searchsorted(t_in, t_out)
-    idx = np.clip(idx, 1, len(t_in)-1)
-    left = t_in[idx-1]
-    right = t_in[idx]
-    idx -= t_out - left < right - t_out
-    return
-
-@njit
 def squad(R_in, t_in, t_out):
     """Spherical "quadrangular" interpolation of rotors with a cubic spline
 
@@ -70,10 +60,32 @@ def squad(R_in, t_in, t_out):
     # that is probably washed out by the cost of the particularly
     # complicated calculations done in this loop, so I'm just saying
     # it's not worth changing the iteration.
-    AB = np.array([
-        [R_i * (0.25*( (R_i.inverse()*R_ip1).log() +((t_ip1-t_i)/(t_i-t_im1))*(R_im1.inverse()*R_i).log() - 2*(R_i.inverse()*R_ip1).log() )).exp(),
-         R_ip1 * (-0.25*( ((t_ip1-t_i)/(t_ip2-t_ip1))*(R_ip1.inverse()*R_ip2).log() + (R_i.inverse()*R_ip1).log() - 2*(R_i.inverse()*R_ip1).log() )).exp()]
-        for t_im1,t_i,t_ip1,t_ip2,R_im1,R_i,R_ip1,R_ip2 in zip(np.roll(t_in,1),t_in,np.roll(t_in,-1),np.roll(t_in,-2),
-                                                               np.roll(R_in,1),R_in,np.roll(R_in,-1),np.roll(R_in,-2))])
+
+    # AB = np.array([
+    #     [R_i * (0.25*( (R_i.inverse()*R_ip1).log() +((t_ip1-t_i)/(t_i-t_im1))*(R_im1.inverse()*R_i).log() - 2*(R_i.inverse()*R_ip1).log() )).exp(),
+    #      R_ip1 * (-0.25*( ((t_ip1-t_i)/(t_ip2-t_ip1))*(R_ip1.inverse()*R_ip2).log() + (R_i.inverse()*R_ip1).log() - 2*(R_i.inverse()*R_ip1).log() )).exp()]
+    #     for t_im1,t_i,t_ip1,t_ip2,R_im1,R_i,R_ip1,R_ip2 in zip(np.roll(t_in,1),t_in,np.roll(t_in,-1),np.roll(t_in,-2),
+    #                                                            np.roll(R_in,1),R_in,np.roll(R_in,-1),np.roll(R_in,-2))])
+
+    AB = np.array(
+        [R_in * exp(( log((~R_in)*np.roll(R_in,-1))
+                      + np.log((~np.roll(R_in,1))*R_in)*((np.roll(t_in,-1)-t_in)/(t_in-np.roll(t_in,1)))
+                      - log(R_in.inverse()*np.roll(R_in,-1))*2 )*0.25),
+         np.roll(R_in,-1) * exp(( log((~np.roll(R_in,-1))*np.roll(R_in,-2))*((np.roll(t_in,-1)-t_in)/(np.roll(t_in,-2)-np.roll(t_in,-1)))
+                                  + log((~R_in)*np.roll(R_in,-1))
+                                  - log((~R_in)*np.roll(R_in,-1))*2 )*-0.25)])
+
+
+    # Finally, we use the coefficients at the corresponding t_out
+    # indices to compute the squad interpolant
+
+    
+
+    while(iOut<tOut.size() && tOut[iOut]<=tIn[iIn+1]):
+        taui = (tOut[iOut]-tIn[iIn]) / Dti;
+        ROut[iOut] = quaternion.slerp(2*taui*(1-taui),
+                                      quaternion.slerp(taui, Qi, Qip1),
+                                      quaternion.slerp(taui, Ai, Bip1))
+        iOut += 1;
 
     return R_out
