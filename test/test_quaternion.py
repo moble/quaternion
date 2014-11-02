@@ -239,6 +239,13 @@ def test_quaternion_log_exp(Qs):
     assert (-quaternion.one).log() == (np.pi)*quaternion.x
     strict_assert(False) # logs of interesting scalars * basis vectors
     strict_assert(False) # logs of negative scalars
+def test_angle(Rs):
+    angle_precision = 4.e-15
+    unit_vecs = [quaternion.x, quaternion.y, quaternion.z,
+                 -quaternion.x, -quaternion.y, -quaternion.z]
+    for u in unit_vecs:
+        for theta in linspace(-2*np.pi, 2*np.pi, num=50):
+            assert abs((theta*u/2).exp().angle() - abs(theta)) < angle_precision
 def test_quaternion_normalized(Qs):
     assert Qs[Q].normalized() == Qs[Qnormalized]
     for q in Qs[Qs_finitenonzero]:
@@ -474,7 +481,7 @@ def test_slerp(Rs):
                                                              quaternion.slerp(R*quaternion.one, R*Q2, t) ) < slerp_precision
 
 
-@pytest.mark.skipif(os.environ.get('FAST'), reason="Takes ~10 seconds")
+#@pytest.mark.skipif(os.environ.get('FAST'), reason="Takes ~2 seconds")
 def test_squad(Rs):
     import quaternion.squad
     squad_precision = 4.e-15

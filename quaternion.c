@@ -89,6 +89,12 @@ quaternion_absolute(quaternion q)
   return sqrt(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
 }
 
+double
+quaternion_angle(quaternion q)
+{
+  return 2 * quaternion_absolute( quaternion_log( q ) );
+}
+
 quaternion
 quaternion_add(quaternion q1, quaternion q2)
 {

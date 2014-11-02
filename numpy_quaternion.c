@@ -138,6 +138,7 @@ BINARY_BOOL_RETURNER(greater_equal)
   }
 UNARY_FLOAT_RETURNER(absolute)
 UNARY_FLOAT_RETURNER(norm)
+UNARY_FLOAT_RETURNER(angle)
 
 #define UNARY_QUATERNION_RETURNER(name)                                 \
   static PyObject*                                                      \
@@ -274,6 +275,8 @@ PyMethodDef pyquaternion_methods[] = {
    "Absolute value of quaternion"},
   {"norm", pyquaternion_norm, METH_NOARGS,
    "Norm (square of the absolute value) of quaternion"},
+  {"angle", pyquaternion_angle, METH_NOARGS,
+   "Angle through which rotor rotates"},
 
   // Unary quaternion returners
   // {"negative", pyquaternion_negative, METH_NOARGS,

@@ -59,6 +59,7 @@ extern "C" {
   // Unary float returners
   double quaternion_absolute(quaternion q);
   double quaternion_norm(quaternion q);
+  double quaternion_angle(quaternion q);
   // Unary quaternion returners
   quaternion quaternion_negative(quaternion q);
   quaternion quaternion_conjugate(quaternion q);
