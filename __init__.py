@@ -4,7 +4,8 @@ from .numpy_quaternion import (quaternion, from_spherical_coords, from_euler_ang
                                rotor_intrinsic_distance, rotor_chordal_distance,
                                rotation_intrinsic_distance, rotation_chordal_distance,
                                slerp, squad_evaluate, squad_loop)
-# from .squad import squad
+from .squad import squad
+from .derivative import derivative
 
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
@@ -14,13 +15,41 @@ __all__ = ['quaternion', 'from_spherical_coords', 'from_euler_angles',
            'rotation_intrinsic_distance', 'rotation_chordal_distance',
            'slerp', 'squad_evaluate',
            'zero', 'one', 'x', 'y', 'z',
-           'as_float_array', 'as_quat_array', 'as_spinor_array']
+           'as_float_array', 'as_quat_array', 'as_spinor_array',
+           'squad', 'derivative']
 
 if 'quaternion' in np.__dict__:
     raise RuntimeError('The NumPy package already has a quaternion type')
 
 np.quaternion = quaternion
 np.typeDict['quaternion'] = np.dtype(quaternion)
+
+
+
+## Allow the code to function without numba, but discourage it
+## strongly.
+try:
+    from numbapro import njit, jit
+except ImportError:
+    try:
+        from numba import njit, jit
+    except ImportError:
+        import warnings
+        warning_text = \
+            "\n\n" + "!"*53 + "\n" + \
+            "Could not import from either numbapro or numba.\n" + \
+            "This means that the code will run MUCH more slowly.\n" + \
+            "You probably REALLY want to install numba / numbapro." + \
+            "\n" + "!"*53 + "\n"
+        warnings.warn(warning_text)
+        def _identity_decorator_outer(*args, **kwargs):
+            def _identity_decorator_inner(fn):
+                return fn
+            return _identity_decorator_inner
+        njit = _identity_decorator_outer
+        jit = _identity_decorator_outer
+
+
 
 zero = np.quaternion(0,0,0,0)
 one = np.quaternion(1,0,0,0)
