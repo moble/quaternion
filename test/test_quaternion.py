@@ -481,7 +481,7 @@ def test_slerp(Rs):
                                                              quaternion.slerp(R*quaternion.one, R*Q2, t) ) < slerp_precision
 
 
-#@pytest.mark.skipif(os.environ.get('FAST'), reason="Takes ~2 seconds")
+@pytest.mark.skipif(os.environ.get('FAST'), reason="Takes ~2 seconds")
 def test_squad(Rs):
     import quaternion.squad
     squad_precision = 4.e-15
