@@ -483,7 +483,6 @@ def test_slerp(Rs):
 
 @pytest.mark.skipif(os.environ.get('FAST'), reason="Takes ~2 seconds")
 def test_squad(Rs):
-    import quaternion.squad
     squad_precision = 4.e-15
     ones = [quaternion.one, quaternion.x, quaternion.y, quaternion.z, -quaternion.x, -quaternion.y, -quaternion.z]
     t_in = np.linspace(0.0, 1.0, num=13, endpoint=True)
@@ -493,14 +492,14 @@ def test_squad(Rs):
     for R1 in Rs:
         for R2 in Rs:
             R_in = np.array([quaternion.slerp(R1, R2, t) for t in t_in])
-            assert np.all( np.abs( quaternion.squad.squad(R_in, t_in, t_in) - R_in ) < squad_precision )
+            assert np.all( np.abs( quaternion.squad(R_in, t_in, t_in) - R_in ) < squad_precision )
     # squad should be the same as slerp for linear interpolation
     for R in ones[1:]:
         R_in = np.array([quaternion.slerp(quaternion.one, R, t) for t in t_in])
-        R_out_squad = quaternion.squad.squad(R_in, t_in, t_out)
+        R_out_squad = quaternion.squad(R_in, t_in, t_out)
         R_out_slerp = np.array([quaternion.slerp(quaternion.one, R, t) for t in t_out])
         assert np.all( np.abs( R_out_squad - R_out_slerp ) < squad_precision )
-        R_out_squad = quaternion.squad.squad(R_in, t_in, t_out2)
+        R_out_squad = quaternion.squad(R_in, t_in, t_out2)
         R_out_slerp = np.array([quaternion.slerp(quaternion.one, R, t) for t in t_out2])
         assert np.all( np.abs( R_out_squad - R_out_slerp ) < squad_precision )
     # assert False # Test unequal input time steps, and correct squad output [0,-2,-1]
