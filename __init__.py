@@ -13,7 +13,8 @@ __all__ = ['quaternion', 'from_spherical_coords', 'from_euler_angles',
            'rotor_intrinsic_distance', 'rotor_chordal_distance',
            'rotation_intrinsic_distance', 'rotation_chordal_distance',
            'slerp', 'squad_evaluate',
-           'one', 'x', 'y', 'z']
+           'zero', 'one', 'x', 'y', 'z',
+           'as_float_array', 'as_quat_array', 'as_spinor_array']
 
 if 'quaternion' in np.__dict__:
     raise RuntimeError('The NumPy package already has a quaternion type')

@@ -222,6 +222,10 @@ def test_quaternion_conjugate(Qs):
     for q in Qs[Qs_nonnan]:
         assert q.conjugate() == q.conj()
         assert q.conjugate().conjugate() == q
+def test_quaternion_sqrt(Qs):
+    sqrt_precision = 4.e-15
+    for q in Qs[Qs_finitenonzero]:
+        assert ( (q.sqrt())*(q.sqrt()) - q ).abs() < sqrt_precision
 def test_quaternion_log_exp(Qs):
     qlogexp_precision = 4.e-15
     assert (Qs[Q].log()-Qs[Qlog]).abs() < qlogexp_precision
@@ -470,6 +474,7 @@ def test_slerp(Rs):
                                                              quaternion.slerp(R*quaternion.one, R*Q2, t) ) < slerp_precision
 
 
+@pytest.mark.skipif(os.environ.get('FAST'), reason="Takes ~10 seconds")
 def test_squad(Rs):
     import quaternion.squad
     squad_precision = 4.e-15

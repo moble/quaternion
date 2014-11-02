@@ -149,6 +149,7 @@ UNARY_FLOAT_RETURNER(norm)
 UNARY_QUATERNION_RETURNER(negative)
 UNARY_QUATERNION_RETURNER(conjugate)
 UNARY_QUATERNION_RETURNER(inverse)
+UNARY_QUATERNION_RETURNER(sqrt)
 UNARY_QUATERNION_RETURNER(log)
 UNARY_QUATERNION_RETURNER(exp)
 UNARY_QUATERNION_RETURNER(normalized)
@@ -285,6 +286,8 @@ PyMethodDef pyquaternion_methods[] = {
    "Return the complex conjugate of the quaternion"},
   {"inverse", pyquaternion_inverse, METH_NOARGS,
    "Return the inverse of the quaternion"},
+  {"sqrt", pyquaternion_sqrt, METH_NOARGS,
+   "Return the square-root of the quaternion"},
   {"log", pyquaternion_log, METH_NOARGS,
    "Return the logarithm (base e) of the quaternion"},
   {"exp", pyquaternion_exp, METH_NOARGS,
@@ -337,7 +340,6 @@ static PyNumberMethods pyquaternion_as_number = {
   pyquaternion_num_absolute,      // nb_absolute
   pyquaternion_num_nonzero,       // nb_nonzero
   pyquaternion_num_inverse,       // nb_invert
-  /* 0,                              // nb_invert */
   0,                              // nb_lshift
   0,                              // nb_rshift
   0,                              // nb_and

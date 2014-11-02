@@ -199,6 +199,17 @@ void quaternion_inplace_divide_scalar(quaternion* q, double s) {
 }
 
 quaternion
+quaternion_sqrt(quaternion q)
+{
+  double absolute = quaternion_absolute(q);
+  if(fabs(1+q.w/absolute)<_QUAT_EPS*absolute) {
+    return (quaternion) {0.0, 1.0, 0.0, 0.0};
+  }
+  double c = sqrt(absolute/(2+2*q.w/absolute));
+  return (quaternion) {(1.0+q.w/absolute)*c, q.x*c/absolute, q.y*c/absolute, q.z*c/absolute};
+}
+
+quaternion
 quaternion_log(quaternion q)
 {
   double b = sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
