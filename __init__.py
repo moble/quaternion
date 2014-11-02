@@ -1,30 +1,5 @@
 from __future__ import division, print_function, absolute_import, unicode_literals
 import numpy as np
-from .numpy_quaternion import (quaternion, from_spherical_coords, from_euler_angles,
-                               rotor_intrinsic_distance, rotor_chordal_distance,
-                               rotation_intrinsic_distance, rotation_chordal_distance,
-                               slerp, squad_evaluate, squad_loop)
-from .squad import squad
-from .derivative import derivative
-
-__doc_title__ = "Quaternion dtype for NumPy"
-__doc__ = "Adds a quaternion dtype to NumPy."
-
-__all__ = ['quaternion', 'from_spherical_coords', 'from_euler_angles',
-           'rotor_intrinsic_distance', 'rotor_chordal_distance',
-           'rotation_intrinsic_distance', 'rotation_chordal_distance',
-           'slerp', 'squad_evaluate',
-           'zero', 'one', 'x', 'y', 'z',
-           'as_float_array', 'as_quat_array', 'as_spinor_array',
-           'squad', 'derivative']
-
-if 'quaternion' in np.__dict__:
-    raise RuntimeError('The NumPy package already has a quaternion type')
-
-np.quaternion = quaternion
-np.typeDict['quaternion'] = np.dtype(quaternion)
-
-
 
 ## Allow the code to function without numba, but discourage it
 ## strongly.
@@ -49,6 +24,29 @@ except ImportError:
         njit = _identity_decorator_outer
         jit = _identity_decorator_outer
 
+from .numpy_quaternion import (quaternion, from_spherical_coords, from_euler_angles,
+                               rotor_intrinsic_distance, rotor_chordal_distance,
+                               rotation_intrinsic_distance, rotation_chordal_distance,
+                               slerp, squad_evaluate, squad_loop)
+from .squad import squad
+from .derivative import derivative
+
+__doc_title__ = "Quaternion dtype for NumPy"
+__doc__ = "Adds a quaternion dtype to NumPy."
+
+__all__ = ['quaternion', 'from_spherical_coords', 'from_euler_angles',
+           'rotor_intrinsic_distance', 'rotor_chordal_distance',
+           'rotation_intrinsic_distance', 'rotation_chordal_distance',
+           'slerp', 'squad_evaluate',
+           'zero', 'one', 'x', 'y', 'z',
+           'as_float_array', 'as_quat_array', 'as_spinor_array',
+           'squad', 'derivative']
+
+if 'quaternion' in np.__dict__:
+    raise RuntimeError('The NumPy package already has a quaternion type')
+
+np.quaternion = quaternion
+np.typeDict['quaternion'] = np.dtype(quaternion)
 
 
 zero = np.quaternion(0,0,0,0)
