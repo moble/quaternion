@@ -24,12 +24,13 @@ except ImportError:
         njit = _identity_decorator_outer
         jit = _identity_decorator_outer
 
-from .numpy_quaternion import (quaternion, from_spherical_coords, from_euler_angles,
+from .numpy_quaternion import (quaternion,
+                               from_spherical_coords, from_euler_angles,
                                rotor_intrinsic_distance, rotor_chordal_distance,
                                rotation_intrinsic_distance, rotation_chordal_distance,
                                slerp, squad_evaluate, squad_loop)
 from .squad import squad
-from .derivative import derivative
+from .calculus import derivative, definite_integral, indefinite_integral
 
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
@@ -40,7 +41,7 @@ __all__ = ['quaternion', 'from_spherical_coords', 'from_euler_angles',
            'slerp', 'squad_evaluate',
            'zero', 'one', 'x', 'y', 'z',
            'as_float_array', 'as_quat_array', 'as_spinor_array',
-           'squad', 'derivative']
+           'squad', 'derivative', 'definite_integral', 'indefinite_integral']
 
 if 'quaternion' in np.__dict__:
     raise RuntimeError('The NumPy package already has a quaternion type')
