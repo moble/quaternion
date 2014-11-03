@@ -1,5 +1,4 @@
 from __future__ import division, print_function, absolute_import, unicode_literals
-from . import njit
 
 @njit('void(f8[:],f8[:],f8[:])')
 def derivative(f, t, dfdt):
@@ -114,20 +113,20 @@ def derivative(f, t, dfdt):
     return
 
 
-# @njit #('void(f8[:,:], f8[:], f8[:,:])')
-# def indefinite_integral(f, t, Sfdt):
-#     Sfdt[0] = 0.0
-#     for i in xrange(1,len(t)):
-#         for j in xrange(f.shape[1]):
-#             Sfdt[i,j] = Sfdt[i-1,j] + (f[i,j]+f[i-1,j])*((t[i]-t[i-1])/2.0)
-#     return
+@njit('void(f8[:,:], f8[:], f8[:,:])')
+def indefinite_integral(f, t, Sfdt):
+    Sfdt[0] = 0.0
+    for i in xrange(1,len(t)):
+        for j in xrange(f.shape[1]):
+            Sfdt[i,j] = Sfdt[i-1,j] + (f[i,j]+f[i-1,j])*((t[i]-t[i-1])/2.0)
+    return
 
 
-# @njit #('void(f8[:,:], f8[:], f8[:])')
-# def definite_integral(f, t, Sfdt):
-#     for i in xrange(len(Sfdt)):
-#         Sfdt[i] = 0.0
-#     for i in xrange(1,f.shape[0]):
-#         for j in xrange(f.shape[1]):
-#             Sfdt[j] += (f[i,j]+f[i-1,j])*((t[i]-t[i-1])/2.0)
-#     return
+@njit('void(f8[:,:], f8[:], f8[:])')
+def definite_integral(f, t, Sfdt):
+    for i in xrange(len(Sfdt)):
+        Sfdt[i] = 0.0
+    for i in xrange(1,f.shape[0]):
+        for j in xrange(f.shape[1]):
+            Sfdt[j] += (f[i,j]+f[i-1,j])*((t[i]-t[i-1])/2.0)
+    return

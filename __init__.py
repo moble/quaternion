@@ -30,7 +30,8 @@ from .numpy_quaternion import (quaternion,
                                rotation_intrinsic_distance, rotation_chordal_distance,
                                slerp, squad_evaluate, squad_loop)
 from .squad import squad
-from .calculus import derivative, definite_integral, indefinite_integral
+from .derivative import derivative
+# from .calculus import derivative, definite_integral, indefinite_integral
 
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
@@ -41,7 +42,7 @@ __all__ = ['quaternion', 'from_spherical_coords', 'from_euler_angles',
            'slerp', 'squad_evaluate',
            'zero', 'one', 'x', 'y', 'z',
            'as_float_array', 'as_quat_array', 'as_spinor_array',
-           'squad', 'derivative', 'definite_integral', 'indefinite_integral']
+           'squad', 'derivative']#, 'definite_integral', 'indefinite_integral']
 
 if 'quaternion' in np.__dict__:
     raise RuntimeError('The NumPy package already has a quaternion type')

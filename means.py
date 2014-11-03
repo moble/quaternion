@@ -1,6 +1,5 @@
 from __future__ import division, print_function, absolute_import, unicode_literals
 import numpy as np
-from . import njit
 from .calculus import definite_integral
 
 def mean_rotor_in_chordal_metric(R, t=None):
