@@ -8,35 +8,59 @@ Mark Weibe), but has been updated to work with python 3.x, and to
 expand the applications of quaternions (as well as to fix a few bugs).
 
 
-## Requirements and Installation
+## Dependencies
 
-The only requirements are python and numpy.  The code is [routinely
-tested](https://travis-ci.org/moble/numpy_quaternion) on python
-versions 2.6, 2.7, 3.2, 3.3, and 3.4, so any of these should be
-acceptable.  Numpy versions 1.7 and newer should also work, but the
-tests are only run on a recent version of numpy (1.9, as of this
-writing).
+The basic requirements for this code are reasonably current versions
+of `python` and `numpy`.  In particular, `python` versions 2.6, 2.8,
+3.2, 3.3, and 3.4 are
+[routinely tested](https://travis-ci.org/moble/numpy_quaternion), and
+any `numpy` version greater than 1.7.0 should work.
 
-The [anaconda](https://store.continuum.io/cshop/anaconda/)
-installation comes highly recommended.  This is easy, free, and
-generally the best way to stay up-to-date with python.  It installs
-into your user directory (no root password needed), can easily be
-uninstalled, and doesn't interfere in any way with your system python
--- in addition to numerous other advantages.
+However, certain advanced functions in this package (including
+`squad`, `mean_rotor_in_intrinsic_metric`,
+`integrate_angular_velocity`, and related functions) require
+[`scipy`](http://scipy.org/) and can automatically use
+[`numba`](http://numba.pydata.org/).  `Scipy` is a standard python
+package for scientific computation, and implements interfaces to C and
+Fortran codes for optimization (among other things) need for finding
+mean and optimal rotors.  `Numba` uses [LLVM](http://llvm.org/) to
+compile python code to machine code, accelerating most numerical
+functions by factors of anywhere from 2 to 2000.  It is *possible* to
+run all the code without `numba`, but these functions are roughly 4 to
+400 times slower without it.
 
-To install with anaconda or virtualenv (which will just go into your
-user directory), simply run
+The only drawback of `numba` is that it is nontrivial to install on
+its own.  Fortunately, the best python installer,
+[`anaconda`](http://continuum.io/downloads), makes it trivial.  Just
+install the main `anaconda` package, which installs both `numba` and
+`scipy`.
+
+If you prefer the smaller download size of
+[`miniconda`](http://conda.pydata.org/miniconda.html) (which comes
+with no extras beyond python), you'll also have to run this command:
 
 ```sh
-$ python setup.py install
+conda install pip numpy scipy numba
 ```
 
-With other installations of python, you can install to the user
-directory with
+## Installation
+
+Installation is simple with `pip` (which should be present in any
+reasonably new installation of `python`):
 
 ```sh
-$ python setup.py install --user
+pip install git+git://github.com/moble/numpy_quaternion
 ```
+
+If you refuse to use anaconda, you might want to install inside your
+home directory without root privileges.  (Anaconda does this by
+default anyway.)  This is done by adding `--user` to the above
+command:
+
+```sh
+pip install --user git+git://github.com/moble/numpy_quaternion
+```
+
 
 ## Usage
 
@@ -83,3 +107,34 @@ for all three imaginary components. Complex types may also be cast to
 quaternions, with their single imaginary component becoming the first
 imaginary component of the quaternion. Quaternions may not be cast to
 real or complex types.
+
+
+## Bug reports and feature requests
+
+Bug reports and feature requests are entirely welcome.  The best way
+to do this is to open an
+[issue on this code's github page](https://github.com/moble/numpy_quaternion/issues).
+For bug reports, please try to include a minimal working example
+demonstrating the problem.
+
+[Pull requests](https://help.github.com/articles/using-pull-requests/)
+are also entirely welcome, of course, if you have an idea where the
+code is going wrong, or have an idea for a new feature that you know
+how to implement.
+
+This code is
+[routinely tested](https://travis-ci.org/moble/numpy_quaternion) on
+recent versions of both python (2.x and 3.x) and numpy (>=1.7).  But
+the test coverage is not necessarily as complete as it should be, so
+bugs may certainly be present, especially in the higher-level
+functions like `mean_rotor_...`.
+
+
+
+<br/><br/>
+###### <sup>1</sup> Running without `numba`
+
+It is technically *possible* to run these functions without `numba`.
+However, some functions can be sped up by factors of up to 1500 when
+using `numba`.  The anaconda distribution makes installation of
+`numba` so simple that there's just no reason not to use it.
