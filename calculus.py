@@ -1,4 +1,5 @@
-from __future__ import division, print_function, absolute_import, unicode_literals
+from __future__ import division, print_function, absolute_import
+from . import njit
 
 @njit('void(f8[:],f8[:],f8[:])')
 def derivative(f, t, dfdt):
