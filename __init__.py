@@ -5,11 +5,13 @@ import numpy as np
 ## strongly.
 try:
     from numbapro import njit, jit
+    from numba.utils import IS_PY3
 except ImportError:
     try:
         from numba import njit, jit
+        from numba.utils import IS_PY3
     except ImportError:
-        import warnings
+        import warnings, sys
         warning_text = \
             "\n\n" + "!"*53 + "\n" + \
             "Could not import from either numbapro or numba.\n" + \
@@ -23,6 +25,7 @@ except ImportError:
             return _identity_decorator_inner
         njit = _identity_decorator_outer
         jit = _identity_decorator_outer
+        IS_PY3 = (sys.version_info[:2] >= (3, 0))
 
 from .numpy_quaternion import (quaternion,
                                from_spherical_coords, from_euler_angles,

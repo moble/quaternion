@@ -1,5 +1,8 @@
 from __future__ import division, print_function, absolute_import
-from . import njit
+from . import njit, IS_PY3
+
+if IS_PY3:
+    xrange = range
 
 @njit('void(f8[:],f8[:],f8[:])')
 def derivative(f, t, dfdt):
