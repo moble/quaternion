@@ -1,7 +1,7 @@
 from . import njit
 
 @njit('void(f8[:],f8[:],f8[:])')
-def derivative_jit(f, t, dfdt):
+def derivative(f, t, dfdt):
     """Fourth-order finite-differencing with non-uniform time steps
 
     The formula for this finite difference comes from Eq. (A 5b) of
