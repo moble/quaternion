@@ -6,10 +6,8 @@ from .numpy_quaternion import (quaternion,
                                rotor_intrinsic_distance, rotor_chordal_distance,
                                rotation_intrinsic_distance, rotation_chordal_distance,
                                slerp, squad_evaluate, squad_loop)
-# from .quaternion_time_series import squad
-# from .calculus import derivative, definite_integral, indefinite_integral
-import quaternion.quaternion_time_series
-import quaternion.calculus
+from .quaternion_time_series import squad
+from .calculus import derivative, definite_integral, indefinite_integral
 
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
