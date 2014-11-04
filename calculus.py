@@ -1,5 +1,5 @@
 from __future__ import division, print_function, absolute_import
-from . import njit, IS_PY3
+from .numba import njit, IS_PY3
 
 if IS_PY3:
     xrange = range
