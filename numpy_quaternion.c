@@ -1057,7 +1057,7 @@ pyquaternion_slerp(PyObject *self, PyObject *args)
   return (PyObject*)Q;
 }
 
-// Interface to the module-level slerp function
+// Interface to the evaluate a squad interpolant at a particular time
 static PyObject*
 pyquaternion_squad_evaluate(PyObject *self, PyObject *args)
 {
