@@ -7,11 +7,12 @@ def configuration(parent_package='',top_path=None):
         raise DistutilsError('The target NumPy already has a quaternion type')
     from numpy.distutils.misc_util import Configuration
     from numpy.distutils.system_info import get_info
-    if(os.environ.get('THIS_IS_TRAVIS') is not None):
-        print("This appears to be Travis!")
-        compile_args = ['-O3']
-    else:
-        compile_args = ['-ffast-math', '-O3']
+    # if(os.environ.get('THIS_IS_TRAVIS') is not None):
+    #     print("This appears to be Travis!")
+    #     compile_args = ['-O3']
+    # else:
+    #     compile_args = ['-ffast-math', '-O3']
+    compile_args = ['-O3']
     config = Configuration('quaternion',parent_package,top_path)
     config.add_extension('numpy_quaternion',
                          ['quaternion.c','numpy_quaternion.c'],
