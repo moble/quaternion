@@ -3,12 +3,14 @@ from __future__ import division, print_function, absolute_import
 ## Allow the code to function without numba, but discourage it
 ## strongly.
 try:
-    from numbapro import njit, jit
+    from numbapro import njit, jit, int64
     from numba.utils import IS_PY3
+    GOT_NUMBA = True
 except ImportError:
     try:
-        from numba import njit, jit
+        from numba import njit, jit, int64
         from numba.utils import IS_PY3
+        GOT_NUMBA = True
     except ImportError:
         import warnings, sys
         warning_text = \
@@ -24,4 +26,11 @@ except ImportError:
             return _identity_decorator_inner
         njit = _identity_decorator_outer
         jit = _identity_decorator_outer
+        int64 = int
         IS_PY3 = (sys.version_info[:2] >= (3, 0))
+        GOT_NUMBA = False
+
+if IS_PY3:
+    xrange = range
+else:
+    xrange = xrange
