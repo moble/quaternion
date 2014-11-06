@@ -2,7 +2,7 @@ from __future__ import print_function, division, absolute_import
 
 import numpy as np
 import quaternion
-from .numba import njit, xrange
+from quaternion.numba_wrapper import njit, xrange
 
 def squad(R_in, t_in, t_out):
     """Spherical "quadrangular" interpolation of rotors with a cubic spline
