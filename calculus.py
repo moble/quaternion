@@ -1,5 +1,5 @@
 from __future__ import division, print_function, absolute_import
-from .numba import njit, xrange
+from quaternion.numba_wrapper import njit, xrange
 
 @njit('void(f8[:],f8[:],f8[:])')
 def derivative(f, t, dfdt):
