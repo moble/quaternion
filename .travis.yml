@@ -6,7 +6,6 @@ python:
   - "3.3"
   - "3.4"
 install:
-  - python -c 'import numpy; print(numpy.__version__)'
   - python setup.py install
 script:
   - py.test

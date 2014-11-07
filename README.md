@@ -130,6 +130,27 @@ bugs may certainly be present, especially in the higher-level
 functions like `mean_rotor_...`.
 
 
+## Acknowledgments
+
+This code is, of course, hosted on github.  Because it is an
+open-source project, the hosting is free, and all the wonderful
+features of github are available, including free wiki space and web
+page hosting, pull requests, a nice interface to the git logs, etc.
+
+Every change in this code is
+[auomatically tested](https://travis-ci.org/moble/numpy_quaternion) on
+[Travis-CI](https://travis-ci.org/).  This is a free service (for
+open-source projects like this one), which integrates beautifully with
+github, detecting each commit and automatically re-running the tests.
+The code is downloaded and installed fresh each time, and then tested,
+on each of the five different versions of python.  This ensures that
+no change I make to the code breaks either installation or any of the
+features that I have written tests for.
+
+The work of creating this code was supported in part by the Sherman
+Fairchild Foundation and by NSF Grants No. PHY-1306125 and
+AST-1333129.
+
 
 <br/><br/>
 ###### <sup>1</sup> Running without `numba`
