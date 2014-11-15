@@ -1,3 +1,5 @@
+ <a href="https://travis-ci.org/moble/numpy_quaternion"><img align="right" hspace="3" alt="Status of automatic build and test suite" src="https://travis-ci.org/moble/numpy_quaternion.svg?branch=master"></a> <a href="https://github.com/moble/numpy_quaternion/blob/master/LICENSE"><img align="right" hspace="3" alt="Code distributed under the open-source MIT license" src="http://moble.github.io/spherical_functions/images/MITLicenseBadge.svg"></a>
+
 # Quaternion modules
 
 This Python module adds a quaternion dtype to NumPy.
