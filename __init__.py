@@ -56,6 +56,12 @@ def as_quat_array(a):
     The input array must have a final dimension whose size is
     divisible by four (or better yet *is* 4).
 
+    We will not convert back from a spinor array because there is no
+    unique convention for the spinors, so I don't want to mess with
+    that.  Also, we want to discourage users from the slow,
+    memory-copying process of swapping columns required for useful
+    definitions of the spinors.
+
     """
     assert a.dtype == np.dtype(np.float)
     av = a.view(np.quaternion)
