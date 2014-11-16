@@ -100,6 +100,37 @@ PyQuaternion_FromQuaternion(quaternion q) {
     return NULL;                                                        \
   }
 
+static PyObject *
+pyquaternion_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  PyQuaternion* self;
+  self = (PyQuaternion *)type->tp_alloc(type, 0);
+  return (PyObject *)self;
+}
+
+static int
+pyquaternion_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+  // "A good rule of thumb is that for immutable types, all
+  // initialization should take place in `tp_new`, while for mutable
+  // types, most initialization should be deferred to `tp_init`."
+  // ---Python 2.7.8 docs
+  quaternion* q;
+  q = &(((PyQuaternion*)self)->obval);
+  if (kwds && PyDict_Size(kwds)) {
+    PyErr_SetString(PyExc_TypeError,
+                    "quaternion constructor takes no keyword arguments");
+    return -1;
+  }
+
+  if (!PyArg_ParseTuple(args, "dddd", &q->w, &q->x, &q->y, &q->z)) {
+    PyErr_SetString(PyExc_TypeError,
+                    "quaternion constructor takes four double (float) arguments");
+    return -1;
+  }
+
+  return 0;
+}
 
 #define UNARY_BOOL_RETURNER(name)                                       \
   static PyObject*                                                      \
@@ -238,6 +269,40 @@ QQ_QS_SQ_BINARY_QUATERNION_INPLACE(divide)
 /* QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(floor_divide, divide) */
 QQ_QS_SQ_BINARY_QUATERNION_INPLACE(power)
 
+static PyObject *
+pyquaternion__reduce(PyQuaternion* self)
+{
+  printf("\n\n\nI'm trying, most of all!\n\n\n");
+  return Py_BuildValue("O(OOOO)", Py_TYPE(self),
+                       PyFloat_FromDouble(self->obval.w), PyFloat_FromDouble(self->obval.x),
+                       PyFloat_FromDouble(self->obval.y), PyFloat_FromDouble(self->obval.z));
+}
+
+static PyObject *
+pyquaternion_getstate(PyQuaternion* self, PyObject* args)
+{
+  printf("\n\n\nI'm Trying, OKAY?\n\n\n");
+  if (!PyArg_ParseTuple(args, ":getstate"))
+    return NULL;
+  return Py_BuildValue("OOOO",
+                       PyFloat_FromDouble(self->obval.w), PyFloat_FromDouble(self->obval.x),
+                       PyFloat_FromDouble(self->obval.y), PyFloat_FromDouble(self->obval.z));
+}
+
+static PyObject *
+pyquaternion_setstate(PyQuaternion* self, PyObject* args)
+{
+  printf("\n\n\nI'm Trying, TOO!\n\n\n");
+  quaternion* q;
+  q = &(self->obval);
+
+  if (!PyArg_ParseTuple(args, "dddd:setstate", &q->w, &q->x, &q->y, &q->z)) {
+    return NULL;
+  }
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
 
 // This is an array of methods (member functions) that will be
 // available to use on the quaternion objects in python.  This is
@@ -313,6 +378,13 @@ PyMethodDef pyquaternion_methods[] = {
   //  "Standard (geometric) quaternion division"},
   // {"power", pyquaternion_power, METH_O,
   //  "q.power(p) = (q.log() * p).exp()"},
+
+  {"__reduce__", (PyCFunction)pyquaternion__reduce, METH_NOARGS,
+   "Return state information for pickling."},
+  {"__getstate__", (PyCFunction)pyquaternion_getstate, METH_VARARGS,
+   "Return state information for pickling."},
+  {"__setstate__", (PyCFunction)pyquaternion_setstate, METH_VARARGS,
+   "Reconstruct state information from pickle."},
 
   {NULL}
 };
@@ -510,38 +582,6 @@ PyGetSetDef pyquaternion_getset[] = {
 };
 
 
-
-static PyObject *
-pyquaternion_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-{
-  PyQuaternion* self;
-  self = (PyQuaternion *)type->tp_alloc(type, 0);
-  return (PyObject *)self;
-}
-
-static int
-pyquaternion_init(PyObject *self, PyObject *args, PyObject *kwds)
-{
-  // "A good rule of thumb is that for immutable types, all
-  // initialization should take place in `tp_new`, while for mutable
-  // types, most initialization should be deferred to `tp_init`."
-  // ---Python 2.7.8 docs
-  quaternion* q;
-  q = &(((PyQuaternion*)self)->obval);
-  if (kwds && PyDict_Size(kwds)) {
-    PyErr_SetString(PyExc_TypeError,
-                    "quaternion constructor takes no keyword arguments");
-    return -1;
-  }
-
-  if (!PyArg_ParseTuple(args, "dddd", &q->w, &q->x, &q->y, &q->z)) {
-    PyErr_SetString(PyExc_TypeError,
-                    "quaternion constructor takes four double (float) arguments");
-    return -1;
-  }
-
-  return 0;
-}
 
 static PyObject*
 pyquaternion_richcompare(PyObject* a, PyObject* b, int op)
@@ -871,36 +911,6 @@ static void register_cast_function(int sourceType, int destType, PyArray_VectorU
 // This is the crucial feature that will make a quaternion into a
 // built-in numpy data type.  We will describe its features below.
 PyArray_Descr* quaternion_descr;
-
-// This function generates a view of the quaternion array as a float
-// array.  I'm just not sure where to put it...
-// {"float_array", pyquaternion_get_float_array, NULL,
-//  "The quaternion array, viewed as a float array (with an extra dimension of size 4)", NULL},
-// static PyObject *
-// pyquaternion_get_float_array(PyObject *self, void *closure)
-// {
-//   PyArrayObject* array = (PyArrayObject *) self;
-
-//   // Save the dtype of double, because it will be stolen
-//   PyArray_Descr* dtype;
-//   dtype = PyArray_DescrFromType(NPY_DOUBLE);
-
-//   // Now, make an array of describing the new shape of the output array
-//   size_t size = PyArray_NDIM(array);
-//   npy_intp* shape_old;
-//   shape_old = PyArray_SHAPE(array);
-//   PyObject* shape_new = PyList_New(size+1);
-//   for (size_t i = 0; i != size; ++i) {
-//     PyList_SET_ITEM(shape_new, i, PyInt_FromLong(shape_old[i]));
-//   }
-//   PyList_SET_ITEM(shape_new, size, PyInt_FromLong(4));
-
-//   // Get the new view
-//   PyArrayObject* array_float = (PyArrayObject*) PyArray_View((PyArrayObject *) self, dtype, self->ob_type);
-
-//   // Reshape it, so that the last dimension is split up properly
-//   return PyArray_Reshape(array_float, shape_new);
-// }
 
 
 // This is a macro that will be used to define the various basic unary
