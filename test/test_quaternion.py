@@ -266,8 +266,9 @@ def test_quaternion_subtract(Qs):
         for p in Qs[Qs_finite]:
             assert q-p==quaternion.quaternion(q.w-p.w,q.x-p.x,q.y-p.y,q.z-p.z)
     strict_assert(False) # Check non-finite
+@pytest.mark.xfail
 def test_quaternion_copysign(Qs):
-    strict_assert(False)
+    assert False
 
 
 ## Quaternion-quaternion or quaternion-scalar binary quaternion returners
@@ -504,6 +505,7 @@ def test_squad(Rs):
         assert np.all( np.abs( R_out_squad - R_out_slerp ) < squad_precision )
     # assert False # Test unequal input time steps, and correct squad output [0,-2,-1]
 
+@pytest.mark.xfail
 def test_arrfuncs():
     # nonzero
     # copyswap
@@ -513,7 +515,7 @@ def test_arrfuncs():
     # compare
     # argmax
     # fillwithscalar
-    pass
+    assert False
 
 def test_setitem_quat(Qs):
     Ps = Qs[:]
@@ -550,32 +552,35 @@ def test_setitem_quat(Qs):
     with pytest.raises(TypeError):
         Ps[0] = 's'
 
-# def test_arraydescr():
-#     # new
-#     # richcompare
-#     # hash
-#     # repr
-#     # str
+@pytest.mark.xfail
+def test_arraydescr():
+    # new
+    # richcompare
+    # hash
+    # repr
+    # str
+    assert False
 
-
-# def test_casts():
-#     # FLOAT, npy_float
-#     # DOUBLE, npy_double
-#     # LONGDOUBLE, npy_longdouble
-#     # BOOL, npy_bool
-#     # BYTE, npy_byte
-#     # UBYTE, npy_ubyte
-#     # SHORT, npy_short
-#     # USHORT, npy_ushort
-#     # INT, npy_int
-#     # UINT, npy_uint
-#     # LONG, npy_long
-#     # ULONG, npy_ulong
-#     # LONGLONG, npy_longlong
-#     # ULONGLONG, npy_ulonglong
-#     # CFLOAT, npy_float
-#     # CDOUBLE, npy_double
-#     # CLONGDOUBLE, npy_longdouble
+@pytest.mark.xfail
+def test_casts():
+    # FLOAT, npy_float
+    # DOUBLE, npy_double
+    # LONGDOUBLE, npy_longdouble
+    # BOOL, npy_bool
+    # BYTE, npy_byte
+    # UBYTE, npy_ubyte
+    # SHORT, npy_short
+    # USHORT, npy_ushort
+    # INT, npy_int
+    # UINT, npy_uint
+    # LONG, npy_long
+    # ULONG, npy_ulong
+    # LONGLONG, npy_longlong
+    # ULONGLONG, npy_ulonglong
+    # CFLOAT, npy_float
+    # CDOUBLE, npy_double
+    # CLONGDOUBLE, npy_longdouble
+    assert False
 
 def test_ufuncs(Rs, Qs):
     assert np.allclose( np.abs(Rs), np.ones(Rs.shape), atol=1.e-14, rtol=1.e-15)
@@ -645,18 +650,4 @@ def test_numpy_array_conversion(Qs):
 
 
 if __name__=='__main__':
-    print("quaternion_members")
-    test_quaternion_members()
-    print("quaternion_methods")
-    test_quaternion_methods()
-    print("qaternion_getset")
-    test_quaternion_getset()
-    print("arrfuncs")
-    test_arrfuncs()
-    print("arraydescr")
-    test_arraydescr()
-    print("casts")
-    test_casts()
-    print("numpy_array_conversion")
-    test_numpy_array_conversion()
-    print("Finished")
+    print("The tests should be run automatically via py.test (pip install pytest)")
