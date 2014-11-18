@@ -1,18 +1,22 @@
 from __future__ import division, print_function, absolute_import
-from quaternion.numba_wrapper import njit, xrange
+import numpy as np
+from quaternion.numba_wrapper import njit, jit, xrange
 
-@njit('void(f8[:],f8[:],f8[:])')
-def derivative(f, t, dfdt):
+@jit
+def derivative(f, t):
     """Fourth-order finite-differencing with non-uniform time steps
 
     The formula for this finite difference comes from Eq. (A 5b) of
-    "Derivative formulas and errors for non-uniformly spaced points"
-    by M. K. Bowen and Ronald Smith.  As explained in their Eqs. (B
-    9b) and (B 10b), this is a fourth-order formula.  If there are
-    fewer than five points, the function reverts to simpler
-    (lower-order) formulas.
+    "Derivative formulas and errors for non-uniformly spaced points" by
+    M. K. Bowen and Ronald Smith.  As explained in their Eqs. (B 9b) and (B
+    10b), this is a fourth-order formula -- though that's a squishy concept
+    with non-uniform time steps.
+
+    TODO: If there are fewer than five points, the function should revert to
+    simpler (lower-order) formulas.
 
     """
+    dfdt = np.empty_like(f)
 
     for i in xrange(2):
         t_i = t[i]
@@ -111,23 +115,27 @@ def derivative(f, t, dfdt):
                    +(h1*h2*h3 + h1*h2*h5 + h1*h3*h5 + h2*h3*h5)*f4/((h14)*(h24)*(h34)*(h45))
                    -(h1*h2*h3 + h1*h2*h4 + h1*h3*h4 + h2*h3*h4)*f5/((h15)*(h25)*(h35)*(h45)))
 
-    return
+    return dfdt
 
 
-@njit('void(f8[:,:], f8[:], f8[:,:])')
-def indefinite_integral(f, t, Sfdt):
+#@njit('void(f8[:,:], f8[:], f8[:,:])')
+@jit
+def indefinite_integral(f, t):
+    Sfdt = np.empty_like(f)
     Sfdt[0] = 0.0
     for i in xrange(1,len(t)):
         for j in xrange(f.shape[1]):
             Sfdt[i,j] = Sfdt[i-1,j] + (f[i,j]+f[i-1,j])*((t[i]-t[i-1])/2.0)
-    return
+    return Sfdt
 
 
-@njit('void(f8[:,:], f8[:], f8[:])')
-def definite_integral(f, t, Sfdt):
+#@njit('void(f8[:,:], f8[:], f8[:])')
+@jit
+def definite_integral(f, t):
+    Sfdt = np.empty_like(f)
     for i in xrange(len(Sfdt)):
         Sfdt[i] = 0.0
     for i in xrange(1,f.shape[0]):
         for j in xrange(f.shape[1]):
             Sfdt[j] += (f[i,j]+f[i-1,j])*((t[i]-t[i-1])/2.0)
-    return
+    return Sfdt
