@@ -16,18 +16,18 @@ def derivative(f, t):
 
     """
     dfdt = np.empty_like(f)
-    _derivative(f, t, dfdt)
+    if(f.ndim==1):
+        _derivative(f, t, dfdt)
+    elif(f.ndim==2):
+        _derivative_2d(f, t, dfdt)
+    else:
+        raise NotImplementedError("Taking derivatives of {0}-dimensional arrays is not yet implemented".format(f.ndim))
     return dfdt
 
 @njit
 def _derivative(f, t, dfdt):
     for i in xrange(2):
         t_i = t[i]
-        f1 = f[0]
-        f2 = f[1]
-        f3 = f[2]
-        f4 = f[3]
-        f5 = f[4]
         t1 = t[0]
         t2 = t[1]
         t3 = t[2]
@@ -48,18 +48,13 @@ def _derivative(f, t, dfdt):
         h34 = t3 - t4
         h35 = t3 - t5
         h45 = t4 - t5
-        dfdt[i] = (-((h2*h3*h4 +h2*h3*h5 +h2*h4*h5 +h3*h4*h5)/(h12*h13*h14*h15))*f1
-                   +((h1*h3*h4 + h1*h3*h5 + h1*h4*h5 + h3*h4*h5)/(h12*h23*h24*h25))*f2
-                   -((h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)/(h13*h23*h34*h35))*f3
-                   +((h1*h2*h3 + h1*h2*h5 + h1*h3*h5 + h2*h3*h5)/(h14*h24*h34*h45))*f4
-                   -((h1*h2*h3 + h1*h2*h4 + h1*h3*h4 + h2*h3*h4)/(h15*h25*h35*h45))*f5)
+        dfdt[i] = (-((h2*h3*h4 +h2*h3*h5 +h2*h4*h5 +h3*h4*h5)/(h12*h13*h14*h15))*f[0]
+                   +((h1*h3*h4 + h1*h3*h5 + h1*h4*h5 + h3*h4*h5)/(h12*h23*h24*h25))*f[1]
+                   -((h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)/(h13*h23*h34*h35))*f[2]
+                   +((h1*h2*h3 + h1*h2*h5 + h1*h3*h5 + h2*h3*h5)/(h14*h24*h34*h45))*f[3]
+                   -((h1*h2*h3 + h1*h2*h4 + h1*h3*h4 + h2*h3*h4)/(h15*h25*h35*h45))*f[4])
 
     for i in xrange(2,len(t)-2):
-        f1 = f[i-2]
-        f2 = f[i-1]
-        f3 = f[i]
-        f4 = f[i+1]
-        f5 = f[i+2]
         t1 = t[i-2]
         t2 = t[i-1]
         t3 = t[i]
@@ -79,19 +74,14 @@ def _derivative(f, t, dfdt):
         h34 = t3 - t4
         h35 = t3 - t5
         h45 = t4 - t5
-        dfdt[i] = (-((h2*h4*h5)/(h12*h13*h14*h15))*f1
-                   +((h1*h4*h5)/(h12*h23*h24*h25))*f2
-                   -((h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)/(h13*h23*h34*h35))*f3
-                   +((h1*h2*h5)/(h14*h24*h34*h45))*f4
-                   -((h1*h2*h4)/(h15*h25*h35*h45))*f5)
+        dfdt[i] = (-((h2*h4*h5)/(h12*h13*h14*h15))*f[i-2]
+                   +((h1*h4*h5)/(h12*h23*h24*h25))*f[i-1]
+                   -((h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)/(h13*h23*h34*h35))*f[i]
+                   +((h1*h2*h5)/(h14*h24*h34*h45))*f[i+1]
+                   -((h1*h2*h4)/(h15*h25*h35*h45))*f[i+2])
 
     for i in xrange(len(t)-2,len(t)):
         t_i = t[i]
-        f1 = f[-5]
-        f2 = f[-4]
-        f3 = f[-3]
-        f4 = f[-2]
-        f5 = f[-1]
         t1 = t[-5]
         t2 = t[-4]
         t3 = t[-3]
@@ -112,11 +102,100 @@ def _derivative(f, t, dfdt):
         h34 = t3 - t4
         h35 = t3 - t5
         h45 = t4 - t5
-        dfdt[i] = (-((h2*h3*h4 +h2*h3*h5 +h2*h4*h5 +h3*h4*h5)/(h12*h13*h14*h15))*f1
-                   +((h1*h3*h4 + h1*h3*h5 + h1*h4*h5 + h3*h4*h5)/(h12*h23*h24*h25))*f2
-                   -((h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)/(h13*h23*h34*h35))*f3
-                   +((h1*h2*h3 + h1*h2*h5 + h1*h3*h5 + h2*h3*h5)/(h14*h24*h34*h45))*f4
-                   -((h1*h2*h3 + h1*h2*h4 + h1*h3*h4 + h2*h3*h4)/(h15*h25*h35*h45))*f5)
+        dfdt[i] = (-((h2*h3*h4 +h2*h3*h5 +h2*h4*h5 +h3*h4*h5)/(h12*h13*h14*h15))*f[-5]
+                   +((h1*h3*h4 + h1*h3*h5 + h1*h4*h5 + h3*h4*h5)/(h12*h23*h24*h25))*f[-4]
+                   -((h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)/(h13*h23*h34*h35))*f[-3]
+                   +((h1*h2*h3 + h1*h2*h5 + h1*h3*h5 + h2*h3*h5)/(h14*h24*h34*h45))*f[-2]
+                   -((h1*h2*h3 + h1*h2*h4 + h1*h3*h4 + h2*h3*h4)/(h15*h25*h35*h45))*f[-1])
+
+    return
+
+@njit
+def _derivative_2d(f, t, dfdt):
+    for i in xrange(2):
+        t_i = t[i]
+        t1 = t[0]
+        t2 = t[1]
+        t3 = t[2]
+        t4 = t[3]
+        t5 = t[4]
+        h1 = t1 - t_i
+        h2 = t2 - t_i
+        h3 = t3 - t_i
+        h4 = t4 - t_i
+        h5 = t5 - t_i
+        h12 = t1 - t2
+        h13 = t1 - t3
+        h14 = t1 - t4
+        h15 = t1 - t5
+        h23 = t2 - t3
+        h24 = t2 - t4
+        h25 = t2 - t5
+        h34 = t3 - t4
+        h35 = t3 - t5
+        h45 = t4 - t5
+        for k in xrange(f.shape[1]):
+            dfdt[i,k] = (-((h2*h3*h4 +h2*h3*h5 +h2*h4*h5 +h3*h4*h5)/(h12*h13*h14*h15))*f[0,k]
+                         +((h1*h3*h4 + h1*h3*h5 + h1*h4*h5 + h3*h4*h5)/(h12*h23*h24*h25))*f[1,k]
+                         -((h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)/(h13*h23*h34*h35))*f[2,k]
+                         +((h1*h2*h3 + h1*h2*h5 + h1*h3*h5 + h2*h3*h5)/(h14*h24*h34*h45))*f[3,k]
+                         -((h1*h2*h3 + h1*h2*h4 + h1*h3*h4 + h2*h3*h4)/(h15*h25*h35*h45))*f[4,k])
+
+    for i in xrange(2,len(t)-2):
+        t1 = t[i-2]
+        t2 = t[i-1]
+        t3 = t[i]
+        t4 = t[i+1]
+        t5 = t[i+2]
+        h1 = t1 - t3
+        h2 = t2 - t3
+        h4 = t4 - t3
+        h5 = t5 - t3
+        h12 = t1 - t2
+        h13 = t1 - t3
+        h14 = t1 - t4
+        h15 = t1 - t5
+        h23 = t2 - t3
+        h24 = t2 - t4
+        h25 = t2 - t5
+        h34 = t3 - t4
+        h35 = t3 - t5
+        h45 = t4 - t5
+        for k in xrange(f.shape[1]):
+            dfdt[i,k] = (-((h2*h4*h5)/(h12*h13*h14*h15))*f[i-2,k]
+                         +((h1*h4*h5)/(h12*h23*h24*h25))*f[i-1,k]
+                         -((h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)/(h13*h23*h34*h35))*f[i,k]
+                         +((h1*h2*h5)/(h14*h24*h34*h45))*f[i+1,k]
+                         -((h1*h2*h4)/(h15*h25*h35*h45))*f[i+2,k])
+
+    for i in xrange(len(t)-2,len(t)):
+        t_i = t[i]
+        t1 = t[-5]
+        t2 = t[-4]
+        t3 = t[-3]
+        t4 = t[-2]
+        t5 = t[-1]
+        h1 = t1 - t_i
+        h2 = t2 - t_i
+        h3 = t3 - t_i
+        h4 = t4 - t_i
+        h5 = t5 - t_i
+        h12 = t1 - t2
+        h13 = t1 - t3
+        h14 = t1 - t4
+        h15 = t1 - t5
+        h23 = t2 - t3
+        h24 = t2 - t4
+        h25 = t2 - t5
+        h34 = t3 - t4
+        h35 = t3 - t5
+        h45 = t4 - t5
+        for k in xrange(f.shape[1]):
+            dfdt[i,k] = (-((h2*h3*h4 +h2*h3*h5 +h2*h4*h5 +h3*h4*h5)/(h12*h13*h14*h15))*f[-5,k]
+                         +((h1*h3*h4 + h1*h3*h5 + h1*h4*h5 + h3*h4*h5)/(h12*h23*h24*h25))*f[-4,k]
+                         -((h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)/(h13*h23*h34*h35))*f[-3,k]
+                         +((h1*h2*h3 + h1*h2*h5 + h1*h3*h5 + h2*h3*h5)/(h14*h24*h34*h45))*f[-2,k]
+                         -((h1*h2*h3 + h1*h2*h4 + h1*h3*h4 + h2*h3*h4)/(h15*h25*h35*h45))*f[-1,k])
 
     return
 
