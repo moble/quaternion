@@ -2,7 +2,6 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 from quaternion.numba_wrapper import njit, jit, xrange
 
-@jit
 def derivative(f, t):
     """Fourth-order finite-differencing with non-uniform time steps
 
@@ -17,7 +16,11 @@ def derivative(f, t):
 
     """
     dfdt = np.empty_like(f)
+    _derivative(f, t, dfdt)
+    return dfdt
 
+@njit
+def _derivative(f, t, dfdt):
     for i in xrange(2):
         t_i = t[i]
         f1 = f[0]
@@ -45,11 +48,11 @@ def derivative(f, t):
         h34 = t3 - t4
         h35 = t3 - t5
         h45 = t4 - t5
-        dfdt[i] = (-(h2*h3*h4 +h2*h3*h5 +h2*h4*h5 +h3*h4*h5)*f1/((h12)*(h13)*(h14)*(h15))
-                   +(h1*h3*h4 + h1*h3*h5 + h1*h4*h5 + h3*h4*h5)*f2/((h12)*(h23)*(h24)*(h25))
-                   -(h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)*f3/((h13)*(h23)*(h34)*(h35))
-                   +(h1*h2*h3 + h1*h2*h5 + h1*h3*h5 + h2*h3*h5)*f4/((h14)*(h24)*(h34)*(h45))
-                   -(h1*h2*h3 + h1*h2*h4 + h1*h3*h4 + h2*h3*h4)*f5/((h15)*(h25)*(h35)*(h45)))
+        dfdt[i] = (-((h2*h3*h4 +h2*h3*h5 +h2*h4*h5 +h3*h4*h5)/(h12*h13*h14*h15))*f1
+                   +((h1*h3*h4 + h1*h3*h5 + h1*h4*h5 + h3*h4*h5)/(h12*h23*h24*h25))*f2
+                   -((h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)/(h13*h23*h34*h35))*f3
+                   +((h1*h2*h3 + h1*h2*h5 + h1*h3*h5 + h2*h3*h5)/(h14*h24*h34*h45))*f4
+                   -((h1*h2*h3 + h1*h2*h4 + h1*h3*h4 + h2*h3*h4)/(h15*h25*h35*h45))*f5)
 
     for i in xrange(2,len(t)-2):
         f1 = f[i-2]
@@ -76,11 +79,11 @@ def derivative(f, t):
         h34 = t3 - t4
         h35 = t3 - t5
         h45 = t4 - t5
-        dfdt[i] = (-(h2*h4*h5)*f1/(h12*h13*h14*h15)
-                   +(h1*h4*h5)*f2/(h12*h23*h24*h25)
-                   -(h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)*f3/((h13)*(h23)*(h34)*(h35))
-                   +(h1*h2*h5)*f4/(h14*h24*h34*h45)
-                   -(h1*h2*h4)*f5/(h15*h25*h35*h45))
+        dfdt[i] = (-((h2*h4*h5)/(h12*h13*h14*h15))*f1
+                   +((h1*h4*h5)/(h12*h23*h24*h25))*f2
+                   -((h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)/(h13*h23*h34*h35))*f3
+                   +((h1*h2*h5)/(h14*h24*h34*h45))*f4
+                   -((h1*h2*h4)/(h15*h25*h35*h45))*f5)
 
     for i in xrange(len(t)-2,len(t)):
         t_i = t[i]
@@ -109,13 +112,13 @@ def derivative(f, t):
         h34 = t3 - t4
         h35 = t3 - t5
         h45 = t4 - t5
-        dfdt[i] = (-(h2*h3*h4 +h2*h3*h5 +h2*h4*h5 +h3*h4*h5)*f1/((h12)*(h13)*(h14)*(h15))
-                   +(h1*h3*h4 + h1*h3*h5 + h1*h4*h5 + h3*h4*h5)*f2/((h12)*(h23)*(h24)*(h25))
-                   -(h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)*f3/((h13)*(h23)*(h34)*(h35))
-                   +(h1*h2*h3 + h1*h2*h5 + h1*h3*h5 + h2*h3*h5)*f4/((h14)*(h24)*(h34)*(h45))
-                   -(h1*h2*h3 + h1*h2*h4 + h1*h3*h4 + h2*h3*h4)*f5/((h15)*(h25)*(h35)*(h45)))
+        dfdt[i] = (-((h2*h3*h4 +h2*h3*h5 +h2*h4*h5 +h3*h4*h5)/(h12*h13*h14*h15))*f1
+                   +((h1*h3*h4 + h1*h3*h5 + h1*h4*h5 + h3*h4*h5)/(h12*h23*h24*h25))*f2
+                   -((h1*h2*h4 + h1*h2*h5 + h1*h4*h5 + h2*h4*h5)/(h13*h23*h34*h35))*f3
+                   +((h1*h2*h3 + h1*h2*h5 + h1*h3*h5 + h2*h3*h5)/(h14*h24*h34*h45))*f4
+                   -((h1*h2*h3 + h1*h2*h4 + h1*h3*h4 + h2*h3*h4)/(h15*h25*h35*h45))*f5)
 
-    return dfdt
+    return
 
 
 #@njit('void(f8[:,:], f8[:], f8[:,:])')
