@@ -250,6 +250,16 @@ def test_quaternion_normalized(Qs):
     assert Qs[Q].normalized() == Qs[Qnormalized]
     for q in Qs[Qs_finitenonzero]:
         assert abs(q.normalized().abs()-1.0) < 1.e-15
+def test_quaternion_parity_conjugates(Qs):
+    for q in Qs[Qs_finite]:
+        assert q.x_parity_conjugate() == np.quaternion(q.w, q.x, -q.y, -q.z)
+        assert q.y_parity_conjugate() == np.quaternion(q.w, -q.x, q.y, -q.z)
+        assert q.z_parity_conjugate() == np.quaternion(q.w, -q.x, -q.y, q.z)
+        assert q.parity_conjugate() == np.quaternion(q.w, q.x, q.y, q.z)
+    assert np.array_equal(np.x_parity_conjugate(Qs[Qs_finite]), np.array([q.x_parity_conjugate() for q in Qs[Qs_finite]]))
+    assert np.array_equal(np.y_parity_conjugate(Qs[Qs_finite]), np.array([q.y_parity_conjugate() for q in Qs[Qs_finite]]))
+    assert np.array_equal(np.z_parity_conjugate(Qs[Qs_finite]), np.array([q.z_parity_conjugate() for q in Qs[Qs_finite]]))
+    assert np.array_equal(np.parity_conjugate(Qs[Qs_finite]), np.array([q.parity_conjugate() for q in Qs[Qs_finite]]))
 
 ## Quaternion-quaternion binary quaternion returners
 def test_quaternion_add(Qs):

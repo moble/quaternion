@@ -50,7 +50,7 @@ def squad(R_in, t_in, t_out):
     # Use the coefficients at the corresponding t_out indices to
     # compute the squad interpolant
     tau = (t_out-t_in[i_in_for_out]) / ((np.roll(t_in,-1)-t_in)[i_in_for_out])
-    R_out = quaternion.squad_loop(tau, R_in[i_in_for_out], A[i_in_for_out], B[i_in_for_out], np.roll(R_in,-1)[i_in_for_out])
+    R_out = np.squad_loop(tau, R_in[i_in_for_out], A[i_in_for_out], B[i_in_for_out], np.roll(R_in,-1)[i_in_for_out])
 
     # Correct the first one and last two time steps
 

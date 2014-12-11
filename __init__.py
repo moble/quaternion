@@ -5,7 +5,7 @@ from .numpy_quaternion import (quaternion,
                                from_spherical_coords, from_euler_angles,
                                rotor_intrinsic_distance, rotor_chordal_distance,
                                rotation_intrinsic_distance, rotation_chordal_distance,
-                               slerp, squad_evaluate, squad_loop)
+                               slerp, squad_evaluate)
 from .quaternion_time_series import squad
 from .calculus import derivative, definite_integral, indefinite_integral
 

@@ -257,6 +257,30 @@ quaternion_normalized(quaternion q)
 }
 
 quaternion
+quaternion_x_parity_conjugate(quaternion q)
+{
+  return (quaternion) {q.w, q.x, -q.y, -q.z};
+}
+
+quaternion
+quaternion_y_parity_conjugate(quaternion q)
+{
+  return (quaternion) {q.w, -q.x, q.y, -q.z};
+}
+
+quaternion
+quaternion_z_parity_conjugate(quaternion q)
+{
+  return (quaternion) {q.w, -q.x, -q.y, q.z};
+}
+
+quaternion
+quaternion_parity_conjugate(quaternion q)
+{
+  return (quaternion) {q.w, q.x, q.y, q.z};
+}
+
+quaternion
 quaternion_power(quaternion q, quaternion p)
 {
   return quaternion_exp(quaternion_multiply(quaternion_log(q), p));
