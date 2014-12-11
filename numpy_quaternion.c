@@ -1219,6 +1219,8 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
     INITERROR;
   }
 
+  module_dict = PyModule_GetDict(module);
+
   // Initialize numpy
   import_array();
   if (PyErr_Occurred()) {
@@ -1301,8 +1303,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   register_cast_function(NPY_CDOUBLE, quaternionNum, (PyArray_VectorUnaryFunc*)CDOUBLE_to_quaternion);
   register_cast_function(NPY_CLONGDOUBLE, quaternionNum, (PyArray_VectorUnaryFunc*)CLONGDOUBLE_to_quaternion);
 
-  module_dict = PyModule_GetDict(module);
-
   // These macros will be used below
   #define REGISTER_UFUNC(name)                                          \
     PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
@@ -1310,12 +1310,12 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   #define REGISTER_SCALAR_UFUNC(name)                                   \
     PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
                                 quaternion_descr->type_num, quaternion_##name##_scalar_ufunc, arg_types, NULL)
-  #define REGISTER_NEW_UFUNC(name, doc, nargin, nargout)                \
+  #define REGISTER_NEW_UFUNC(name, nargin, nargout, doc)                \
     tmp_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, nargin, nargout, \
-                                        PyUFunc_None, #name, doc, 0);  \
+                                        PyUFunc_None, #name, doc, 0);   \
     PyUFunc_RegisterLoopForType((PyUFuncObject *)tmp_ufunc,             \
                                 quaternion_descr->type_num, quaternion_##name##_ufunc, arg_types, NULL); \
-    PyDict_SetItemString(numpy_dict, #name, tmp_ufunc); \
+    PyDict_SetItemString(numpy_dict, #name, tmp_ufunc);                 \
     Py_DECREF(tmp_ufunc)
 
 
@@ -1339,13 +1339,16 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_UFUNC(negative);
   REGISTER_UFUNC(conjugate);
   REGISTER_UFUNC(invert);
-  /* arg_dtypes[0] = quaternion_descr; */
-  /* arg_dtypes[1] = quaternion_descr; */
-  REGISTER_NEW_UFUNC(normalized, "doc1", 1, 1);
-  REGISTER_NEW_UFUNC(x_parity_conjugate, "doc2", 1, 1);
-  REGISTER_NEW_UFUNC(y_parity_conjugate, "doc3", 1, 1);
-  REGISTER_NEW_UFUNC(z_parity_conjugate, "doc4", 1, 1);
-  REGISTER_NEW_UFUNC(parity_conjugate, "doc5", 1, 1);
+  REGISTER_NEW_UFUNC(normalized, 1, 1,
+                     "Normalize all quaternions in this array");
+  REGISTER_NEW_UFUNC(x_parity_conjugate, 1, 1,
+                     "Reflect across y-z plane (note spinorial character)");
+  REGISTER_NEW_UFUNC(y_parity_conjugate, 1, 1,
+                     "Reflect across x-z plane (note spinorial character)");
+  REGISTER_NEW_UFUNC(z_parity_conjugate, 1, 1,
+                     "Reflect across x-y plane (note spinorial character)");
+  REGISTER_NEW_UFUNC(parity_conjugate, 1, 1,
+                     "Reflect all dimensions (note spinorial character)");
 
   // quat, quat -> bool
   arg_types[0] = quaternion_descr->type_num;
@@ -1404,9 +1407,9 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   PyDict_SetItemString(numpy_dict, "squad_loop", squad_evaluate_ufunc);
   Py_DECREF(squad_evaluate_ufunc);
 
-
   // Finally, add this quaternion object to the quaternion module itself
   PyModule_AddObject(module, "quaternion", (PyObject *)&PyQuaternion_Type);
+
 
 #if PY_MAJOR_VERSION >= 3
     return module;
