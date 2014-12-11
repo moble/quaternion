@@ -1,3 +1,6 @@
+# Copyright (c) 2014, Michael Boyle
+# See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
+
 from __future__ import division, print_function, absolute_import
 import numpy as np
 

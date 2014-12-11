@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+
+# Copyright (c) 2014, Michael Boyle
+# See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
+
 def configuration(parent_package='',top_path=None):
     import numpy
     import os

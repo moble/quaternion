@@ -1,13 +1,14 @@
- <a href="https://travis-ci.org/moble/numpy_quaternion"><img align="right" hspace="3" alt="Status of automatic build and test suite" src="https://travis-ci.org/moble/numpy_quaternion.svg?branch=master"></a> <a href="https://github.com/moble/numpy_quaternion/blob/master/LICENSE"><img align="right" hspace="3" alt="Code distributed under the open-source MIT license" src="http://moble.github.io/spherical_functions/images/MITLicenseBadge.svg"></a>
+ <a href="https://travis-ci.org/moble/quaternion"><img align="right" hspace="3" alt="Status of automatic build and test suite" src="https://travis-ci.org/moble/quaternion.svg?branch=master"></a> <a href="https://github.com/moble/quaternion/blob/master/LICENSE"><img align="right" hspace="3" alt="Code distributed under the open-source MIT license" src="http://moble.github.io/spherical_functions/images/MITLicenseBadge.svg"></a>
 
 # Quaternion modules
 
 This Python module adds a quaternion dtype to NumPy.
 
-The code was originally based on [code by Martin
-Ling](https://github.com/martinling/numpy_quaternion) (with help from
-Mark Weibe), but has been updated to work with python 3.x, and to
-expand the applications of quaternions (as well as to fix a few bugs).
+The code was originally based on
+[code by Martin Ling](https://github.com/martinling/numpy_quaternion) (with
+help from Mark Weibe), but has been essentially totally rewritten to work with
+both python 2.x and 3.x, and to expand the applications of quaternions (and to
+fix a few bugs).
 
 
 ## Dependencies
@@ -15,7 +16,7 @@ expand the applications of quaternions (as well as to fix a few bugs).
 The basic requirements for this code are reasonably current versions
 of `python` and `numpy`.  In particular, `python` versions 2.6, 2.8,
 3.2, 3.3, and 3.4 are
-[routinely tested](https://travis-ci.org/moble/numpy_quaternion), and
+[routinely tested](https://travis-ci.org/moble/quaternion), and
 any `numpy` version greater than 1.7.0 should work.
 
 However, certain advanced functions in this package (including
@@ -51,7 +52,7 @@ Installation is simple with `pip` (which should be present in any
 reasonably new installation of `python`):
 
 ```sh
-pip install git+git://github.com/moble/numpy_quaternion
+pip install git+git://github.com/moble/quaternion
 ```
 
 If you refuse to use anaconda, you might want to install inside your
@@ -60,7 +61,7 @@ default anyway.)  This is done by adding `--user` to the above
 command:
 
 ```sh
-pip install --user git+git://github.com/moble/numpy_quaternion
+pip install --user git+git://github.com/moble/quaternion
 ```
 
 
@@ -115,7 +116,7 @@ real or complex types.
 
 Bug reports and feature requests are entirely welcome.  The best way
 to do this is to open an
-[issue on this code's github page](https://github.com/moble/numpy_quaternion/issues).
+[issue on this code's github page](https://github.com/moble/quaternion/issues).
 For bug reports, please try to include a minimal working example
 demonstrating the problem.
 
@@ -125,7 +126,7 @@ code is going wrong, or have an idea for a new feature that you know
 how to implement.
 
 This code is
-[routinely tested](https://travis-ci.org/moble/numpy_quaternion) on
+[routinely tested](https://travis-ci.org/moble/quaternion) on
 recent versions of both python (2.x and 3.x) and numpy (>=1.7).  But
 the test coverage is not necessarily as complete as it should be, so
 bugs may certainly be present, especially in the higher-level
@@ -140,7 +141,7 @@ features of github are available, including free wiki space and web
 page hosting, pull requests, a nice interface to the git logs, etc.
 
 Every change in this code is
-[auomatically tested](https://travis-ci.org/moble/numpy_quaternion) on
+[auomatically tested](https://travis-ci.org/moble/quaternion) on
 [Travis-CI](https://travis-ci.org/).  This is a free service (for
 open-source projects like this one), which integrates beautifully with
 github, detecting each commit and automatically re-running the tests.
