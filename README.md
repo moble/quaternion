@@ -14,7 +14,7 @@ fix a few bugs).
 ## Dependencies
 
 The basic requirements for this code are reasonably current versions
-of `python` and `numpy`.  In particular, `python` versions 2.6, 2.8,
+of `python` and `numpy`.  In particular, `python` versions 2.6, 2.7,
 3.2, 3.3, and 3.4 are
 [routinely tested](https://travis-ci.org/moble/quaternion), and
 any `numpy` version greater than 1.7.0 should work.
