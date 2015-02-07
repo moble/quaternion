@@ -2,8 +2,11 @@
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 from __future__ import division, print_function, absolute_import
+
 import numpy as np
+
 from .calculus import definite_integral
+
 
 def mean_rotor_in_chordal_metric(R, t=None):
     """Return rotor that is closest to all R in the least-squares sense
@@ -25,6 +28,7 @@ def mean_rotor_in_chordal_metric(R, t=None):
     definite_integral(as_float_array(R), t, mean)
     return np.quaternion(*mean).normalized()
 
+
 def optimal_alignment_in_chordal_metric(Ra, Rb, t=None):
     """Return Rd such that Rd*Rb is as close to Ra as possible
 
@@ -36,7 +40,7 @@ def optimal_alignment_in_chordal_metric(Ra, Rb, t=None):
     sum is used instead (which may be slightly faster).
 
     """
-    return mean_rotor_in_chordal_metric(Ra/Rb, t)
+    return mean_rotor_in_chordal_metric(Ra / Rb, t)
 
 
 def mean_rotor_in_intrinsic_metric(R, t=None):

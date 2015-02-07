@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 from __future__ import print_function, division, absolute_import
+import os
+import random
+
 import numpy as np
 import quaternion
 from numpy import *
-import warnings
-import sys
-import os
-import random
 import pytest
 
 
@@ -589,6 +588,11 @@ def test_arrfuncs():
     # compare
     # argmax
     # fillwithscalar
+    assert False
+
+
+@pytest.mark.xfail
+def test_integration_of_angular_velocity():
     assert False
 
 

@@ -3,13 +3,11 @@
 
 from __future__ import print_function, division, absolute_import
 
-import itertools
 import numpy
-import weakref
 
 from numba import utils, float32, float64
-from numba.six import add_metaclass
 from numba.types import Type, number_domain
+
 
 @utils.total_ordering
 class Quaternion(Type):
@@ -28,6 +26,7 @@ class Quaternion(Type):
         if self.__class__ is not other.__class__:
             return NotImplemented
         return self.bitwidth < other.bitwidth
+
 
 quaternion128 = Quaternion('quaternion128', float32)
 quaternion256 = Quaternion('quaternion256', float64)

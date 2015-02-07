@@ -2,6 +2,7 @@
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 from __future__ import division, print_function, absolute_import
+
 import numpy as np
 
 from .numpy_quaternion import (quaternion,
@@ -29,11 +30,12 @@ if 'quaternion' in np.__dict__:
 np.quaternion = quaternion
 np.typeDict['quaternion'] = np.dtype(quaternion)
 
-zero = np.quaternion(0,0,0,0)
-one = np.quaternion(1,0,0,0)
-x = np.quaternion(0,1,0,0)
-y = np.quaternion(0,0,1,0)
-z = np.quaternion(0,0,0,1)
+zero = np.quaternion(0, 0, 0, 0)
+one = np.quaternion(1, 0, 0, 0)
+x = np.quaternion(0, 1, 0, 0)
+y = np.quaternion(0, 0, 1, 0)
+z = np.quaternion(0, 0, 0, 1)
+
 
 def as_float_array(a):
     """View the quaternion array as an array of floats
@@ -47,9 +49,11 @@ def as_float_array(a):
     """
     assert a.dtype == np.dtype(np.quaternion)
     av = a.view(np.float)
-    av = av.reshape(a.shape+(4,))
+    av = av.reshape(a.shape + (4,))
     return av
     # return a.view(np.float).reshape(a.shape+(4,))
+
+
 def as_quat_array(a):
     """View a float array as an array of quaternions
 
@@ -68,13 +72,15 @@ def as_quat_array(a):
     """
     assert a.dtype == np.dtype(np.float)
     av = a.view(np.quaternion)
-    if(a.shape[-1]==4) :
+    if a.shape[-1] == 4:
         av = av.reshape(a.shape[:-1])
         # return a.view(np.quaternion).reshape(a.shape[:-1])
-    else :
-        av = av.reshape(a.shape[:-1]+(a.shape[-1]//4,))
+    else:
+        av = av.reshape(a.shape[:-1] + (a.shape[-1] // 4,))
         # return a.view(np.quaternion).reshape(a.shape[:-1]+(a.shape[-1]//4,))
     return av
+
+
 def as_spinor_array(a):
     """View a quaternion array as spinors in two-complex representation
 
@@ -86,4 +92,4 @@ def as_spinor_array(a):
     assert a.dtype == np.dtype(np.quaternion)
     # I'm not sure why it has to be so complicated, but all of these steps
     # appear to be necessary in this case.
-    return a.view(np.float).reshape(a.shape+(4,))[...,[0,3,2,1]].ravel().view(np.complex).reshape(a.shape+(2,))
+    return a.view(np.float).reshape(a.shape + (4,))[..., [0, 3, 2, 1]].ravel().view(np.complex).reshape(a.shape + (2,))

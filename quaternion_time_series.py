@@ -7,6 +7,7 @@ import numpy as np
 import quaternion
 from quaternion.numba_wrapper import njit, xrange
 
+
 def squad(R_in, t_in, t_out):
     """Spherical "quadrangular" interpolation of rotors with a cubic spline
 
@@ -26,10 +27,10 @@ def squad(R_in, t_in, t_out):
     """
 
     # This list contains an index for each `t_out` such that
-    #   t_in[i-1] <= t_out < t_in[i]
+    # t_in[i-1] <= t_out < t_in[i]
     # Note that `side='right'` is much faster in my tests
     i_in_for_out = t_in.searchsorted(t_out, side='left')
-    np.clip(i_in_for_out, 0, len(t_in)-1, out=i_in_for_out)
+    np.clip(i_in_for_out, 0, len(t_in) - 1, out=i_in_for_out)
     i_in = np.unique(i_in_for_out)
 
     # Now, for each index `i` in `i_in`, we need to compute the
@@ -42,18 +43,18 @@ def squad(R_in, t_in, t_out):
     # though the difference is probably totally washed out here.  In
     # any case, it might be useful to test again.
     #
-    A = R_in * np.exp(( np.log((~R_in)*np.roll(R_in,-1))
-                        + np.log((~np.roll(R_in,1))*R_in)*((np.roll(t_in,-1)-t_in)/(t_in-np.roll(t_in,1)))
-                        - np.log((~R_in)*np.roll(R_in,-1))*2 )*0.25)
-    B = np.roll(R_in,-1) * np.exp(( np.log((~np.roll(R_in,-1))*np.roll(R_in,-2))
-                                    *((np.roll(t_in,-1)-t_in)/(np.roll(t_in,-2)-np.roll(t_in,-1)))
-                                    + np.log((~R_in)*np.roll(R_in,-1))
-                                    - np.log((~R_in)*np.roll(R_in,-1))*2 )*-0.25)
+    A = R_in * np.exp(( np.log((~R_in) * np.roll(R_in, -1))
+                        + np.log((~np.roll(R_in, 1)) * R_in) * ((np.roll(t_in, -1) - t_in) / (t_in - np.roll(t_in, 1)))
+                        - np.log((~R_in) * np.roll(R_in, -1)) * 2 ) * 0.25)
+    B = np.roll(R_in, -1) * np.exp(( np.log((~np.roll(R_in, -1)) * np.roll(R_in, -2))
+                                     * ((np.roll(t_in, -1) - t_in) / (np.roll(t_in, -2) - np.roll(t_in, -1)))
+                                     + np.log((~R_in) * np.roll(R_in, -1))
+                                     - np.log((~R_in) * np.roll(R_in, -1)) * 2 ) * -0.25)
 
     # Use the coefficients at the corresponding t_out indices to
     # compute the squad interpolant
-    tau = (t_out-t_in[i_in_for_out]) / ((np.roll(t_in,-1)-t_in)[i_in_for_out])
-    R_out = np.squad_loop(tau, R_in[i_in_for_out], A[i_in_for_out], B[i_in_for_out], np.roll(R_in,-1)[i_in_for_out])
+    tau = (t_out - t_in[i_in_for_out]) / ((np.roll(t_in, -1) - t_in)[i_in_for_out])
+    R_out = np.squad_loop(tau, R_in[i_in_for_out], A[i_in_for_out], B[i_in_for_out], np.roll(R_in, -1)[i_in_for_out])
 
     # Correct the first one and last two time steps
 
@@ -61,3 +62,19 @@ def squad(R_in, t_in, t_out):
     return R_out
 
 
+@njit
+def frame_from_angular_velocity_integrand(rfrak, Omega):
+    rfrakMag = math.sqrt(rfrak[0] * rfrak[0] + rfrak[1] * rfrak[1] + rfrak[2] * rfrak[2])
+    OmegaMag = math.sqrt(Omega[0] * Omega[0] + Omega[1] * Omega[1] + Omega[2] * Omega[2])
+    # If the matrix is really close to the identity, return
+    if rfrakMag < Quaternion_Epsilon * OmegaMag:
+        return Omega[0] / 2.0, Omega[1] / 2.0, Omega[2] / 2.0
+    # If the matrix is really close to singular, it's equivalent to the identity, so return
+    if abs(math.sin(rfrakMag)) < Quaternion_Epsilon:
+        return Omega[0] / 2.0, Omega[1] / 2.0, Omega[2] / 2.0
+
+    OmegaOver2 = Omega[0] / 2.0, Omega[1] / 2.0, Omega[2] / 2.0
+    rfrakHat = rfrak[0] / rfrakMag, rfrak[1] / rfrakMag, rfrak[2] / rfrakMag
+
+    return ((OmegaOver2 - rfrakHat * dot(rfrakHat, OmegaOver2)) * (rfrakMag / math.tan(rfrakMag))
+            + rfrakHat * dot(rfrakHat, OmegaOver2) + cross(OmegaOver2, rfrak))
