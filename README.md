@@ -40,3 +40,10 @@ And in the package's `__init__.py` file, you could have something like this:
 ```python
 from .version import __version__
 ```
+
+Then, in other code you would see the version normally:
+
+```python
+import enclosing_package_name
+print(enclosing_package_name.__version__)
+```
