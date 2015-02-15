@@ -31,8 +31,7 @@ from auto_version import calculate_version, build_py_copy_version
 distutils.core.setup(name='enclosing_package_name',
                      version=calculate_version(),
                      cmdclass={'build_py': build_py_copy_version},
-                     ...,
-                     )
+                     ...,)
 ```
 
 And in the package's `__init__.py` file, you could have something like this:
