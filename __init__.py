@@ -11,7 +11,7 @@ how to use this module.
 def calculate_version():
     try:
         import subprocess
-        git_revision = subprocess.check_output("git show -s --format='%ci %h' HEAD", shell=True)
+        git_revision = subprocess.check_output("git show -s --format='%ci %h' HEAD", shell=True).decode('ascii')
         date, time, utc_offset, short_hash = git_revision.split(' ')
         date = date.replace('-', '.').strip()  # make date an acceptable version string
         short_hash = short_hash.strip()  # remove newline and any other whitespace
@@ -20,7 +20,6 @@ def calculate_version():
         version = '{0}.{1}'.format(date, short_hash)
         if dirty:
             version += '.dirty'
-        print('putative __version__ = "{0}"'.format(version))
         exec('putative__version__ = "{0}"'.format(version))  # see if this will raise an error for some reason
     except Exception as e:
         # If any of the above failed for any reason whatsoever, fall back on this dumb version
