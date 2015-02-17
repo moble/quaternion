@@ -4,13 +4,7 @@ python:
   - "3.4"
 install:
   - lsb_release -a
-  - git --version
-  - sudo apt-get install python-software-properties
-  - sudo apt-get install software-properties-common
-  - sudo add-apt-repository ppa:git-core/ppa -y
-  - sudo apt-get update
-  - sudo apt-get install git
-  - git --version
+  - git show -s --format='%ci %h' HEAD
   - python setup.py install
 script:
   - py.test
