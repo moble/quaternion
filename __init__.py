@@ -17,6 +17,10 @@ if "check_output" not in dir(subprocess):
     have to duck-punch it in, as suggested in this stackoverflow answer:
     <http://stackoverflow.com/a/13160748/1194883>.
 
+    This code is taken from the python 2.7 code, except that
+    `CalledProcessError` needs to be given the namespace, and doesn't take a
+    the output argument.
+
     """
     def f(*popenargs, **kwargs):
         if 'stdout' in kwargs:
@@ -28,7 +32,7 @@ if "check_output" not in dir(subprocess):
             cmd = kwargs.get("args")
             if cmd is None:
                 cmd = popenargs[0]
-            raise subprocess.CalledProcessError(retcode, cmd, output=output)
+            raise subprocess.CalledProcessError(retcode, cmd)  # , output=output)
         return output
     subprocess.check_output = f
 
