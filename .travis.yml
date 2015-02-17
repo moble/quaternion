@@ -1,13 +1,16 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
-  - "3.2"
-  - "3.3"
   - "3.4"
 install:
+  - git --version
   - lsb_release -a
   - sudo apt-get update
+  - git --version
+  - sudo apt-get upgrade
+  - git --version
+  - sudo apt-get dist-upgrade
+  - git --version
   - python setup.py install
 script:
   - py.test
