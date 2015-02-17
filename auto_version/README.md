@@ -17,7 +17,9 @@ state (changes have been made since the last commit), then `.dirty` will be
 appended to the version.  This form requires the ability to run a few simple
 `git` commands from `python`.  If that is not possible, the system will fall
 back to using the current date (at the time of installation), preceded by
-`0.0.0.`, so that version ordering will work safely.
+`0.0.0.`, so that version ordering will work safely.  In particular, note that
+the calling of shell functions from python is a little delicate in python 2.6
+and lower.
 
 The `build_py_copy_version` class wraps the basic `build_py` class used in
 the standard setup function, but adds a step at the end to create a file named
