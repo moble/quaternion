@@ -7,9 +7,9 @@ install:
   - lsb_release -a
   - sudo apt-get update
   - git --version
-  - sudo apt-get upgrade
+  - sudo apt-get upgrade -f -y --force-yes
   - git --version
-  - sudo apt-get dist-upgrade
+  - sudo apt-get dist-upgrade -f -y --force-yes
   - git --version
   - python setup.py install
 script:
