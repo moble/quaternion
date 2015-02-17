@@ -7,6 +7,7 @@ how to use this module.
 
 """
 
+import traceback
 
 def calculate_version():
     try:
@@ -28,6 +29,7 @@ def calculate_version():
     except Exception as e:
         # If any of the above failed for any reason whatsoever, fall back on this dumb version
         print('\nThe `calculate_version` function failed to get the git version; maybe your version of git is too old?')
+        print(traceback.format_exc())
         print(e)
         print('This should not be a problem, unless you need an accurate version number.')
         print('Continuing on, in spite of it all...\n')
