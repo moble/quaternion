@@ -3,6 +3,9 @@
 # Copyright (c) 2014, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
+from auto_version import calculate_version, build_py_copy_version
+
+
 def configuration(parent_package='', top_path=None):
     import numpy
     from distutils.errors import DistutilsError
@@ -26,4 +29,6 @@ def configuration(parent_package='', top_path=None):
 if __name__ == "__main__":
     from numpy.distutils.core import setup
 
-    setup(configuration=configuration)
+    setup(configuration=configuration,
+          version=calculate_version(),
+          cmdclass={'build_py': build_py_copy_version},)

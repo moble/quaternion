@@ -12,6 +12,7 @@ from .numpy_quaternion import (quaternion,
                                slerp, squad_evaluate)
 from .quaternion_time_series import squad
 from .calculus import derivative, definite_integral, indefinite_integral
+from ._version import __version__
 
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
