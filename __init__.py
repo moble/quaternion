@@ -21,6 +21,7 @@ def calculate_version():
         version = '{0}.{1}'.format(date, short_hash)
         if dirty:
             version += '.dirty'
+        exec('__version__ = "{0}"'.format(version))  # see if this will raise an error for some reason
     except:
         from datetime import datetime
         date = datetime.now().isoformat().split('T')[0]
@@ -35,8 +36,10 @@ from distutils.command.build_py import build_py
 class build_py_copy_version(build_py):
     def run(self):
         build_py.run(self)  # distutils uses old-style classes, so no super()
+        version = calculate_version()
+        print('build_py_copy_version using __version__ = "{0}"'.format(version))
         if not self.dry_run:
             import os.path
             for package in self.packages:
                 with open(os.path.join(self.build_lib, os.path.join(*package.split('.')), '_version.py'), 'w') as fobj:
-                    fobj.write('__version__ = "{0}"'.format(calculate_version()))
+                    fobj.write('__version__ = "{0}"'.format(version))

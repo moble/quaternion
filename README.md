@@ -64,10 +64,21 @@ git subtree add --prefix=auto_version auto_version --squash master
 Now, any time the super-repo is checked out, the subtree will be there
 automatically.
 
-The only problem is if you make changes within the `auto_version` directory in
-the super-repo, if you want to commit them back to the original `auto_version`
-repo, you need to do something special; something like this (though you may
-want to verify the details):
+If you want to merge new changes in the subtree, run this:
+
+```sh
+git fetch auto_version
+git subtree pull --prefix=auto_version auto_version master --squash
+```
+
+This will be a new commit in your super-repo.
+
+## Pushing the subtree
+
+This probably won't be as common, but if you make changes within the
+`auto_version` directory in the super-repo, and you want to commit them back to
+the original `auto_version` repo, you need to do something special; something
+like this (though you may want to verify the details):
 
 ```sh
 git subtree push --prefix=auto_version https://github.com/moble/auto_version.git master
