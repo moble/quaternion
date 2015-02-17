@@ -7,11 +7,34 @@ how to use this module.
 
 """
 
-import traceback
+import subprocess
+
+
+if "check_output" not in dir(subprocess):
+    """Duck punch python <=2.6 as necessary
+
+    The version of subprocess in python 2.6 doesn't have `check_output`, so we
+    have to duck-punch it in, as suggested in this stackoverflow answer:
+    <http://stackoverflow.com/a/13160748/1194883>.
+
+    """
+    def f(*popenargs, **kwargs):
+        if 'stdout' in kwargs:
+            raise ValueError('stdout argument not allowed, it will be overridden.')
+        process = Popen(stdout=PIPE, *popenargs, **kwargs)
+        output, unused_err = process.communicate()
+        retcode = process.poll()
+        if retcode:
+            cmd = kwargs.get("args")
+            if cmd is None:
+                cmd = popenargs[0]
+            raise subprocess.CalledProcessError(retcode, cmd, output=output)
+        return output
+    subprocess.check_output = f
+
 
 def calculate_version():
     try:
-        import subprocess
         git_revision = subprocess.check_output("git show -s --format='%ci %h' HEAD", shell=True).decode('ascii')
         date, time, utc_offset, short_hash = git_revision.split(' ')
         date = date.replace('-', '.').strip()  # make date an acceptable version string
@@ -24,8 +47,8 @@ def calculate_version():
         exec('putative__version__ = "{0}"'.format(version))  # see if this will raise an error for some reason
     except Exception as e:
         # If any of the above failed for any reason whatsoever, fall back on this dumb version
-        print('\nThe `calculate_version` function failed to get the git info')
-        print(traceback.format_exc())
+        print('\nThe `calculate_version` function failed to get the git version.')
+        print('Maybe your version of python (<2.7?) is too old.')
         print(e)
         print('This should not be a problem, unless you need an accurate version number.')
         print('Continuing on, in spite of it all...\n')
