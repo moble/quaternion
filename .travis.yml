@@ -3,13 +3,13 @@ python:
   - "2.7"
   - "3.4"
 install:
-  - git --version
   - lsb_release -a
+  - git --version
+  - sudo apt-get install python-software-properties
+  - sudo apt-get install software-properties-common
+  - sudo add-apt-repository ppa:git-core/ppa -y
   - sudo apt-get update
-  - git --version
-  - sudo apt-get upgrade -f -y --force-yes
-  - git --version
-  - sudo apt-get dist-upgrade -f -y --force-yes
+  - sudo apt-get install git
   - git --version
   - python setup.py install
 script:
