@@ -23,9 +23,10 @@ def calculate_version():
         exec('putative__version__ = "{0}"'.format(version))  # see if this will raise an error for some reason
     except Exception as e:
         # If any of the above failed for any reason whatsoever, fall back on this dumb version
-        print('The `calculate_version` function failed to get the git version; maybe your version of git is too old?')
+        print('\nThe `calculate_version` function failed to get the git version; maybe your version of git is too old?')
         print(e)
-        print('Continuing on, in spite of it all...')
+        print('This should not be a problem, unless you need an accurate version number.')
+        print('Continuing on, in spite of it all...\n')
         from datetime import datetime
         date = datetime.now().isoformat().split('T')[0]
         date = date.replace('-', '.')
