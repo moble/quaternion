@@ -11,9 +11,8 @@ how to use this module.
 def calculate_version():
     try:
         import subprocess
-        git_revision = subprocess.check_output("git show -s --format='%cI %h' HEAD", shell=True)
-        date, short_hash = git_revision.split(' ')
-        date = date.split('T')[0]  # remove ISO 8601 time info
+        git_revision = subprocess.check_output("git show -s --format='%ci %h' HEAD", shell=True)
+        date, time, utc_offset, short_hash = git_revision.split(' ')
         date = date.replace('-', '.')  # make date an acceptable version string
         short_hash = short_hash[:-1]  # remove newline
         dirty = bool(subprocess.call("git diff-files --quiet --", shell=True))
