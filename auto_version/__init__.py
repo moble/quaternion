@@ -23,6 +23,8 @@ def calculate_version():
             version += '.dirty'
         exec('__version__ = "{0}"'.format(version))  # see if this will raise an error for some reason
     except:
+        # If any of the above failed for any reason whatsoever, fall back on this dumb version
+        print('The `calculate_version` function failed to get the git version; maybe your version of git is too old?')
         from datetime import datetime
         date = datetime.now().isoformat().split('T')[0]
         date = date.replace('-', '.')
