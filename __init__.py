@@ -21,10 +21,12 @@ def calculate_version():
         version = '{0}.{1}'.format(date, short_hash)
         if dirty:
             version += '.dirty'
-        exec('__version__ = "{0}"'.format(version))  # see if this will raise an error for some reason
-    except:
+        exec('putative__version__ = "{0}"'.format(version))  # see if this will raise an error for some reason
+    except Exception as e:
         # If any of the above failed for any reason whatsoever, fall back on this dumb version
         print('The `calculate_version` function failed to get the git version; maybe your version of git is too old?')
+        print(e)
+        print('Continuing on, in spite of it all...')
         from datetime import datetime
         date = datetime.now().isoformat().split('T')[0]
         date = date.replace('-', '.')
