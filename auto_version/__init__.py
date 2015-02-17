@@ -12,6 +12,9 @@ def calculate_version():
     try:
         import subprocess
         git_revision = subprocess.check_output("git show -s --format='%ci %h' HEAD", shell=True)
+        print("git_revision:")
+        print(git_revision)
+        print(":git_revision")
         date, time, utc_offset, short_hash = git_revision.split(' ')
         date = date.replace('-', '.').strip()  # make date an acceptable version string
         short_hash = short_hash.strip()  # remove newline and any other whitespace
