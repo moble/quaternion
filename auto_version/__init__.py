@@ -12,10 +12,7 @@ import traceback
 def calculate_version():
     try:
         import subprocess
-        git_revision = subprocess.check_output("git show -s --format='%ci %h' HEAD", shell=True)
-        print("git_revision:")
-        print(git_revision)
-        print(":git_revision")
+        git_revision = subprocess.check_output("git show -s --format='%ci %h' HEAD", shell=True).decode('ascii')
         date, time, utc_offset, short_hash = git_revision.split(' ')
         date = date.replace('-', '.').strip()  # make date an acceptable version string
         short_hash = short_hash.strip()  # remove newline and any other whitespace
@@ -24,11 +21,10 @@ def calculate_version():
         version = '{0}.{1}'.format(date, short_hash)
         if dirty:
             version += '.dirty'
-        print('putative __version__ = "{0}"'.format(version))
         exec('putative__version__ = "{0}"'.format(version))  # see if this will raise an error for some reason
     except Exception as e:
         # If any of the above failed for any reason whatsoever, fall back on this dumb version
-        print('\nThe `calculate_version` function failed to get the git version; maybe your version of git is too old?')
+        print('\nThe `calculate_version` function failed to get the git info')
         print(traceback.format_exc())
         print(e)
         print('This should not be a problem, unless you need an accurate version number.')
