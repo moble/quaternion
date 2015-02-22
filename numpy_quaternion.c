@@ -155,9 +155,17 @@ UNARY_QUATERNION_RETURNER(log)
 UNARY_QUATERNION_RETURNER(exp)
 UNARY_QUATERNION_RETURNER(normalized)
 UNARY_QUATERNION_RETURNER(x_parity_conjugate)
+UNARY_QUATERNION_RETURNER(x_parity_symmetric_part)
+UNARY_QUATERNION_RETURNER(x_parity_antisymmetric_part)
 UNARY_QUATERNION_RETURNER(y_parity_conjugate)
+UNARY_QUATERNION_RETURNER(y_parity_symmetric_part)
+UNARY_QUATERNION_RETURNER(y_parity_antisymmetric_part)
 UNARY_QUATERNION_RETURNER(z_parity_conjugate)
+UNARY_QUATERNION_RETURNER(z_parity_symmetric_part)
+UNARY_QUATERNION_RETURNER(z_parity_antisymmetric_part)
 UNARY_QUATERNION_RETURNER(parity_conjugate)
+UNARY_QUATERNION_RETURNER(parity_symmetric_part)
+UNARY_QUATERNION_RETURNER(parity_antisymmetric_part)
 static PyObject*
 pyquaternion_positive(PyObject* self, PyObject* b) {
     Py_INCREF(self);
@@ -337,12 +345,28 @@ PyMethodDef pyquaternion_methods[] = {
    "Return a normalized copy of the quaternion"},
   {"x_parity_conjugate", pyquaternion_x_parity_conjugate, METH_NOARGS,
    "Reflect across y-z plane (note spinorial character)"},
+  {"x_parity_symmetric_part", pyquaternion_x_parity_symmetric_part, METH_NOARGS,
+   "Part invariant under reflection across y-z plane (note spinorial character)"},
+  {"x_parity_antisymmetric_part", pyquaternion_x_parity_antisymmetric_part, METH_NOARGS,
+   "Part anti-invariant under reflection across y-z plane (note spinorial character)"},
   {"y_parity_conjugate", pyquaternion_y_parity_conjugate, METH_NOARGS,
    "Reflect across x-z plane (note spinorial character)"},
+  {"y_parity_symmetric_part", pyquaternion_y_parity_symmetric_part, METH_NOARGS,
+   "Part invariant under reflection across x-z plane (note spinorial character)"},
+  {"y_parity_antisymmetric_part", pyquaternion_y_parity_antisymmetric_part, METH_NOARGS,
+   "Part anti-invariant under reflection across x-z plane (note spinorial character)"},
   {"z_parity_conjugate", pyquaternion_z_parity_conjugate, METH_NOARGS,
    "Reflect across x-y plane (note spinorial character)"},
+  {"z_parity_symmetric_part", pyquaternion_z_parity_symmetric_part, METH_NOARGS,
+   "Part invariant under reflection across x-y plane (note spinorial character)"},
+  {"z_parity_antisymmetric_part", pyquaternion_z_parity_antisymmetric_part, METH_NOARGS,
+   "Part anti-invariant under reflection across x-y plane (note spinorial character)"},
   {"parity_conjugate", pyquaternion_parity_conjugate, METH_NOARGS,
    "Reflect all dimensions (note spinorial character)"},
+  {"parity_symmetric_part", pyquaternion_parity_symmetric_part, METH_NOARGS,
+   "Part invariant under negation of all vectors (note spinorial character)"},
+  {"parity_antisymmetric_part", pyquaternion_parity_antisymmetric_part, METH_NOARGS,
+   "Part anti-invariant under negation of all vectors (note spinorial character)"},
 
   // Quaternion-quaternion binary quaternion returners
   // {"add", pyquaternion_add, METH_O,
@@ -922,9 +946,17 @@ UNARY_UFUNC(conjugate, quaternion)
 UNARY_GEN_UFUNC(invert, inverse, quaternion)
 UNARY_UFUNC(normalized, quaternion)
 UNARY_UFUNC(x_parity_conjugate, quaternion)
+UNARY_UFUNC(x_parity_symmetric_part, quaternion)
+UNARY_UFUNC(x_parity_antisymmetric_part, quaternion)
 UNARY_UFUNC(y_parity_conjugate, quaternion)
+UNARY_UFUNC(y_parity_symmetric_part, quaternion)
+UNARY_UFUNC(y_parity_antisymmetric_part, quaternion)
 UNARY_UFUNC(z_parity_conjugate, quaternion)
+UNARY_UFUNC(z_parity_symmetric_part, quaternion)
+UNARY_UFUNC(z_parity_antisymmetric_part, quaternion)
 UNARY_UFUNC(parity_conjugate, quaternion)
+UNARY_UFUNC(parity_symmetric_part, quaternion)
+UNARY_UFUNC(parity_antisymmetric_part, quaternion)
 
 // This is a macro that will be used to define the various basic binary
 // quaternion functions, so that they can be applied quickly to a
@@ -1312,12 +1344,28 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
                      "Normalize all quaternions in this array");
   REGISTER_NEW_UFUNC(x_parity_conjugate, 1, 1,
                      "Reflect across y-z plane (note spinorial character)");
+  REGISTER_NEW_UFUNC(x_parity_symmetric_part, 1, 1,
+                     "Part invariant under reflection across y-z plane (note spinorial character)");
+  REGISTER_NEW_UFUNC(x_parity_antisymmetric_part, 1, 1,
+                     "Part anti-invariant under reflection across y-z plane (note spinorial character)");
   REGISTER_NEW_UFUNC(y_parity_conjugate, 1, 1,
                      "Reflect across x-z plane (note spinorial character)");
+  REGISTER_NEW_UFUNC(y_parity_symmetric_part, 1, 1,
+                     "Part invariant under reflection across x-z plane (note spinorial character)");
+  REGISTER_NEW_UFUNC(y_parity_antisymmetric_part, 1, 1,
+                     "Part anti-invariant under reflection across x-z plane (note spinorial character)");
   REGISTER_NEW_UFUNC(z_parity_conjugate, 1, 1,
                      "Reflect across x-y plane (note spinorial character)");
+  REGISTER_NEW_UFUNC(z_parity_symmetric_part, 1, 1,
+                     "Part invariant under reflection across x-y plane (note spinorial character)");
+  REGISTER_NEW_UFUNC(z_parity_antisymmetric_part, 1, 1,
+                     "Part anti-invariant under reflection across x-y plane (note spinorial character)");
   REGISTER_NEW_UFUNC(parity_conjugate, 1, 1,
                      "Reflect all dimensions (note spinorial character)");
+  REGISTER_NEW_UFUNC(parity_symmetric_part, 1, 1,
+                     "Part invariant under reversal of all vectors (note spinorial character)");
+  REGISTER_NEW_UFUNC(parity_antisymmetric_part, 1, 1,
+                     "Part anti-invariant under reversal of all vectors (note spinorial character)");
 
   // quat, quat -> bool
   arg_types[0] = quaternion_descr->type_num;

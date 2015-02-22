@@ -125,14 +125,38 @@ extern "C" {
   static NPY_INLINE quaternion quaternion_x_parity_conjugate(quaternion q) {
     return (quaternion) {q.w, q.x, -q.y, -q.z};
   }
+  static NPY_INLINE quaternion quaternion_x_parity_symmetric_part(quaternion q) {
+    return (quaternion) {q.w, q.x, 0.0, 0.0};
+  }
+  static NPY_INLINE quaternion quaternion_x_parity_antisymmetric_part(quaternion q) {
+    return (quaternion) {0.0, 0.0, q.y, q.z};
+  }
   static NPY_INLINE quaternion quaternion_y_parity_conjugate(quaternion q) {
     return (quaternion) {q.w, -q.x, q.y, -q.z};
+  }
+  static NPY_INLINE quaternion quaternion_y_parity_symmetric_part(quaternion q) {
+    return (quaternion) {q.w, 0.0, q.y, 0.0};
+  }
+  static NPY_INLINE quaternion quaternion_y_parity_antisymmetric_part(quaternion q) {
+    return (quaternion) {0.0, q.x, 0.0, q.z};
   }
   static NPY_INLINE quaternion quaternion_z_parity_conjugate(quaternion q) {
     return (quaternion) {q.w, -q.x, -q.y, q.z};
   }
+  static NPY_INLINE quaternion quaternion_z_parity_symmetric_part(quaternion q) {
+    return (quaternion) {q.w, 0.0, 0.0, q.z};
+  }
+  static NPY_INLINE quaternion quaternion_z_parity_antisymmetric_part(quaternion q) {
+    return (quaternion) {0.0, q.x, q.y, 0.0};
+  }
   static NPY_INLINE quaternion quaternion_parity_conjugate(quaternion q) {
     return (quaternion) {q.w, q.x, q.y, q.z};
+  }
+  static NPY_INLINE quaternion quaternion_parity_symmetric_part(quaternion q) {
+    return (quaternion) {q.w, q.x, q.y, q.z};
+  }
+  static NPY_INLINE quaternion quaternion_parity_antisymmetric_part(quaternion q) {
+    return (quaternion) {0.0, 0.0, 0.0, 0.0};
   }
   static NPY_INLINE quaternion quaternion_negative(quaternion q) {
     return (quaternion) {-q.w, -q.x, -q.y, -q.z};
