@@ -9,7 +9,7 @@ by other python packages, and used by `setup.py` on installation.
 The `calculate_version` function constructs a version number from the date.
 This will be of the form
 
-    2015.02.15-dev82e4326
+    2015.02.15.dev82e4326
 
 where `2015.02.15` represents the date of the commit, and `82e4326` is the
 shortened hash of the commit.  Additionally, if the code is not in a clean
@@ -17,7 +17,7 @@ state (changes have been made since the last commit), then `-dirty` will be
 appended to the version.  This form requires the ability to run a few simple
 `git` commands from `python`.  If that is not possible, the system will fall
 back to using the current date (at the time of installation), preceded by
-`0.0.0-dev`, so that version ordering will work safely.  In particular, note
+`0.0.0.dev`, so that version ordering will work safely.  In particular, note
 that the calling of shell functions from python is a little delicate in python
 2.6 and lower.
 
