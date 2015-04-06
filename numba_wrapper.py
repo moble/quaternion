@@ -17,7 +17,8 @@ except ImportError:
 
         GOT_NUMBA = True
     except ImportError:
-        import warnings, sys
+        import warnings
+        import sys
 
         warning_text = \
             "\n\n" + "!" * 53 + "\n" + \
