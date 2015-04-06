@@ -45,7 +45,7 @@ def calculate_version():
         short_hash = short_hash.strip()  # remove newline and any other whitespace
         dirty = bool(subprocess.call("git diff-files --quiet --", shell=True))
         dirty = dirty or bool(subprocess.call("git diff-index --cached --quiet HEAD --", shell=True))
-        version = '{0}.{1}'.format(date, short_hash)
+        version = '{0}-dev{1}'.format(date, short_hash)
         if dirty:
             version += '.dirty'
         exec('putative__version__ = "{0}"'.format(version))  # see if this will raise an error for some reason
@@ -59,7 +59,7 @@ def calculate_version():
         from datetime import datetime
         date = datetime.now().isoformat().split('T')[0]
         date = date.replace('-', '.').strip()
-        version = '0.0.0.' + date
+        version = '0.0.0-dev' + date
     return version
 
 
