@@ -38,6 +38,11 @@ typedef struct {
 
 static PyTypeObject PyQuaternion_Type;
 
+// This is the crucial feature that will make a quaternion into a
+// built-in numpy data type.  We will describe its features below.
+PyArray_Descr* quaternion_descr;
+
+
 static NPY_INLINE int
 PyQuaternion_Check(PyObject* object) {
   return PyObject_IsInstance(object,(PyObject*)&PyQuaternion_Type);
@@ -200,12 +205,70 @@ QQ_BINARY_QUATERNION_INPLACE(subtract)
 
 #define QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(fake_name, name)       \
   static PyObject*                                                      \
+  pyquaternion_##fake_name##_array_operator(PyObject* a, PyObject* b) { \
+    PyArrayObject *in_array = (PyArrayObject*) b;                       \
+    PyObject      *out_array;                                           \
+    NpyIter *in_iter;                                                   \
+    NpyIter *out_iter;                                                  \
+    NpyIter_IterNextFunc *in_iternext;                                  \
+    NpyIter_IterNextFunc *out_iternext;                                 \
+    quaternion p = {0};                                                 \
+    PyQuaternion_AsQuaternion(p, a);                                    \
+    out_array = PyArray_NewLikeArray(in_array, NPY_ANYORDER, quaternion_descr, 0); \
+    if (out_array == NULL) return NULL;                                 \
+    in_iter = NpyIter_New(in_array, NPY_ITER_READONLY, NPY_KEEPORDER,   \
+                          NPY_NO_CASTING, NULL);                        \
+    if (in_iter == NULL) goto fail;                                     \
+    out_iter = NpyIter_New((PyArrayObject *)out_array, NPY_ITER_READWRITE, \
+                           NPY_KEEPORDER, NPY_NO_CASTING, NULL);        \
+    if (out_iter == NULL) {                                             \
+      NpyIter_Deallocate(in_iter);                                      \
+      goto fail;                                                        \
+    }                                                                   \
+    in_iternext = NpyIter_GetIterNext(in_iter, NULL);                   \
+    out_iternext = NpyIter_GetIterNext(out_iter, NULL);                 \
+    if (in_iternext == NULL || out_iternext == NULL) {                  \
+      NpyIter_Deallocate(in_iter);                                      \
+      NpyIter_Deallocate(out_iter);                                     \
+      goto fail;                                                        \
+    }                                                                   \
+    quaternion ** out_dataptr = (quaternion **) NpyIter_GetDataPtrArray(out_iter); \
+    if(PyArray_EquivTypes(PyArray_DESCR((PyArrayObject*) b), quaternion_descr)) { \
+      quaternion ** in_dataptr = (quaternion **) NpyIter_GetDataPtrArray(in_iter); \
+      do {                                                              \
+        **out_dataptr = quaternion_##name(p, **in_dataptr);             \
+      } while(in_iternext(in_iter) && out_iternext(out_iter));          \
+    } else if(PyArray_ISFLOAT((PyArrayObject*) b)) {                    \
+      double ** in_dataptr = (double **) NpyIter_GetDataPtrArray(in_iter); \
+      do {                                                              \
+        **out_dataptr = quaternion_##name##_scalar(p, **in_dataptr);    \
+      } while(in_iternext(in_iter) && out_iternext(out_iter));          \
+    } else if(PyArray_ISINTEGER((PyArrayObject*) b)) {                  \
+      int ** in_dataptr = (int **) NpyIter_GetDataPtrArray(in_iter);    \
+      do {                                                              \
+        **out_dataptr = quaternion_##name##_scalar(p, **in_dataptr);    \
+      } while(in_iternext(in_iter) && out_iternext(out_iter));          \
+    } else {                                                            \
+      NpyIter_Deallocate(in_iter);                                      \
+      NpyIter_Deallocate(out_iter);                                     \
+      goto fail;                                                        \
+    }                                                                   \
+    NpyIter_Deallocate(in_iter);                                        \
+    NpyIter_Deallocate(out_iter);                                       \
+    Py_INCREF(out_array);                                               \
+    return out_array;                                                   \
+  fail:                                                                 \
+    Py_XDECREF(out_array);                                              \
+    return NULL;                                                        \
+  }                                                                     \
+  static PyObject*                                                      \
   pyquaternion_##fake_name(PyObject* a, PyObject* b) {                  \
     quaternion p = {0};                                                 \
+    if(PyArray_Check(b)) { return pyquaternion_##fake_name##_array_operator(a, b); } \
     if(PyFloat_Check(a)) { return pyquaternion_##fake_name(b,a); }      \
     PyQuaternion_AsQuaternion(p, a);                                    \
     if(PyQuaternion_Check(b)) {                                         \
-      return PyQuaternion_FromQuaternion(quaternion_##name(p,((PyQuaternion*)b)->obval));       \
+      return PyQuaternion_FromQuaternion(quaternion_##name(p,((PyQuaternion*)b)->obval)); \
     } else if(PyFloat_Check(b)) {                                       \
       return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyFloat_AsDouble(b))); \
     } else if(PyInt_Check(b)) {                                         \
@@ -911,11 +974,6 @@ static void register_cast_function(int sourceType, int destType, PyArray_VectorU
   PyArray_RegisterCanCast(descr, destType, NPY_NOSCALAR);
   Py_DECREF(descr);
 }
-
-
-// This is the crucial feature that will make a quaternion into a
-// built-in numpy data type.  We will describe its features below.
-PyArray_Descr* quaternion_descr;
 
 
 // This is a macro that will be used to define the various basic unary
