@@ -173,10 +173,10 @@ extern "C" {
   static NPY_INLINE quaternion quaternion_add(quaternion q1, quaternion q2) {
     return (quaternion) {
       q1.w+q2.w,
-        q1.x+q2.x,
-        q1.y+q2.y,
-        q1.z+q2.z,
-        };
+      q1.x+q2.x,
+      q1.y+q2.y,
+      q1.z+q2.z,
+    };
   }
   static NPY_INLINE void quaternion_inplace_add(quaternion* q1, quaternion q2) {
     q1->w += q2.w;
@@ -188,10 +188,10 @@ extern "C" {
   static NPY_INLINE quaternion quaternion_subtract(quaternion q1, quaternion q2) {
     return (quaternion) {
       q1.w-q2.w,
-        q1.x-q2.x,
-        q1.y-q2.y,
-        q1.z-q2.z,
-        };
+      q1.x-q2.x,
+      q1.y-q2.y,
+      q1.z-q2.z,
+    };
   }
   static NPY_INLINE void quaternion_inplace_subtract(quaternion* q1, quaternion q2) {
     q1->w -= q2.w;
@@ -203,20 +203,20 @@ extern "C" {
   static NPY_INLINE quaternion quaternion_copysign(quaternion q1, quaternion q2) {
     return (quaternion) {
       copysign(q1.w, q2.w),
-        copysign(q1.x, q2.x),
-        copysign(q1.y, q2.y),
-        copysign(q1.z, q2.z)
-        };
+      copysign(q1.x, q2.x),
+      copysign(q1.y, q2.y),
+      copysign(q1.z, q2.z)
+    };
   }
 
   // Quaternion-quaternion/quaternion-scalar binary quaternion returners
   static NPY_INLINE quaternion quaternion_multiply(quaternion q1, quaternion q2) {
     return (quaternion) {
       q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z,
-        q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y,
-        q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x,
-        q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w,
-        };
+      q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y,
+      q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x,
+      q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w,
+    };
   }
   static NPY_INLINE void quaternion_inplace_multiply(quaternion* q1a, quaternion q2) {
     quaternion q1 = *q1a;
@@ -224,6 +224,16 @@ extern "C" {
     q1a->x = q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y;
     q1a->y = q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x;
     q1a->z = q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w;
+    return;
+  }
+  static NPY_INLINE quaternion quaternion_scalar_multiply(double s, quaternion q) {
+    return (quaternion) {s*q.w, s*q.x, s*q.y, s*q.z};
+  }
+  static NPY_INLINE void quaternion_inplace_scalar_multiply(double s, quaternion* q) {
+    q->w *= s;
+    q->x *= s;
+    q->y *= s;
+    q->z *= s;
     return;
   }
   static NPY_INLINE quaternion quaternion_multiply_scalar(quaternion q, double s) {
@@ -240,10 +250,10 @@ extern "C" {
     double q2norm = q2.w*q2.w + q2.x*q2.x + q2.y*q2.y + q2.z*q2.z;
     return (quaternion) {
       (  q1.w*q2.w + q1.x*q2.x + q1.y*q2.y + q1.z*q2.z) / q2norm,
-        (- q1.w*q2.x + q1.x*q2.w - q1.y*q2.z + q1.z*q2.y) / q2norm,
-        (- q1.w*q2.y + q1.x*q2.z + q1.y*q2.w - q1.z*q2.x) / q2norm,
-        (- q1.w*q2.z - q1.x*q2.y + q1.y*q2.x + q1.z*q2.w) / q2norm
-        };
+      (- q1.w*q2.x + q1.x*q2.w - q1.y*q2.z + q1.z*q2.y) / q2norm,
+      (- q1.w*q2.y + q1.x*q2.z + q1.y*q2.w - q1.z*q2.x) / q2norm,
+      (- q1.w*q2.z - q1.x*q2.y + q1.y*q2.x + q1.z*q2.w) / q2norm
+    };
   }
   static NPY_INLINE void quaternion_inplace_divide(quaternion* q1a, quaternion q2) {
     double q2norm;
@@ -255,6 +265,17 @@ extern "C" {
     q1a->z = (-q1.w*q2.z - q1.x*q2.y + q1.y*q2.x + q1.z*q2.w)/q2norm;
     return;
   }
+  static NPY_INLINE quaternion quaternion_scalar_divide(double s, quaternion q) {
+    double qnorm = q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z;
+    return (quaternion) {
+      ( s*q.w) / qnorm,
+      (-s*q.x) / qnorm,
+      (-s*q.y) / qnorm,
+      (-s*q.z) / qnorm
+    };
+  }
+  /* The following function is impossible, but listed for completeness: */
+  /* static NPY_INLINE void quaternion_inplace_scalar_divide(double* sa, quaternion q2) { } */
   static NPY_INLINE quaternion quaternion_divide_scalar(quaternion q, double s) {
     return (quaternion) {q.w/s, q.x/s, q.y/s, q.z/s};
   }
@@ -266,18 +287,55 @@ extern "C" {
     return;
   }
   static NPY_INLINE quaternion quaternion_power(quaternion q, quaternion p) {
+    /* Note that the following is just my chosen definition of the power. */
+    /* Other definitions may disagree due to non-commutativity. */
+    if(! quaternion_nonzero(q)) { /* log(q)=-inf */
+      if(! quaternion_nonzero(p)) {
+        return (quaternion) {1.0, 0.0, 0.0, 0.0}; /* consistent with python */
+      } else {
+        return (quaternion) {0.0, 0.0, 0.0, 0.0}; /* consistent with python */
+      }
+    }
     return quaternion_exp(quaternion_multiply(quaternion_log(q), p));
   }
   static NPY_INLINE void quaternion_inplace_power(quaternion* q1, quaternion q2) {
+    /* Not overly useful as an in-place operator, but here for completeness. */
     quaternion q3 = quaternion_power(*q1,q2);
     *q1 = q3;
     return;
   }
-  static NPY_INLINE quaternion quaternion_power_scalar(quaternion q, double p) {
-    return quaternion_exp(quaternion_multiply_scalar(quaternion_log(q), p));
+  double _quaternion_scalar_log(double s);
+  static NPY_INLINE quaternion quaternion_scalar_power(double s, quaternion q) {
+    /* Unlike the quaternion^quaternion power, this is unambiguous. */
+    if(s==0.0) { /* log(s)=-inf */
+      if(! quaternion_nonzero(q)) {
+        return (quaternion) {1.0, 0.0, 0.0, 0.0}; /* consistent with python */
+      } else {
+        return (quaternion) {0.0, 0.0, 0.0, 0.0}; /* consistent with python */
+      }
+    }
+    return quaternion_exp(quaternion_multiply_scalar(q, _quaternion_scalar_log(s)));
+  }
+  static NPY_INLINE void quaternion_inplace_scalar_power(double s, quaternion* q) {
+    /* Not overly useful as an in-place operator, but here for completeness. */
+    quaternion q2 = quaternion_scalar_power(s, *q);
+    *q = q2;
+    return;
+  }
+  static NPY_INLINE quaternion quaternion_power_scalar(quaternion q, double s) {
+    /* Unlike the quaternion^quaternion power, this is unambiguous. */
+    if(! quaternion_nonzero(q)) { /* log(q)=-inf */
+      if(s==0) {
+        return (quaternion) {1.0, 0.0, 0.0, 0.0}; /* consistent with python */
+      } else {
+        return (quaternion) {0.0, 0.0, 0.0, 0.0}; /* consistent with python */
+      }
+    }
+    return quaternion_exp(quaternion_multiply_scalar(quaternion_log(q), s));
   }
   static NPY_INLINE void quaternion_inplace_power_scalar(quaternion* q, double s) {
-    quaternion q2 = quaternion_power_scalar(*q,s);
+    /* Not overly useful as an in-place operator, but here for completeness. */
+    quaternion q2 = quaternion_power_scalar(*q, s);
     *q = q2;
     return;
   }

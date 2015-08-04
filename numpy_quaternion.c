@@ -57,6 +57,7 @@ PyQuaternion_FromQuaternion(quaternion q) {
 
 // TODO: Add list/tuple conversions
 #define PyQuaternion_AsQuaternion(q, o)                                 \
+  /* fprintf (stderr, "file %s, line %d., PyQuaternion_AsQuaternion\n", __FILE__, __LINE__); */ \
   if(PyQuaternion_Check(o)) {                                           \
     q = ((PyQuaternion*)o)->obval;                                      \
   } else {                                                              \
@@ -66,6 +67,7 @@ PyQuaternion_FromQuaternion(quaternion q) {
   }
 
 #define PyQuaternion_AsQuaternionPointer(q, o)                          \
+  /* fprintf (stderr, "file %s, line %d, PyQuaternion_AsQuaternionPointer.\n", __FILE__, __LINE__); */ \
   if(PyQuaternion_Check(o)) {                                           \
     q = &((PyQuaternion*)o)->obval;                                     \
   } else {                                                              \
@@ -206,6 +208,7 @@ QQ_BINARY_QUATERNION_INPLACE(subtract)
 #define QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(fake_name, name)       \
   static PyObject*                                                      \
   pyquaternion_##fake_name##_array_operator(PyObject* a, PyObject* b) { \
+    /* fprintf (stderr, "\nfile %s, line %d, pyquaternion_%s_array_operator(PyObject* a, PyObject* b).\n", __FILE__, __LINE__, #fake_name); */ \
     PyArrayObject *in_array = (PyArrayObject*) b;                       \
     PyObject      *out_array;                                           \
     NpyIter *in_iter;                                                   \
@@ -263,9 +266,15 @@ QQ_BINARY_QUATERNION_INPLACE(subtract)
   }                                                                     \
   static PyObject*                                                      \
   pyquaternion_##fake_name(PyObject* a, PyObject* b) {                  \
+    /* fprintf (stderr, "\nfile %s, line %d, pyquaternion_%s(PyObject* a, PyObject* b).\n", __FILE__, __LINE__, #fake_name); */ \
     quaternion p = {0};                                                 \
     if(PyArray_Check(b)) { return pyquaternion_##fake_name##_array_operator(a, b); } \
-    if(PyFloat_Check(a)) { return pyquaternion_##fake_name(b,a); }      \
+    if(PyFloat_Check(a) && PyQuaternion_Check(b)) {                     \
+      return PyQuaternion_FromQuaternion(quaternion_scalar_##name(PyFloat_AsDouble(a), ((PyQuaternion*)b)->obval)); \
+    }                                                                   \
+    if(PyInt_Check(a) && PyQuaternion_Check(b)) {                       \
+      return PyQuaternion_FromQuaternion(quaternion_scalar_##name(PyInt_AsLong(a), ((PyQuaternion*)b)->obval)); \
+    }                                                                   \
     PyQuaternion_AsQuaternion(p, a);                                    \
     if(PyQuaternion_Check(b)) {                                         \
       return PyQuaternion_FromQuaternion(quaternion_##name(p,((PyQuaternion*)b)->obval)); \
@@ -287,6 +296,7 @@ QQ_QS_SQ_BINARY_QUATERNION_RETURNER(power)
 #define QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(fake_name, name)        \
   static PyObject*                                                      \
   pyquaternion_inplace_##fake_name(PyObject* a, PyObject* b) {          \
+    /* fprintf (stderr, "file %s, line %d, pyquaternion_inplace_%s(PyObject* a, PyObject* b).\n", __FILE__, __LINE__); */ \
     quaternion* p = {0};                                                \
     if(PyFloat_Check(a) || PyInt_Check(a)) {                            \
       pyquaternion_inplace_##fake_name(b,a);                            \

@@ -334,7 +334,10 @@ def test_quaternion_multiply(Qs):
         assert q * Qs[q_1] == q
     for q in Qs[Qs_finite]:  # General quaternion mult. would use inf*0.0
         assert q * 1.0 == q
-    for s in [-2.3, -1.2, -1.0, 1.0, 1.2, 2.3]:
+        assert q * 1 == q
+        assert 1.0 * q == q
+        assert 1 * q == q
+    for s in [-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]:
         for q in Qs[Qs_finite]:
             assert q * s == quaternion.quaternion(s * q.w, s * q.x, s * q.y, s * q.z)
             assert s * q == q * s
@@ -357,7 +360,11 @@ def test_quaternion_multiply(Qs):
 
 def test_quaternion_divide(Qs):
     for q in Qs[Qs_finitenonzero]:
-        assert ((q / q) - Qs[q_1]).abs() < np.finfo(float).eps
+        assert ((q / q) - Qs[q_1]).abs() < 2*np.finfo(float).eps
+        assert ((1 / q) - q.inverse()).abs() < 2*np.finfo(float).eps
+        assert ((1.0 / q) - q.inverse()).abs() < 2*np.finfo(float).eps
+        assert ((5 / q) - 5*q.inverse()).abs() < 2*np.finfo(float).eps
+        assert ((5.1 / q) - 5.1*q.inverse()).abs() < 2*np.finfo(float).eps
     for q in Qs[Qs_nonnan]:
         assert q / 1.0 == q
     strict_assert(False)  # Division by non-unit scalar
@@ -377,13 +384,25 @@ def test_quaternion_divide(Qs):
 
 
 def test_quaternion_power(Qs):
-    qpower_precision = 4.e-13
+    qpower_precision = 5.e-13
     for q in Qs[Qs_finitenonzero]:
+        assert (q ** 0 - np.quaternion(1, 0, 0, 0)).abs() < qpower_precision
+        assert (q ** 0.0 - np.quaternion(1, 0, 0, 0)).abs() < qpower_precision
+        assert (q ** np.quaternion(0, 0, 0, 0) - np.quaternion(1, 0, 0, 0)).abs() < qpower_precision
         assert (((q ** 0.5) * (q ** 0.5)) - q).abs() < qpower_precision
         assert (q ** 1.0 - q).abs() < qpower_precision
+        assert (q ** 1 - q).abs() < qpower_precision
+        assert (q ** np.quaternion(1, 0, 0, 0) - q).abs() < qpower_precision
         assert (q ** 2.0 - q * q).abs() < qpower_precision
         assert (q ** 2 - q * q).abs() < qpower_precision
+        assert (q ** np.quaternion(2, 0, 0, 0) - q * q).abs() < qpower_precision
         assert (q ** 3 - q * q * q).abs() < qpower_precision
+    for b in [0, 0.0, 1, 1.0, 2, 2.0, 5.6]:
+        for e in [0, 0.0, 1, 1.0, 2, 2.0, 4.5]:
+            be = np.quaternion(b**e, 0, 0, 0)
+            assert (be - np.quaternion(b, 0, 0, 0)**np.quaternion(e, 0, 0, 0)).abs() < qpower_precision
+            assert (be - b**np.quaternion(e, 0, 0, 0)).abs() < qpower_precision
+            assert (be - np.quaternion(b, 0, 0, 0)**e).abs() < qpower_precision
     qinverse_precision = 5.e-16
     for q in Qs[Qs_finitenonzero]:
         assert ((q ** -1.0) * q - Qs[q_1]).abs() < qinverse_precision

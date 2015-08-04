@@ -8,6 +8,9 @@
 
 #define _QUAT_EPS 1e-14
 
+double
+_quaternion_scalar_log(double s) { return log(s); }
+
 quaternion
 quaternion_create_from_spherical_coords(double vartheta, double varphi) {
   double ct = cos(vartheta/2.);
