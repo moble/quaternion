@@ -94,3 +94,91 @@ def as_spinor_array(a):
     # I'm not sure why it has to be so complicated, but all of these steps
     # appear to be necessary in this case.
     return a.view(np.float).reshape(a.shape + (4,))[..., [0, 3, 2, 1]].ravel().view(np.complex).reshape(a.shape + (2,))
+
+
+def allclose(a, b, rtol=2*np.finfo(float).eps, atol=0.0):
+    """
+    Returns True if two arrays are element-wise equal within a tolerance.
+
+    This function is essentially a copy of the `numpy.allclose` function,
+    with different default tolerances, and minor changes necessary to deal
+    correctly with quaternions.
+
+    The tolerance values are positive, typically very small numbers.  The
+    relative difference (`rtol` * abs(`b`)) and the absolute difference
+    `atol` are added together to compare against the absolute difference
+    between `a` and `b`.
+
+    If either array contains one or more NaNs, False is returned.
+    Infs are treated as equal if they are in the same place and of the same
+    sign in both arrays.
+
+    Parameters
+    ----------
+    a, b : array_like
+        Input arrays to compare.
+    rtol : float
+        The relative tolerance parameter (see Notes).  Default 2*eps.
+    atol : float
+        The absolute tolerance parameter (see Notes).  Default 0.0.
+
+    Returns
+    -------
+    allclose : bool
+        Returns True if the two arrays are equal within the given
+        tolerance; False otherwise.
+
+    See Also
+    --------
+    numpy.allclose
+
+    Notes
+    -----
+    If the following equation is element-wise True, then allclose returns
+    True.
+     absolute(`a` - `b`) <= (`atol` + `rtol` * absolute(`b`))
+    The above equation is not symmetric in `a` and `b`, so that
+    `allclose(a, b)` might be different from `allclose(b, a)` in
+    some rare cases.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import quaternion
+    >>> q1 = quaternion.quaternion(1e10, 0, 0, 0)
+    >>> q2 = quaternion.quaternion(1.00001e10, 0, 0, 0)
+    >>> q3 = quaternion.quaternion(1.0001e10, 0, 0, 0)
+    >>> q4 = quaternion.quaternion(1e-7, 0, 0, 0)
+    >>> q5 = quaternion.quaternion(1e-8, 0, 0, 0)
+    >>> q6 = quaternion.quaternion(1e-9, 0, 0, 0)
+    >>> q7 = quaternion.quaternion(np.nan, 0, 0, 0)
+    >>> quaternion.allclose([q1, q4], [q2, q5], rtol=1.e-5, atol=1.e-8)
+    False
+    >>> quaternion.allclose([q1, q5], [q2, q6], rtol=1.e-5, atol=1.e-8)
+    True
+    >>> quaternion.allclose([q1, q5], [q3, q6], rtol=1.e-5, atol=1.e-8)
+    False
+    >>> quaternion.allclose([quaternion.one, q7], [quaternion.one, q7], rtol=1.e-5, atol=1.e-8)
+    False
+    """
+    x = np.array(a, copy=False, ndmin=1)
+    y = np.array(b, copy=False, ndmin=1)
+
+    xinf = np.isinf(x)
+    yinf = np.isinf(y)
+    if any(xinf) or any(yinf):
+        # Check that x and y have inf's only in the same positions
+        if not all(xinf == yinf):
+            return False
+        # Check that sign of inf's in x and y is the same
+        if not all(x[xinf] == y[xinf]):
+            return False
+
+        x = x[~xinf]
+        y = y[~xinf]
+
+    # ignore invalid fpe's
+    with np.errstate(invalid='ignore'):
+        r = all(np.less_equal(abs(x - y), atol + rtol * abs(y)))
+
+    return r

@@ -8,6 +8,7 @@ import numpy as np
 import quaternion
 from numpy import *
 import pytest
+from quaternion import allclose
 
 
 def passer(b):
@@ -83,6 +84,29 @@ def test_constants():
     assert quaternion.x == np.quaternion(0.0, 1.0, 0.0, 0.0)
     assert quaternion.y == np.quaternion(0.0, 0.0, 1.0, 0.0)
     assert quaternion.z == np.quaternion(0.0, 0.0, 0.0, 1.0)
+
+
+def test_allclose(Qs):
+    for q in Qs[Qs_nonnan]:
+        assert quaternion.allclose(q, q, rtol=0.0, atol=0.0)
+    assert quaternion.allclose(Qs[Qs_nonnan], Qs[Qs_nonnan], rtol=0.0, atol=0.0)
+
+    for q in Qs[Qs_finite]:
+        assert quaternion.allclose(q, q*(1+1e-13), rtol=1.1e-13, atol=0.0)
+        assert ~quaternion.allclose(q, q*(1+1e-13), rtol=0.9e-13, atol=0.0)
+        for e in [quaternion.one, quaternion.x, quaternion.y, quaternion.z]:
+            assert quaternion.allclose(q, q+(1e-13*e), rtol=0.0, atol=1.1e-13)
+            assert ~quaternion.allclose(q, q+(1e-13*e), rtol=0.0, atol=0.9e-13)
+    assert quaternion.allclose(Qs[Qs_finite], Qs[Qs_finite]*(1+1e-13), rtol=1.1e-13, atol=0.0)
+    assert ~quaternion.allclose(Qs[Qs_finite], Qs[Qs_finite]*(1+1e-13), rtol=0.9e-13, atol=0.0)
+    for e in [quaternion.one, quaternion.x, quaternion.y, quaternion.z]:
+        assert quaternion.allclose(Qs[Qs_finite], Qs[Qs_finite]+(1e-13*e), rtol=0.0, atol=1.1e-13)
+        assert ~quaternion.allclose(Qs[Qs_finite], Qs[Qs_finite]+(1e-13*e), rtol=0.0, atol=0.9e-13)
+
+    for qnan in Qs[Qs_nan]:
+        assert ~quaternion.allclose(qnan, qnan, rtol=1.0, atol=1.0)
+        for q in Qs:
+            assert ~quaternion.allclose(q, qnan, rtol=1.0, atol=1.0)
 
 
 def test_from_spherical_coords():
@@ -347,6 +371,12 @@ def test_quaternion_multiply(Qs):
     for q in [Qs[q_1], Qs[x], Qs[y], Qs[z]]:
         assert Qs[q_1] * q == q
         assert q * Qs[q_1] == q
+    for q1 in Qs[Qs_finite]:
+        for q2 in Qs[Qs_finite]:
+            for q3 in Qs[Qs_finite]:
+                assert (q1*(q2+q3) - ((q1*q2)+(q1*q3))).abs() < 2*np.finfo(float).eps
+    # The following tests the multiplication table.  Combined with linearity,
+    # this checks that multiplication works correctly.
     assert Qs[x] * Qs[x] == -Qs[q_1]
     assert Qs[x] * Qs[y] == Qs[z]
     assert Qs[x] * Qs[z] == -Qs[y]

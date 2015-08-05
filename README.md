@@ -154,12 +154,3 @@ features that I have written tests for.
 The work of creating this code was supported in part by the Sherman
 Fairchild Foundation and by NSF Grants No. PHY-1306125 and
 AST-1333129.
-
-
-<br/><br/>
-###### <sup>1</sup> Running without `numba`
-
-It is technically *possible* to run these functions without `numba`.
-However, some functions can be sped up by factors of up to 1500 when
-using `numba`.  The anaconda distribution makes installation of
-`numba` so simple that there's just no reason not to use it.
