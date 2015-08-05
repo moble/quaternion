@@ -40,7 +40,7 @@ extern "C" {
     return ! (q.w == 0 && q.x == 0 && q.y == 0 && q.z == 0);
   }
   static NPY_INLINE int quaternion_isinf(quaternion q) {
-    return isinf(q.w) || isinf(q.x) || isinf(q.y) || isnan(q.z);
+    return isinf(q.w) || isinf(q.x) || isinf(q.y) || isinf(q.z);
   }
   static NPY_INLINE int quaternion_isfinite(quaternion q) {
     return isfinite(q.w) && isfinite(q.x) && isfinite(q.y) && isfinite(q.z);
