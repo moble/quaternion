@@ -326,7 +326,7 @@ QQ_QS_SQ_BINARY_QUATERNION_INPLACE(power)
 static PyObject *
 pyquaternion__reduce(PyQuaternion* self)
 {
-  printf("\n\n\nI'm trying, most of all!\n\n\n");
+  /* printf("\n\n\nI'm trying, most of all!\n\n\n"); */
   return Py_BuildValue("O(OOOO)", Py_TYPE(self),
                        PyFloat_FromDouble(self->obval.w), PyFloat_FromDouble(self->obval.x),
                        PyFloat_FromDouble(self->obval.y), PyFloat_FromDouble(self->obval.z));
@@ -335,7 +335,7 @@ pyquaternion__reduce(PyQuaternion* self)
 static PyObject *
 pyquaternion_getstate(PyQuaternion* self, PyObject* args)
 {
-  printf("\n\n\nI'm Trying, OKAY?\n\n\n");
+  /* printf("\n\n\nI'm Trying, OKAY?\n\n\n"); */
   if (!PyArg_ParseTuple(args, ":getstate"))
     return NULL;
   return Py_BuildValue("OOOO",
@@ -346,7 +346,7 @@ pyquaternion_getstate(PyQuaternion* self, PyObject* args)
 static PyObject *
 pyquaternion_setstate(PyQuaternion* self, PyObject* args)
 {
-  printf("\n\n\nI'm Trying, TOO!\n\n\n");
+  /* printf("\n\n\nI'm Trying, TOO!\n\n\n"); */
   quaternion* q;
   q = &(self->obval);
 
@@ -993,6 +993,7 @@ static void register_cast_function(int sourceType, int destType, PyArray_VectorU
   static void                                                           \
   quaternion_##ufunc_name##_ufunc(char** args, npy_intp* dimensions,    \
                                   npy_intp* steps, void* data) {        \
+    /* fprintf (stderr, "file %s, line %d, quaternion_%s_ufunc.\n", __FILE__, __LINE__, #ufunc_name); */ \
     char *ip1 = args[0], *op1 = args[1];                                \
     npy_intp is1 = steps[0], os1 = steps[1];                            \
     npy_intp n = dimensions[0];                                         \
@@ -1029,30 +1030,34 @@ UNARY_UFUNC(parity_antisymmetric_part, quaternion)
 // This is a macro that will be used to define the various basic binary
 // quaternion functions, so that they can be applied quickly to a
 // numpy array of quaternions.
-#define BINARY_GEN_UFUNC(ufunc_name, func_name, arg_type, ret_type)     \
+#define BINARY_GEN_UFUNC(ufunc_name, func_name, arg_type1, arg_type2, ret_type) \
   static void                                                           \
   quaternion_##ufunc_name##_ufunc(char** args, npy_intp* dimensions,    \
                                   npy_intp* steps, void* data) {        \
+    /* fprintf (stderr, "file %s, line %d, quaternion_%s_ufunc.\n", __FILE__, __LINE__, #ufunc_name); */ \
     char *ip1 = args[0], *ip2 = args[1], *op1 = args[2];                \
     npy_intp is1 = steps[0], is2 = steps[1], os1 = steps[2];            \
     npy_intp n = dimensions[0];                                         \
     npy_intp i;                                                         \
-    for(i = 0; i < n; i++, ip1 += is1, ip2 += is2, op1 += os1){         \
-      const quaternion in1 = *(quaternion *)ip1;                        \
-      const arg_type in2 = *(arg_type *)ip2;                            \
-      *((ret_type *)op1) = quaternion_##func_name(in1, in2);};};
+    for(i = 0; i < n; i++, ip1 += is1, ip2 += is2, op1 += os1) {        \
+      const arg_type1 in1 = *(arg_type1 *)ip1;                          \
+      const arg_type2 in2 = *(arg_type2 *)ip2;                          \
+      *((ret_type *)op1) = quaternion_##func_name(in1, in2);            \
+    };                                                                  \
+  };
 // A couple special-case versions of the above
 #define BINARY_UFUNC(name, ret_type)                    \
-  BINARY_GEN_UFUNC(name, name, quaternion, ret_type)
+  BINARY_GEN_UFUNC(name, name, quaternion, quaternion, ret_type)
 #define BINARY_SCALAR_UFUNC(name, ret_type)                             \
-  BINARY_GEN_UFUNC(name##_scalar, name##_scalar, npy_double, ret_type)
+  BINARY_GEN_UFUNC(name##_scalar, name##_scalar, quaternion, npy_double, ret_type) \
+  BINARY_GEN_UFUNC(scalar_##name, scalar_##name, npy_double, quaternion, ret_type)
 // And these all do the work mentioned above, using the macros
 BINARY_UFUNC(add, quaternion)
 BINARY_UFUNC(subtract, quaternion)
 BINARY_UFUNC(multiply, quaternion)
 BINARY_UFUNC(divide, quaternion)
-BINARY_GEN_UFUNC(true_divide, divide, quaternion, quaternion)
-BINARY_GEN_UFUNC(floor_divide, divide, quaternion, quaternion)
+BINARY_GEN_UFUNC(true_divide, divide, quaternion, quaternion, quaternion)
+BINARY_GEN_UFUNC(floor_divide, divide, quaternion, quaternion, quaternion)
 BINARY_UFUNC(power, quaternion)
 BINARY_UFUNC(copysign, quaternion)
 BINARY_UFUNC(equal, npy_bool)
@@ -1061,8 +1066,10 @@ BINARY_UFUNC(less, npy_bool)
 BINARY_UFUNC(less_equal, npy_bool)
 BINARY_SCALAR_UFUNC(multiply, quaternion)
 BINARY_SCALAR_UFUNC(divide, quaternion)
-BINARY_GEN_UFUNC(true_divide_scalar, divide_scalar, npy_double, quaternion)
-BINARY_GEN_UFUNC(floor_divide_scalar, divide_scalar, npy_double, quaternion)
+BINARY_GEN_UFUNC(true_divide_scalar, divide_scalar, quaternion, npy_double, quaternion)
+BINARY_GEN_UFUNC(floor_divide_scalar, divide_scalar, quaternion, npy_double, quaternion)
+BINARY_GEN_UFUNC(scalar_true_divide, scalar_divide, npy_double, quaternion, quaternion)
+BINARY_GEN_UFUNC(scalar_floor_divide, scalar_divide, npy_double, quaternion, quaternion)
 BINARY_SCALAR_UFUNC(power, quaternion)
 
 
@@ -1378,6 +1385,9 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
                                 quaternion_descr->type_num, quaternion_##name##_ufunc, arg_types, NULL)
   #define REGISTER_SCALAR_UFUNC(name)                                   \
     PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
+                                quaternion_descr->type_num, quaternion_scalar_##name##_ufunc, arg_types, NULL)
+  #define REGISTER_UFUNC_SCALAR(name)                                   \
+    PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
                                 quaternion_descr->type_num, quaternion_##name##_scalar_ufunc, arg_types, NULL)
   #define REGISTER_NEW_UFUNC(name, nargin, nargout, doc)                \
     tmp_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, nargin, nargout, \
@@ -1444,15 +1454,25 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_UFUNC(less);
   REGISTER_UFUNC(less_equal);
 
-  // quat, double -> quat
-  arg_types[0] = quaternion_descr->type_num;
-  arg_types[1] = NPY_DOUBLE;
+  // double, quat -> quat
+  arg_types[0] = NPY_DOUBLE;
+  arg_types[1] = quaternion_descr->type_num;
   arg_types[2] = quaternion_descr->type_num;
   REGISTER_SCALAR_UFUNC(multiply);
   REGISTER_SCALAR_UFUNC(divide);
   REGISTER_SCALAR_UFUNC(true_divide);
   REGISTER_SCALAR_UFUNC(floor_divide);
   REGISTER_SCALAR_UFUNC(power);
+
+  // quat, double -> quat
+  arg_types[0] = quaternion_descr->type_num;
+  arg_types[1] = NPY_DOUBLE;
+  arg_types[2] = quaternion_descr->type_num;
+  REGISTER_UFUNC_SCALAR(multiply);
+  REGISTER_UFUNC_SCALAR(divide);
+  REGISTER_UFUNC_SCALAR(true_divide);
+  REGISTER_UFUNC_SCALAR(floor_divide);
+  REGISTER_UFUNC_SCALAR(power);
 
   // quat, quat -> quat
   arg_types[0] = quaternion_descr->type_num;

@@ -96,15 +96,15 @@ def test_from_spherical_coords():
 
 def test_from_euler_angles():
     random.seed(1843)
-    random_angles = [[random.uniform(-np.pi, np.pi), random.uniform(-np.pi, np.pi), random.uniform(-np.pi, np.pi)]
+    random_angles = [[random.uniform(-np.pi, np.pi),
+                      random.uniform(-np.pi, np.pi),
+                      random.uniform(-np.pi, np.pi)]
                      for i in range(5000)]
     for alpha, beta, gamma in random_angles:
-        assert abs((
-                       np.quaternion(0, 0, 0, alpha / 2.).exp() * np.quaternion(0, 0, beta / 2.,
-                                                                                0).exp() * np.quaternion(0,
-                                                                                                         0,
-                                                                                                         0,
-                                                                                                         gamma / 2.).exp())
+        assert abs((np.quaternion(0, 0, 0, alpha / 2.).exp()
+                    * np.quaternion(0, 0, beta / 2., 0).exp()
+                    * np.quaternion(0, 0, 0, gamma / 2.).exp()
+                   )
                    - quaternion.from_euler_angles(alpha, beta, gamma)) < 1.e-15
 
 
