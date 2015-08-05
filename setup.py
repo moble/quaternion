@@ -22,6 +22,7 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('quaternion', parent_package, top_path)
     config.add_extension('numpy_quaternion',
                          ['quaternion.c', 'numpy_quaternion.c'],
+                         depends=['quaternion.c', 'quaternion.h', 'numpy_quaternion.c'],
                          extra_compile_args=compile_args, )
     return config
 
