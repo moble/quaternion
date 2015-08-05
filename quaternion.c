@@ -8,9 +8,6 @@
 
 #define _QUAT_EPS 1e-14
 
-double
-_quaternion_scalar_log(double s) { return log(s); }
-
 quaternion
 quaternion_create_from_spherical_coords(double vartheta, double varphi) {
   double ct = cos(vartheta/2.);
@@ -61,6 +58,26 @@ quaternion_log(quaternion q)
     double f = v/b;
     return (quaternion) { log(q.w*q.w+b*b)/2.0, f*q.x, f*q.y, f*q.z };
   }
+}
+
+double
+_quaternion_scalar_log(double s) { return log(s); }
+
+quaternion
+quaternion_scalar_power(double s, quaternion q)
+{
+  /* Unlike the quaternion^quaternion power, this is unambiguous. */
+  if(s==0.0) { /* log(s)=-inf */
+    if(! quaternion_nonzero(q)) {
+      return (quaternion) {1.0, 0.0, 0.0, 0.0}; /* consistent with python */
+    } else {
+      return (quaternion) {0.0, 0.0, 0.0, 0.0}; /* consistent with python */
+    }
+  } else if(s<0.0) { /* log(s)=nan */
+    // fprintf(stderr, "Input scalar (%.15g) has no unique logarithm; returning one arbitrarily.", s);
+    return quaternion_exp(quaternion_multiply(q, (quaternion) {log(-s), M_PI, 0, 0}));
+  }
+  return quaternion_exp(quaternion_multiply_scalar(q, log(s)));
 }
 
 quaternion

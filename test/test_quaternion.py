@@ -8,7 +8,14 @@ import numpy as np
 import quaternion
 from numpy import *
 import pytest
-from quaternion import allclose
+
+
+eps = np.finfo(float).eps
+
+
+def allclose(*args, **kwargs):
+    kwargs.update({'verbose': True})
+    return quaternion.allclose(*args, **kwargs)
 
 
 def passer(b):
@@ -354,9 +361,10 @@ def test_quaternion_copysign(Qs):
 
 ## Quaternion-quaternion or quaternion-scalar binary quaternion returners
 def test_quaternion_multiply(Qs):
-    for q in Qs[Qs_finite]:  # General quaternion mult. would use inf*0.0
+    # Check scalar multiplication
+    for q in Qs[Qs_finite]:
         assert q * Qs[q_1] == q
-    for q in Qs[Qs_finite]:  # General quaternion mult. would use inf*0.0
+    for q in Qs[Qs_finite]:
         assert q * 1.0 == q
         assert q * 1 == q
         assert 1.0 * q == q
@@ -368,15 +376,18 @@ def test_quaternion_multiply(Qs):
     for q in Qs[Qs_finite]:
         assert 0.0 * q == Qs[q_0]
         assert 0.0 * q == q * 0.0
-    for q in [Qs[q_1], Qs[x], Qs[y], Qs[z]]:
-        assert Qs[q_1] * q == q
-        assert q * Qs[q_1] == q
+
+    # Check linearity
     for q1 in Qs[Qs_finite]:
         for q2 in Qs[Qs_finite]:
             for q3 in Qs[Qs_finite]:
-                assert (q1*(q2+q3) - ((q1*q2)+(q1*q3))).abs() < 2*np.finfo(float).eps
-    # The following tests the multiplication table.  Combined with linearity,
-    # this checks that multiplication works correctly.
+                assert allclose(q1*(q2+q3), (q1*q2)+(q1*q3))
+                assert allclose((q1+q2)*q3, (q1*q3)+(q2*q3))
+
+    # Check the multiplication table
+    for q in [Qs[q_1], Qs[x], Qs[y], Qs[z]]:
+        assert Qs[q_1] * q == q
+        assert q * Qs[q_1] == q
     assert Qs[x] * Qs[x] == -Qs[q_1]
     assert Qs[x] * Qs[y] == Qs[z]
     assert Qs[x] * Qs[z] == -Qs[y]
@@ -389,16 +400,27 @@ def test_quaternion_multiply(Qs):
 
 
 def test_quaternion_divide(Qs):
+    # Check scalar division
     for q in Qs[Qs_finitenonzero]:
-        assert ((q / q) - Qs[q_1]).abs() < 2*np.finfo(float).eps
-        assert ((1 / q) - q.inverse()).abs() < 2*np.finfo(float).eps
-        assert ((1.0 / q) - q.inverse()).abs() < 2*np.finfo(float).eps
-        assert ((5 / q) - 5*q.inverse()).abs() < 2*np.finfo(float).eps
-        assert ((5.1 / q) - 5.1*q.inverse()).abs() < 2*np.finfo(float).eps
+        assert allclose(q / q, quaternion.one)
+        assert allclose(1 / q, q.inverse())
+        assert allclose(1.0 / q, q.inverse())
+        assert 0.0 / q == quaternion.zero
+        for s in [-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]:
+            assert allclose(s / q, s * (q.inverse()))
     for q in Qs[Qs_nonnan]:
         assert q / 1.0 == q
-    strict_assert(False)  # Division by non-unit scalar
-    strict_assert(False)  # Each of the 16 basic products
+        assert q / 1 == q
+        for s in [-3, -2.3, -1.2, -1.0, 1.0, 1, 1.2, 2.3, 3]:
+            assert allclose(q / s, q * (1.0/s))
+
+    # Check linearity
+    for q1 in Qs[Qs_finite]:
+        for q2 in Qs[Qs_finite]:
+            for q3 in Qs[Qs_finitenonzero]:
+                assert allclose((q1+q2)/q3, (q1/q3)+(q2/q3))
+
+    # Check the multiplication table
     for q in [Qs[q_1], Qs[x], Qs[y], Qs[z]]:
         assert Qs[q_1] / q == q.conj()
         assert q / Qs[q_1] == q
@@ -414,33 +436,75 @@ def test_quaternion_divide(Qs):
 
 
 def test_quaternion_power(Qs):
-    qpower_precision = 5.e-13
-    for q in Qs[Qs_finitenonzero]:
-        assert (q ** 0 - np.quaternion(1, 0, 0, 0)).abs() < qpower_precision
-        assert (q ** 0.0 - np.quaternion(1, 0, 0, 0)).abs() < qpower_precision
-        assert (q ** np.quaternion(0, 0, 0, 0) - np.quaternion(1, 0, 0, 0)).abs() < qpower_precision
-        assert (((q ** 0.5) * (q ** 0.5)) - q).abs() < qpower_precision
-        assert (q ** 1.0 - q).abs() < qpower_precision
-        assert (q ** 1 - q).abs() < qpower_precision
-        assert (q ** np.quaternion(1, 0, 0, 0) - q).abs() < qpower_precision
-        assert (q ** 2.0 - q * q).abs() < qpower_precision
-        assert (q ** 2 - q * q).abs() < qpower_precision
-        assert (q ** np.quaternion(2, 0, 0, 0) - q * q).abs() < qpower_precision
-        assert (q ** 3 - q * q * q).abs() < qpower_precision
+    import math
+    qpower_precision = 4*eps
+
+    # Test equivalence between scalar and real-quaternion exponentiation
     for b in [0, 0.0, 1, 1.0, 2, 2.0, 5.6]:
         for e in [0, 0.0, 1, 1.0, 2, 2.0, 4.5]:
             be = np.quaternion(b**e, 0, 0, 0)
-            assert (be - np.quaternion(b, 0, 0, 0)**np.quaternion(e, 0, 0, 0)).abs() < qpower_precision
-            assert (be - b**np.quaternion(e, 0, 0, 0)).abs() < qpower_precision
-            assert (be - np.quaternion(b, 0, 0, 0)**e).abs() < qpower_precision
-    qinverse_precision = 5.e-16
+            assert allclose(be, np.quaternion(b, 0, 0, 0)**np.quaternion(e, 0, 0, 0), rtol=qpower_precision)
+            assert allclose(be, b**np.quaternion(e, 0, 0, 0), rtol=qpower_precision)
+            assert allclose(be, np.quaternion(b, 0, 0, 0)**e, rtol=qpower_precision)
+    for q in [-3*quaternion.one, -2*quaternion.one, -quaternion.one, quaternion.zero, quaternion.one, 3*quaternion.one]:
+        for s in [-3, -2.3, -1.2, -1.0, 1.0, 1, 1.2, 2.3, 3]:
+            for t in [-3, -2.3, -1.2, -1.0, 1.0, 1, 1.2, 2.3, 3]:
+                assert allclose((s*t)**q, (s**q)*(t**q), rtol=2*qpower_precision)
+
+    # Test basic integer-exponent and additive-exponent properties
     for q in Qs[Qs_finitenonzero]:
-        assert ((q ** -1.0) * q - Qs[q_1]).abs() < qinverse_precision
+        assert allclose(q ** 0, np.quaternion(1, 0, 0, 0), rtol=qpower_precision)
+        assert allclose(q ** 0.0, np.quaternion(1, 0, 0, 0), rtol=qpower_precision)
+        assert allclose(q ** np.quaternion(0, 0, 0, 0), np.quaternion(1, 0, 0, 0), rtol=qpower_precision)
+        assert allclose(((q ** 0.5) * (q ** 0.5)), q, rtol=qpower_precision)
+        assert allclose(q ** 1.0, q, rtol=qpower_precision)
+        assert allclose(q ** 1, q, rtol=qpower_precision)
+        assert allclose(q ** np.quaternion(1, 0, 0, 0), q, rtol=qpower_precision)
+        assert allclose(q ** 2.0, q * q, rtol=qpower_precision)
+        assert allclose(q ** 2, q * q, rtol=qpower_precision)
+        assert allclose(q ** np.quaternion(2, 0, 0, 0), q * q, rtol=qpower_precision)
+        assert allclose(q ** 3, q * q * q, rtol=qpower_precision)
+        assert allclose(q ** -1, q.inverse(), rtol=qpower_precision)
+        assert allclose(q ** -1.0, q.inverse(), rtol=qpower_precision)
+        for s in [-3, -2.3, -1.2, -1.0, 1.0, 1, 1.2, 2.3, 3]:
+            for t in [-3, -2.3, -1.2, -1.0, 1.0, 1, 1.2, 2.3, 3]:
+                assert allclose(q**(s+t), (q**s)*(q**t), rtol=2*qpower_precision)
+                assert allclose(q**(s-t), (q**s)/(q**t), rtol=2*qpower_precision)
+
+    # Check that exp(q) is the same as e**q
     for q in Qs[Qs_finitenonzero]:
-        assert ((q ** -1) * q - Qs[q_1]).abs() < qinverse_precision
+        assert allclose(q.exp(), math.e**q, rtol=qpower_precision)
+        for s in [0, 0., 1.0, 1, 1.2, 2.3, 3]:
+            for t in [0, 0., 1.0, 1, 1.2, 2.3, 3]:
+                assert allclose((s*t)**q, (s**q)*(t**q), rtol=2*qpower_precision)
+        for s in [1.0, 1, 1.2, 2.3, 3]:
+            assert allclose(s**q, (q*math.log(s)).exp(), rtol=qpower_precision)
+
+    qinverse_precision = 2*eps
     for q in Qs[Qs_finitenonzero]:
-        assert ((q ** Qs[q_1]) - q).abs() < qpower_precision
+        assert allclose((q ** -1.0) * q, Qs[q_1], rtol=qinverse_precision)
+    for q in Qs[Qs_finitenonzero]:
+        assert allclose((q ** -1) * q, Qs[q_1], rtol=qinverse_precision)
+    for q in Qs[Qs_finitenonzero]:
+        assert allclose((q ** Qs[q_1]), q, rtol=qpower_precision)
     strict_assert(False)  # Try more edge cases
+
+    for q in [quaternion.x, quaternion.y, quaternion.z]:
+        assert allclose(quaternion.quaternion(math.exp(-math.pi/2), 0, 0, 0),
+                        q**q, rtol=qpower_precision)
+    assert allclose(quaternion.quaternion(math.cos(math.pi/2), 0, 0, math.sin(math.pi/2)),
+                    quaternion.x**quaternion.y, rtol=qpower_precision)
+    assert allclose(quaternion.quaternion(math.cos(math.pi/2), 0, -math.sin(math.pi/2), 0),
+                    quaternion.x**quaternion.z, rtol=qpower_precision)
+    assert allclose(quaternion.quaternion(math.cos(math.pi/2), 0, 0, -math.sin(math.pi/2)),
+                    quaternion.y**quaternion.x, rtol=qpower_precision)
+    assert allclose(quaternion.quaternion(math.cos(math.pi/2), math.sin(math.pi/2), 0, 0),
+                    quaternion.y**quaternion.z, rtol=qpower_precision)
+    assert allclose(quaternion.quaternion(math.cos(math.pi/2), 0, math.sin(math.pi/2), 0),
+                    quaternion.z**quaternion.x, rtol=qpower_precision)
+    assert allclose(quaternion.quaternion(math.cos(math.pi/2), -math.sin(math.pi/2), 0, 0),
+                    quaternion.z**quaternion.y, rtol=qpower_precision)
+
 
 
 def test_quaternion_getset(Qs):

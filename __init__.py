@@ -96,13 +96,13 @@ def as_spinor_array(a):
     return a.view(np.float).reshape(a.shape + (4,))[..., [0, 3, 2, 1]].ravel().view(np.complex).reshape(a.shape + (2,))
 
 
-def allclose(a, b, rtol=2*np.finfo(float).eps, atol=0.0):
+def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, verbose=False):
     """
     Returns True if two arrays are element-wise equal within a tolerance.
 
     This function is essentially a copy of the `numpy.allclose` function,
-    with different default tolerances, and minor changes necessary to deal
-    correctly with quaternions.
+    with different default tolerances, minor changes necessary to deal
+    correctly with quaternions, and the verbose option.
 
     The tolerance values are positive, typically very small numbers.  The
     relative difference (`rtol` * abs(`b`)) and the absolute difference
@@ -118,7 +118,7 @@ def allclose(a, b, rtol=2*np.finfo(float).eps, atol=0.0):
     a, b : array_like
         Input arrays to compare.
     rtol : float
-        The relative tolerance parameter (see Notes).  Default 2*eps.
+        The relative tolerance parameter (see Notes).  Default 4*eps.
     atol : float
         The absolute tolerance parameter (see Notes).  Default 0.0.
 
@@ -169,9 +169,13 @@ def allclose(a, b, rtol=2*np.finfo(float).eps, atol=0.0):
     if any(xinf) or any(yinf):
         # Check that x and y have inf's only in the same positions
         if not all(xinf == yinf):
+            if verbose:
+                print('not all(xinf == yinf)')
             return False
         # Check that sign of inf's in x and y is the same
         if not all(x[xinf] == y[xinf]):
+            if verbose:
+                print('not all(x[xinf] == y[xinf])')
             return False
 
         x = x[~xinf]
@@ -180,5 +184,12 @@ def allclose(a, b, rtol=2*np.finfo(float).eps, atol=0.0):
     # ignore invalid fpe's
     with np.errstate(invalid='ignore'):
         r = all(np.less_equal(abs(x - y), atol + rtol * abs(y)))
+        if verbose and not r:
+            unequal = np.less_equal(abs(x - y), atol + rtol * abs(y))
+            for i, val in enumerate(unequal):
+                if not val:
+                    print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x[i], y[i])
+                          + '\n{0} > {1} + {2} * {3} = {4}'.format(abs(x[i] - y[i]), atol, rtol, abs(y[i]),
+                                                                   atol + rtol * abs(y[i])))
 
     return r

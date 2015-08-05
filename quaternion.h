@@ -304,18 +304,7 @@ extern "C" {
     *q1 = q3;
     return;
   }
-  double _quaternion_scalar_log(double s);
-  static NPY_INLINE quaternion quaternion_scalar_power(double s, quaternion q) {
-    /* Unlike the quaternion^quaternion power, this is unambiguous. */
-    if(s==0.0) { /* log(s)=-inf */
-      if(! quaternion_nonzero(q)) {
-        return (quaternion) {1.0, 0.0, 0.0, 0.0}; /* consistent with python */
-      } else {
-        return (quaternion) {0.0, 0.0, 0.0, 0.0}; /* consistent with python */
-      }
-    }
-    return quaternion_exp(quaternion_multiply_scalar(q, _quaternion_scalar_log(s)));
-  }
+  quaternion quaternion_scalar_power(double s, quaternion q);
   static NPY_INLINE void quaternion_inplace_scalar_power(double s, quaternion* q) {
     /* Not overly useful as an in-place operator, but here for completeness. */
     quaternion q2 = quaternion_scalar_power(s, *q);
