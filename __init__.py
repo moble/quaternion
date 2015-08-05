@@ -171,11 +171,19 @@ def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, verbose=False):
         if not all(xinf == yinf):
             if verbose:
                 print('not all(xinf == yinf)')
+                equal = (xinf == yinf)
+                for i, val in enumerate(equal):
+                    if not val:
+                        print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x[i], y[i]))
             return False
         # Check that sign of inf's in x and y is the same
         if not all(x[xinf] == y[xinf]):
             if verbose:
                 print('not all(x[xinf] == y[xinf])')
+                equal = (x[xinf] == y[xinf])
+                for i, val in enumerate(equal):
+                    if not val:
+                        print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x[xinf][i], y[xinf][i]))
             return False
 
         x = x[~xinf]
@@ -185,8 +193,8 @@ def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, verbose=False):
     with np.errstate(invalid='ignore'):
         r = all(np.less_equal(abs(x - y), atol + rtol * abs(y)))
         if verbose and not r:
-            unequal = np.less_equal(abs(x - y), atol + rtol * abs(y))
-            for i, val in enumerate(unequal):
+            lessequal = np.less_equal(abs(x - y), atol + rtol * abs(y))
+            for i, val in enumerate(lessequal):
                 if not val:
                     print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x[i], y[i])
                           + '\n{0} > {1} + {2} * {3} = {4}'.format(abs(x[i] - y[i]), atol, rtol, abs(y[i]),

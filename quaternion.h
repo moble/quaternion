@@ -170,6 +170,16 @@ extern "C" {
   }
 
   // Quaternion-quaternion binary quaternion returners
+  static NPY_INLINE quaternion quaternion_copysign(quaternion q1, quaternion q2) {
+    return (quaternion) {
+      copysign(q1.w, q2.w),
+      copysign(q1.x, q2.x),
+      copysign(q1.y, q2.y),
+      copysign(q1.z, q2.z)
+    };
+  }
+
+  // Quaternion-quaternion/quaternion-scalar binary quaternion returners
   static NPY_INLINE quaternion quaternion_add(quaternion q1, quaternion q2) {
     return (quaternion) {
       q1.w+q2.w,
@@ -183,6 +193,20 @@ extern "C" {
     q1->x += q2.x;
     q1->y += q2.y;
     q1->z += q2.z;
+    return;
+  }
+  static NPY_INLINE quaternion quaternion_scalar_add(double s, quaternion q) {
+    return (quaternion) {s+q.w, q.x, q.y, q.z};
+  }
+  static NPY_INLINE void quaternion_inplace_scalar_add(double s, quaternion* q) {
+    q->w += s;
+    return;
+  }
+  static NPY_INLINE quaternion quaternion_add_scalar(quaternion q, double s) {
+    return (quaternion) {s+q.w, q.x, q.y, q.z};
+  }
+  static NPY_INLINE void quaternion_inplace_add_scalar(quaternion* q, double s) {
+    q->w += s;
     return;
   }
   static NPY_INLINE quaternion quaternion_subtract(quaternion q1, quaternion q2) {
@@ -200,16 +224,16 @@ extern "C" {
     q1->z -= q2.z;
     return;
   }
-  static NPY_INLINE quaternion quaternion_copysign(quaternion q1, quaternion q2) {
-    return (quaternion) {
-      copysign(q1.w, q2.w),
-      copysign(q1.x, q2.x),
-      copysign(q1.y, q2.y),
-      copysign(q1.z, q2.z)
-    };
+  static NPY_INLINE quaternion quaternion_scalar_subtract(double s, quaternion q) {
+    return (quaternion) {s-q.w, -q.x, -q.y, -q.z};
   }
-
-  // Quaternion-quaternion/quaternion-scalar binary quaternion returners
+  static NPY_INLINE quaternion quaternion_subtract_scalar(quaternion q, double s) {
+    return (quaternion) {q.w-s, q.x, q.y, q.z};
+  }
+  static NPY_INLINE void quaternion_inplace_subtract_scalar(quaternion* q, double s) {
+    q->w -= s;
+    return;
+  }
   static NPY_INLINE quaternion quaternion_multiply(quaternion q1, quaternion q2) {
     return (quaternion) {
       q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z,

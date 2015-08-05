@@ -3,6 +3,7 @@
 from __future__ import print_function, division, absolute_import
 import os
 import random
+import operator
 
 import numpy as np
 import quaternion
@@ -20,15 +21,39 @@ def allclose(*args, **kwargs):
 
 def passer(b):
     pass
-
 # Change this to strict_assert = assert_ to check for missing tests
 strict_assert = passer
 
 
-## The following fixtures are used to establish some re-usable data
-## for the tests; they need to be re-constructed because some of the
-## tests will change the values, but we want the values to be constant
-## on every entry into a test.
+def ufunc_binary_utility(array1, array2, op, rtol=2*eps, atol=0.0):
+    """Make sure broadcasting is consistent with individual operations
+
+    Given two arrays, we expect a broadcast binary operation to be consistent with the individual operations.  This
+    utility function simply goes through and checks that that is true.  For example, if the input operation is `*`,
+    this function checks for each `i` that
+
+        array1[i] * array2  ==  np.array([array1[i]*array2[j] for j in range(len(array2))])
+
+    """
+    for arg1 in array1:
+        assert allclose(op(arg1, array2),
+                        np.array([op(arg1, arg2) for arg2 in array2]),
+                        rtol=rtol, atol=atol)
+    for arg2 in array2:
+        assert allclose(op(array1, arg2),
+                        np.array([op(arg1, arg2) for arg1 in array1]),
+                        rtol=rtol, atol=atol)
+
+    if array1.shape == array2.shape:
+        assert allclose(op(array1, array2),
+                        np.array([op(arg1, arg2) for arg1, arg2 in zip(array1, array2)]),
+                        rtol=rtol, atol=atol)
+
+
+# The following fixtures are used to establish some re-usable data
+# for the tests; they need to be re-constructed because some of the
+# tests will change the values, but we want the values to be constant
+# on every entry into a test.
 
 @pytest.fixture
 def Qs():
@@ -139,7 +164,7 @@ def test_from_euler_angles():
                    - quaternion.from_euler_angles(alpha, beta, gamma)) < 1.e-15
 
 
-## Unary bool returners
+# Unary bool returners
 def test_quaternion_nonzero(Qs):
     assert not Qs[q_0].nonzero()  # Do this one explicitly, to not use circular logic
     assert Qs[q_1].nonzero()  # Do this one explicitly, to not use circular logic
@@ -181,7 +206,7 @@ def test_quaternion_isfinite(Qs):
         assert q.isfinite()
 
 
-## Binary bool returners
+# Binary bool returners
 def test_quaternion_equal(Qs):
     for j in Qs_nonnan:
         assert Qs[j] == Qs[j]  # self equality
@@ -245,7 +270,7 @@ def test_quaternion_richcompare(Qs):
         assert p.greater_equal(Qs[q_1])
 
 
-## Unary float returners
+# Unary float returners
 def test_quaternion_absolute(Qs):
     for q in Qs[Qs_nan]:
         assert np.isnan(q.abs())
@@ -268,7 +293,7 @@ def test_quaternion_norm(Qs):
         assert q.norm() == a
 
 
-## Unary quaternion returners
+# Unary quaternion returners
 def test_quaternion_negative(Qs):
     assert -Qs[Q] == Qs[Qneg]
     for q in Qs[Qs_finite]:
@@ -335,7 +360,13 @@ def test_quaternion_parity_conjugates(Qs):
     assert np.array_equal(np.parity_conjugate(Qs[Qs_finite]), np.array([q.parity_conjugate() for q in Qs[Qs_finite]]))
 
 
-## Quaternion-quaternion binary quaternion returners
+# Quaternion-quaternion binary quaternion returners
+@pytest.mark.xfail
+def test_quaternion_copysign(Qs):
+    assert False
+
+
+# Quaternion-quaternion, scalar-quaternion, or quaternion-scalar binary quaternion returners
 def test_quaternion_add(Qs):
     for j in Qs_nonnan:
         for k in Qs_nonnan:
@@ -344,22 +375,30 @@ def test_quaternion_add(Qs):
             assert (q + p == quaternion.quaternion(q.w + p.w, q.x + p.x, q.y + p.y, q.z + p.z)
                     or (j == q_inf1 and k == q_minf1)
                     or (k == q_inf1 and j == q_minf1))
-    strict_assert(False)  # Check nans and (Qs[q_inf1]+Qs[q_minf1]) and (Qs[q_minf1]+Qs[q_inf1])
+    for q in Qs[Qs_nonnan]:
+        for s in [-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]:
+            assert (q + s == quaternion.quaternion(q.w + s, q.x, q.y, q.z))
+            assert (s + q == quaternion.quaternion(q.w + s, q.x, q.y, q.z))
+
+
+def test_quaternion_add_ufunc(Qs):
+    ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finite], operator.add)
 
 
 def test_quaternion_subtract(Qs):
     for q in Qs[Qs_finite]:
         for p in Qs[Qs_finite]:
             assert q - p == quaternion.quaternion(q.w - p.w, q.x - p.x, q.y - p.y, q.z - p.z)
-    strict_assert(False)  # Check non-finite
+    for q in Qs[Qs_nonnan]:
+        for s in [-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]:
+            assert (q - s == quaternion.quaternion(q.w - s, q.x, q.y, q.z))
+            assert (s - q == quaternion.quaternion(s - q.w, -q.x, -q.y, -q.z))
 
 
-@pytest.mark.xfail
-def test_quaternion_copysign(Qs):
-    assert False
+def test_quaternion_subtract_ufunc(Qs):
+    ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finite], operator.sub)
 
 
-## Quaternion-quaternion or quaternion-scalar binary quaternion returners
 def test_quaternion_multiply(Qs):
     # Check scalar multiplication
     for q in Qs[Qs_finite]:
@@ -399,6 +438,26 @@ def test_quaternion_multiply(Qs):
     assert Qs[z] * Qs[z] == -Qs[q_1]
 
 
+def test_quaternion_multiply_ufunc(Qs):
+    ufunc_binary_utility(np.array([quaternion.one]), Qs[Qs_finite], operator.mul)
+    ufunc_binary_utility(Qs[Qs_finite], np.array([quaternion.one]), operator.mul)
+    ufunc_binary_utility(np.array([1.0]), Qs[Qs_finite], operator.mul)
+    ufunc_binary_utility(Qs[Qs_finite], np.array([1.0]), operator.mul)
+    ufunc_binary_utility(np.array([1]), Qs[Qs_finite], operator.mul)
+    ufunc_binary_utility(Qs[Qs_finite], np.array([1]), operator.mul)
+    ufunc_binary_utility(np.array([0.0]), Qs[Qs_finite], operator.mul)
+    ufunc_binary_utility(Qs[Qs_finite], np.array([0.0]), operator.mul)
+    ufunc_binary_utility(np.array([0]), Qs[Qs_finite], operator.mul)
+    ufunc_binary_utility(Qs[Qs_finite], np.array([0]), operator.mul)
+
+    ufunc_binary_utility(np.array([-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]),
+                         Qs[Qs_finite], operator.mul)
+    ufunc_binary_utility(Qs[Qs_finite],
+                         np.array([-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]), operator.mul)
+
+    ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finite], operator.mul)
+
+
 def test_quaternion_divide(Qs):
     # Check scalar division
     for q in Qs[Qs_finitenonzero]:
@@ -433,6 +492,28 @@ def test_quaternion_divide(Qs):
     assert Qs[z] / Qs[x] == -Qs[y]
     assert Qs[z] / Qs[y] == Qs[x]
     assert Qs[z] / Qs[z] == Qs[q_1]
+
+
+def test_quaternion_divide_ufunc(Qs):
+    ufunc_binary_utility(np.array([quaternion.one]), Qs[Qs_finitenonzero], operator.truediv)
+    ufunc_binary_utility(Qs[Qs_finite], np.array([quaternion.one]), operator.truediv)
+    ufunc_binary_utility(np.array([1.0]), Qs[Qs_finitenonzero], operator.truediv)
+    ufunc_binary_utility(Qs[Qs_finite], np.array([1.0]), operator.truediv)
+    ufunc_binary_utility(np.array([1]), Qs[Qs_finitenonzero], operator.truediv)
+    ufunc_binary_utility(Qs[Qs_finite], np.array([1]), operator.truediv)
+    ufunc_binary_utility(np.array([0.0]), Qs[Qs_finitenonzero], operator.truediv)
+    ufunc_binary_utility(np.array([0]), Qs[Qs_finitenonzero], operator.truediv)
+
+    ufunc_binary_utility(np.array([-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]),
+                         Qs[Qs_finitenonzero], operator.truediv)
+    ufunc_binary_utility(Qs[Qs_finitenonzero],
+                         np.array([-3, -2.3, -1.2, -1.0, 1.0, 1, 1.2, 2.3, 3]), operator.truediv)
+
+    ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finitenonzero], operator.truediv)
+    ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finitenonzero], operator.floordiv)
+
+    ufunc_binary_utility(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero], operator.truediv)
+    ufunc_binary_utility(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero], operator.floordiv)
 
 
 def test_quaternion_power(Qs):

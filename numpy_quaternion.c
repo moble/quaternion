@@ -184,12 +184,13 @@ pyquaternion_positive(PyObject* self, PyObject* b) {
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
     quaternion p = {0};                                                 \
     quaternion q = {0};                                                 \
+    if(PyArray_Check(b)) { fprintf (stderr, "\nfile %s, line %d, pyquaternion_%s(PyObject* a, PyObject* b).\n", __FILE__, __LINE__, #name); } /*return pyquaternion_##name##_array_operator(a, b); }*/ \
     PyQuaternion_AsQuaternion(p, a);                                    \
     PyQuaternion_AsQuaternion(q, b);                                    \
     return PyQuaternion_FromQuaternion(quaternion_##name(p,q));         \
   }
-QQ_BINARY_QUATERNION_RETURNER(add)
-QQ_BINARY_QUATERNION_RETURNER(subtract)
+/* QQ_BINARY_QUATERNION_RETURNER(add) */
+/* QQ_BINARY_QUATERNION_RETURNER(subtract) */
 QQ_BINARY_QUATERNION_RETURNER(copysign)
 
 #define QQ_BINARY_QUATERNION_INPLACE(name)                              \
@@ -202,8 +203,8 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
     quaternion_inplace_##name(p,q);                                     \
     return a;                                                           \
   }
-QQ_BINARY_QUATERNION_INPLACE(add)
-QQ_BINARY_QUATERNION_INPLACE(subtract)
+/* QQ_BINARY_QUATERNION_INPLACE(add) */
+/* QQ_BINARY_QUATERNION_INPLACE(subtract) */
 
 #define QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(fake_name, name)       \
   static PyObject*                                                      \
@@ -267,6 +268,7 @@ QQ_BINARY_QUATERNION_INPLACE(subtract)
   static PyObject*                                                      \
   pyquaternion_##fake_name(PyObject* a, PyObject* b) {                  \
     /* fprintf (stderr, "\nfile %s, line %d, pyquaternion_%s(PyObject* a, PyObject* b).\n", __FILE__, __LINE__, #fake_name); */ \
+    npy_int64 val;                                                      \
     quaternion p = {0};                                                 \
     if(PyArray_Check(b)) { return pyquaternion_##fake_name##_array_operator(a, b); } \
     if(PyFloat_Check(a) && PyQuaternion_Check(b)) {                     \
@@ -282,11 +284,16 @@ QQ_BINARY_QUATERNION_INPLACE(subtract)
       return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyFloat_AsDouble(b))); \
     } else if(PyInt_Check(b)) {                                         \
       return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyInt_AsLong(b))); \
+    } else if(PyObject_TypeCheck(b, &PyInt64ArrType_Type)) {            \
+      PyArray_ScalarAsCtype(b, &val);                                   \
+      return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p, val)); \
     }                                                                   \
     PyErr_SetString(PyExc_TypeError, "Binary operation involving quaternion and neither float nor quaternion."); \
     return NULL;                                                        \
   }
 #define QQ_QS_SQ_BINARY_QUATERNION_RETURNER(name) QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(name, name)
+QQ_QS_SQ_BINARY_QUATERNION_RETURNER(add)
+QQ_QS_SQ_BINARY_QUATERNION_RETURNER(subtract)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(multiply)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(divide)
 /* QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(true_divide, divide) */
@@ -317,6 +324,8 @@ QQ_QS_SQ_BINARY_QUATERNION_RETURNER(power)
     return NULL;                                                        \
   }
 #define QQ_QS_SQ_BINARY_QUATERNION_INPLACE(name) QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(name, name)
+QQ_QS_SQ_BINARY_QUATERNION_INPLACE(add)
+QQ_QS_SQ_BINARY_QUATERNION_INPLACE(subtract)
 QQ_QS_SQ_BINARY_QUATERNION_INPLACE(multiply)
 QQ_QS_SQ_BINARY_QUATERNION_INPLACE(divide)
 /* QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(true_divide, divide) */
