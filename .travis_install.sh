@@ -16,12 +16,10 @@ if [[ "${CONDA}" == "true" ]]; then
   conda update -q conda
   conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy numba pip pytest anaconda-client
   source activate test-environment
-  conda install --channel https://conda.anaconda.org/moble quaternion
-  py.test
-
-else
-
-  python setup.py install
-  py.test
+#  conda install --channel https://conda.anaconda.org/moble quaternion
+#
+#else
+#
+#  python setup.py install
 
 fi
