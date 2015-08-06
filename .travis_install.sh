@@ -18,9 +18,11 @@ if [[ "${CONDA}" == "true" ]]; then
   source activate test-environment
   conda config --add channels moble
   conda install quaternion
+  py.test
 
 else
 
   python setup.py install
+  py.test
 
 fi
