@@ -156,6 +156,8 @@ def test_as_rotation_matrix(Rs):
 
 
 def test_from_rotation_matrix(Rs):
+    scipy = pytest.importorskip("scipy")
+
     for R1 in Rs:
         R2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(R1))
         d = quaternion.rotation_intrinsic_distance(R1, R2)
