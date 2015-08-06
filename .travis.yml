@@ -13,7 +13,11 @@ env:
 install:
   - lsb_release -a
   - if [[ "${CONDA}" == "true" ]]; then ./.travis_install.sh; fi
+  - echo $PATH
+  - if [[ "${CONDA}" == "true" ]]; then export PATH=$HOME/miniconda/bin:$PATH; fi
+  - echo $PATH
   - if [[ "${CONDA}" == "true" ]]; then source activate test-environment; fi
+  - echo $PATH
   - (source activate test-environment && echo "Conda!") || echo "No conda"
   - python --version
   - which python
