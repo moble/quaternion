@@ -28,18 +28,16 @@ However, certain advanced functions in this package (including
 package for scientific computation, and implements interfaces to C and
 Fortran codes for optimization (among other things) need for finding
 mean and optimal rotors.  `Numba` uses [LLVM](http://llvm.org/) to
-compile python code to machine code, accelerating most numerical
+compile python code to machine code, accelerating many numerical
 functions by factors of anywhere from 2 to 2000.  It is *possible* to
-run all the code without `numba`, but these functions are roughly 4 to
-400 times slower without it.
+run all the code without `numba`, but these particular functions are
+roughly 4 to 400 times slower without it.
 
 The only drawback of `numba` is that it is nontrivial to install on
 its own.  Fortunately, the best python installer,
 [`anaconda`](http://continuum.io/downloads), makes it trivial.  Just
 install the main `anaconda` package, which installs both `numba` and
-`scipy`.
-
-If you prefer the smaller download size of
+`scipy`.  If you prefer the smaller download size of
 [`miniconda`](http://conda.pydata.org/miniconda.html) (which comes
 with no extras beyond python), you'll also have to run this command:
 
@@ -56,6 +54,16 @@ reasonably new installation of `python`):
 pip install git+git://github.com/moble/quaternion
 ```
 
+Of course, you could also just use `conda` with
+
+```sh
+conda install -c moble quaternion
+```
+
+But I might not be great about updating the OS X version of the package.
+(It's easy, but I just forget to do it; if you want the package updated,
+just ping me.)
+
 If you refuse to use anaconda, you might want to install inside your
 home directory without root privileges.  (Anaconda does this by
 default anyway.)  This is done by adding `--user` to the above
@@ -69,20 +77,20 @@ pip install --user git+git://github.com/moble/quaternion
 ## Usage
 
 ```python
- >>> import numpy as np
- >>> import quaternion
- >>> np.quaternion(1,0,0,0)
- quaternion(1, 0, 0, 0)
- >>> q1 = np.quaternion(1,2,3,4)
- >>> q2 = np.quaternion(5,6,7,8)
- >>> q1 * q2
- quaternion(-60, 12, 30, 24)
- >>> a = np.array([q1, q2])
- >>> a
- array([quaternion(1, 2, 3, 4), quaternion(5, 6, 7, 8)], dtype=quaternion)
- >>> exp(a)
- array([quaternion(1.69392, -0.78956, -1.18434, -1.57912),
-        quaternion(138.909, -25.6861, -29.9671, -34.2481)], dtype=quaternion)
+>>> import numpy as np
+>>> import quaternion
+>>> np.quaternion(1,0,0,0)
+quaternion(1, 0, 0, 0)
+>>> q1 = np.quaternion(1,2,3,4)
+>>> q2 = np.quaternion(5,6,7,8)
+>>> q1 * q2
+quaternion(-60, 12, 30, 24)
+>>> a = np.array([q1, q2])
+>>> a
+array([quaternion(1, 2, 3, 4), quaternion(5, 6, 7, 8)], dtype=quaternion)
+>>> exp(a)
+array([quaternion(1.69392, -0.78956, -1.18434, -1.57912),
+       quaternion(138.909, -25.6861, -29.9671, -34.2481)], dtype=quaternion)
 ```
 
 The following ufuncs are implemented (which means they run fast on
@@ -140,6 +148,9 @@ This code is, of course, hosted on github.  Because it is an
 open-source project, the hosting is free, and all the wonderful
 features of github are available, including free wiki space and web
 page hosting, pull requests, a nice interface to the git logs, etc.
+Github user Hannes Ovrén (hovren) pointed out some errors in a
+previous version of this code and suggested some nice utility functions
+for rotation matrices, etc.
 
 Every change in this code is
 [auomatically tested](https://travis-ci.org/moble/quaternion) on

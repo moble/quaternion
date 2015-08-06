@@ -1242,7 +1242,7 @@ static PyMethodDef QuaternionMethods[] = {
   {"from_spherical_coords", quaternion_from_spherical_coords, METH_VARARGS,
    "Generate unit quaternion from spherical coordinates"},
   {"from_euler_angles", quaternion_from_euler_angles, METH_VARARGS,
-   "Generate unit quaternion from Euler angles"},
+   "Generate unit quaternion from Euler angles as `exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)`"},
   {"rotor_intrinsic_distance", pyquaternion_rotor_intrinsic_distance, METH_VARARGS,
    "Distance measure intrinsic to rotor manifold"},
   {"rotor_chordal_distance", pyquaternion_rotor_chordal_distance, METH_VARARGS,

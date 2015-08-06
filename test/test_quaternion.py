@@ -2,7 +2,6 @@
 
 from __future__ import print_function, division, absolute_import
 import os
-import random
 import operator
 
 import numpy as np
@@ -96,9 +95,9 @@ Qs_finitenonzero = [i for i in range(len(Qs())) if Qs()[i].isfinite() and Qs()[i
 def Rs():
     ones = [0, -1., 1.]
     rs = [np.quaternion(w, x, y, z).normalized() for w in ones for x in ones for y in ones for z in ones][1:]
-    random.seed(1842)
-    rs = rs + [r.normalized() for r in [np.quaternion(random.uniform(-1, 1), random.uniform(-1, 1),
-                                                      random.uniform(-1, 1), random.uniform(-1, 1)) for i in range(20)]]
+    np.random.seed(1842)
+    rs = rs + [r.normalized() for r in [np.quaternion(np.random.uniform(-1, 1), np.random.uniform(-1, 1),
+                                                      np.random.uniform(-1, 1), np.random.uniform(-1, 1)) for i in range(20)]]
     return np.array(rs)
 
 
@@ -118,22 +117,98 @@ def test_constants():
     assert quaternion.z == np.quaternion(0.0, 0.0, 0.0, 1.0)
 
 
+def test_as_float_quat(Qs):
+    qs = Qs[Qs_nonnan]
+    for quats in [qs, np.vstack((qs,)*3), np.vstack((qs,)*(3*5)).reshape((3, 5)+qs.shape),
+                  np.vstack((qs,)*(3*5*6)).reshape((3, 5, 6)+qs.shape)]:
+        floats = quaternion.as_float_array(quats)
+        assert floats.shape == quats.shape+(4,)
+        assert allclose(quaternion.as_quat_array(floats), quats)
+
+
+def test_as_rotation_matrix(Rs):
+    def quat_mat(quat):
+        return np.array([(quat * v * quat.inverse()).vec for v in [quaternion.x, quaternion.y, quaternion.z]]).T
+
+    def quat_mat_vec(quats):
+        mat_vec = np.array([quaternion.as_float_array(quats * v * np.invert(quats))[..., 1:]
+                            for v in [quaternion.x, quaternion.y, quaternion.z]])
+        return np.transpose(mat_vec, tuple(range(mat_vec.ndim))[1:-1]+(-1, 0))
+
+    with pytest.raises(ZeroDivisionError):
+        quaternion.as_rotation_matrix(quaternion.zero)
+
+    for R in Rs:
+        # Test correctly normalized rotors:
+        assert allclose(quat_mat(R), quaternion.as_rotation_matrix(R), atol=2*eps)
+        # Test incorrectly normalized rotors:
+        assert allclose(quat_mat(R), quaternion.as_rotation_matrix(1.1*R), atol=2*eps)
+
+    Rs0 = Rs.copy()
+    Rs0[Rs.shape[0]//2] = quaternion.zero
+    with pytest.raises(ZeroDivisionError):
+        quaternion.as_rotation_matrix(Rs0)
+
+    # Test correctly normalized rotors:
+    assert allclose(quat_mat_vec(Rs), quaternion.as_rotation_matrix(Rs), atol=2*eps)
+    # Test incorrectly normalized rotors:
+    assert allclose(quat_mat_vec(Rs), quaternion.as_rotation_matrix(1.1*Rs), atol=2*eps)
+
+
+def test_from_rotation_matrix(Rs):
+    for R1 in Rs:
+        R2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(R1))
+        d = quaternion.rotation_intrinsic_distance(R1, R2)
+        assert d < 10*eps, (R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
+
+    Rs2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(Rs))
+    for R1, R2 in zip(Rs, Rs2):
+        d = quaternion.rotation_intrinsic_distance(R1, R2)
+        assert d < 10*eps, (R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
+
+
+def test_as_rotation_vector():
+    np.random.seed(1234)
+    n_tests = 1000
+    vecs = np.random.uniform(high=math.pi/math.sqrt(3), size=n_tests*3).reshape((n_tests, 3))
+    quats = np.zeros(vecs.shape[:-1]+(4,))
+    quats[..., 1:] = vecs[...]
+    quats = quaternion.as_quat_array(quats)
+    quats = np.exp(quats/2)
+    quat_vecs = quaternion.as_rotation_vector(quats)
+    assert allclose(quat_vecs, vecs)
+
+
+def test_from_rotation_vector():
+    np.random.seed(1234)
+    n_tests = 1000
+    vecs = np.random.uniform(high=math.pi/math.sqrt(3), size=n_tests*3).reshape((n_tests, 3))
+    quats = np.zeros(vecs.shape[:-1]+(4,))
+    quats[..., 1:] = vecs[...]
+    quats = quaternion.as_quat_array(quats)
+    quats = np.exp(quats/2)
+    quat_vecs = quaternion.as_rotation_vector(quats)
+    quats2 = quaternion.from_rotation_vector(quat_vecs)
+    assert allclose(quats, quats2)
+
+
 def test_allclose(Qs):
     for q in Qs[Qs_nonnan]:
         assert quaternion.allclose(q, q, rtol=0.0, atol=0.0)
     assert quaternion.allclose(Qs[Qs_nonnan], Qs[Qs_nonnan], rtol=0.0, atol=0.0)
 
-    for q in Qs[Qs_finite]:
+    for q in Qs[Qs_finitenonzero]:
         assert quaternion.allclose(q, q*(1+1e-13), rtol=1.1e-13, atol=0.0)
         assert ~quaternion.allclose(q, q*(1+1e-13), rtol=0.9e-13, atol=0.0)
         for e in [quaternion.one, quaternion.x, quaternion.y, quaternion.z]:
             assert quaternion.allclose(q, q+(1e-13*e), rtol=0.0, atol=1.1e-13)
             assert ~quaternion.allclose(q, q+(1e-13*e), rtol=0.0, atol=0.9e-13)
-    assert quaternion.allclose(Qs[Qs_finite], Qs[Qs_finite]*(1+1e-13), rtol=1.1e-13, atol=0.0)
-    assert ~quaternion.allclose(Qs[Qs_finite], Qs[Qs_finite]*(1+1e-13), rtol=0.9e-13, atol=0.0)
+    assert quaternion.allclose(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero]*(1+1e-13), rtol=1.1e-13, atol=0.0)
+    assert ~quaternion.allclose(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero]*(1+1e-13), rtol=0.9e-13, atol=0.0)
     for e in [quaternion.one, quaternion.x, quaternion.y, quaternion.z]:
         assert quaternion.allclose(Qs[Qs_finite], Qs[Qs_finite]+(1e-13*e), rtol=0.0, atol=1.1e-13)
         assert ~quaternion.allclose(Qs[Qs_finite], Qs[Qs_finite]+(1e-13*e), rtol=0.0, atol=0.9e-13)
+    assert quaternion.allclose(Qs[Qs_zero], Qs[Qs_zero]*2, rtol=0.0, atol=1.1e-13)
 
     for qnan in Qs[Qs_nan]:
         assert ~quaternion.allclose(qnan, qnan, rtol=1.0, atol=1.0)
@@ -142,8 +217,8 @@ def test_allclose(Qs):
 
 
 def test_from_spherical_coords():
-    random.seed(1843)
-    random_angles = [[random.uniform(-np.pi, np.pi), random.uniform(-np.pi, np.pi)]
+    np.random.seed(1843)
+    random_angles = [[np.random.uniform(-np.pi, np.pi), np.random.uniform(-np.pi, np.pi)]
                      for i in range(5000)]
     for vartheta, varphi in random_angles:
         assert abs((np.quaternion(0, 0, 0, varphi / 2.).exp() * np.quaternion(0, 0, vartheta / 2., 0).exp())
@@ -151,10 +226,10 @@ def test_from_spherical_coords():
 
 
 def test_from_euler_angles():
-    random.seed(1843)
-    random_angles = [[random.uniform(-np.pi, np.pi),
-                      random.uniform(-np.pi, np.pi),
-                      random.uniform(-np.pi, np.pi)]
+    np.random.seed(1843)
+    random_angles = [[np.random.uniform(-np.pi, np.pi),
+                      np.random.uniform(-np.pi, np.pi),
+                      np.random.uniform(-np.pi, np.pi)]
                      for i in range(5000)]
     for alpha, beta, gamma in random_angles:
         assert abs((np.quaternion(0, 0, 0, alpha / 2.).exp()
@@ -162,6 +237,19 @@ def test_from_euler_angles():
                     * np.quaternion(0, 0, 0, gamma / 2.).exp()
                    )
                    - quaternion.from_euler_angles(alpha, beta, gamma)) < 1.e-15
+
+
+def test_as_euler_angles():
+    np.random.seed(1843)
+    random_angles = [[np.random.uniform(-np.pi, np.pi),
+                      np.random.uniform(-np.pi, np.pi),
+                      np.random.uniform(-np.pi, np.pi)]
+                     for i in range(5000)]
+    for alpha, beta, gamma in random_angles:
+        R1 = quaternion.from_euler_angles(alpha, beta, gamma)
+        R2 = quaternion.from_euler_angles(*list(quaternion.as_euler_angles(R1)))
+        d = quaternion.rotation_intrinsic_distance(R1, R2)
+        assert d < 4e3*eps, ((alpha, beta, gamma), R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
 
 
 # Unary bool returners
@@ -750,11 +838,12 @@ def test_slerp(Rs):
 
 @pytest.mark.skipif(os.environ.get('FAST'), reason="Takes ~2 seconds")
 def test_squad(Rs):
+    np.random.seed(1234)
     squad_precision = 4.e-15
     ones = [quaternion.one, quaternion.x, quaternion.y, quaternion.z, -quaternion.x, -quaternion.y, -quaternion.z]
     t_in = np.linspace(0.0, 1.0, num=13, endpoint=True)
     t_out = np.linspace(0.0, 1.0, num=37, endpoint=True)
-    t_out2 = np.array(sorted([random.uniform(0., 1.) for i in range(59)]))
+    t_out2 = np.array(sorted([np.random.uniform(0., 1.) for i in range(59)]))
     # squad interpolated onto the inputs should be the identity
     for R1 in Rs:
         for R2 in Rs:
@@ -859,6 +948,7 @@ def test_casts():
 
 
 def test_ufuncs(Rs, Qs):
+    np.random.seed(1234)
     assert np.allclose(np.abs(Rs), np.ones(Rs.shape), atol=1.e-14, rtol=1.e-15)
     assert np.allclose(np.abs(np.log(Rs) - np.array([r.log() for r in Rs])), np.zeros(Rs.shape), atol=1.e-14,
                        rtol=1.e-15)
@@ -871,7 +961,7 @@ def test_ufuncs(Rs, Qs):
     assert np.all(Rs == Rs)
     assert np.all(Rs <= Rs)
     for i in range(10):
-        x = random.uniform(-10, 10)
+        x = np.random.uniform(-10, 10)
         assert np.allclose(np.abs(Rs * x - np.array([r * x for r in Rs])), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
         # assert np.allclose( np.abs( x*Rs - np.array([r*x for r in Rs]) ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
         strict_assert(False)

@@ -5,7 +5,7 @@ from __future__ import division, print_function, absolute_import
 
 import numpy as np
 
-from .numpy_quaternion import (quaternion,
+from .numpy_quaternion import (quaternion, _eps,
                                from_spherical_coords, from_euler_angles,
                                rotor_intrinsic_distance, rotor_chordal_distance,
                                rotation_intrinsic_distance, rotation_chordal_distance,
@@ -49,6 +49,8 @@ def as_float_array(a):
 
     """
     assert a.dtype == np.dtype(np.quaternion)
+    if a.shape == ():
+        return a.components
     av = a.view(np.float)
     av = av.reshape(a.shape + (4,))
     return av
@@ -94,6 +96,217 @@ def as_spinor_array(a):
     # I'm not sure why it has to be so complicated, but all of these steps
     # appear to be necessary in this case.
     return a.view(np.float).reshape(a.shape + (4,))[..., [0, 3, 2, 1]].ravel().view(np.complex).reshape(a.shape + (2,))
+
+
+def as_rotation_matrix(q):
+    """Convert input quaternion to 3x3 rotation matrix
+
+    Parameters
+    ----------
+    q: quaternion or array of quaternions
+        The quaternion(s) need not be normalized, but must all be nonzero
+
+    Returns
+    -------
+    rot: float array
+        Output shape is q.shape+(3,3).  This matrix should multiply (from
+        the left) a column vector to produce the rotated column vector.
+
+    Raises
+    ------
+    ZeroDivisionError
+        If any of the input quaternions have norm 0.0.
+
+    """
+    if q.shape == ():  # This is just a single quaternion
+        n = q.norm()
+        if n == 0.0:
+            raise ZeroDivisionError("Input to `as_rotation_matrix({0})` has zero norm".format(q))
+        elif abs(n-1.0) < _eps:  # Input q is basically normalized
+            return np.array([
+                [1 - 2*(q.y**2 + q.z**2),   2*(q.x*q.y - q.z*q.w),      2*(q.x*q.z + q.y*q.w)],
+                [2*(q.x*q.y + q.z*q.w),     1 - 2*(q.x**2 + q.z**2),    2*(q.y*q.z - q.x*q.w)],
+                [2*(q.x*q.z - q.y*q.w),     2*(q.y*q.z + q.x*q.w),      1 - 2*(q.x**2 + q.y**2)]
+            ])
+        else:  # Input q is not normalized
+            return np.array([
+                [1 - 2*(q.y**2 + q.z**2)/n,   2*(q.x*q.y - q.z*q.w)/n,      2*(q.x*q.z + q.y*q.w)/n],
+                [2*(q.x*q.y + q.z*q.w)/n,     1 - 2*(q.x**2 + q.z**2)/n,    2*(q.y*q.z - q.x*q.w)/n],
+                [2*(q.x*q.z - q.y*q.w)/n,     2*(q.y*q.z + q.x*q.w)/n,      1 - 2*(q.x**2 + q.y**2)/n]
+            ])
+    else:  # This is an array of quaternions
+        n = np.norm(q)
+        if np.any(n == 0.0):
+            raise ZeroDivisionError("Array input to `as_rotation_matrix` has at least one element with zero norm")
+        else:  # Assume input q is not normalized
+            m = np.empty(q.shape + (3, 3))
+            q = as_float_array(q)
+            m[..., 0, 0] = 1.0 - 2*(q[..., 2]**2 + q[..., 3]**2)/n
+            m[..., 0, 1] = 2*(q[..., 1]*q[..., 2] - q[..., 3]*q[..., 0])/n
+            m[..., 0, 2] = 2*(q[..., 1]*q[..., 3] + q[..., 2]*q[..., 0])/n
+            m[..., 1, 0] = 2*(q[..., 1]*q[..., 2] + q[..., 3]*q[..., 0])/n
+            m[..., 1, 1] = 1.0 - 2*(q[..., 1]**2 + q[..., 3]**2)/n
+            m[..., 1, 2] = 2*(q[..., 2]*q[..., 3] - q[..., 1]*q[..., 0])/n
+            m[..., 2, 0] = 2*(q[..., 1]*q[..., 3] - q[..., 2]*q[..., 0])/n
+            m[..., 2, 1] = 2*(q[..., 2]*q[..., 3] + q[..., 1]*q[..., 0])/n
+            m[..., 2, 2] = 1.0 - 2*(q[..., 1]**2 + q[..., 2]**2)/n
+            return m
+
+
+def from_rotation_matrix(rot):
+    """Convert input 3x3 rotation matrix to unit quaternion
+
+    This uses Bar-Itzhack's algorithm to allow for non-orthogonal matrices.
+    J. Guidance, Vol. 23, No. 6, p. 1085 <http://dx.doi.org/10.2514/2.4654>
+    This will almost certainly be quite a bit slower than simpler versions,
+    though it will be more robust to numerical errors in the rotation matrix.
+    Also note that Bar-Itzhack uses some pretty weird conventions.  The last
+    component of the quaternion appears to represent the scalar, and the
+    quaternion itself is conjugated relative to the convention used
+    throughout this module.
+
+    Parameters
+    ----------
+    rot: (Nx3x3) float array
+        Each 3x3 matrix represents a rotation by multiplying (from the left)
+        a column vector to produce a rotated column vector.  Note that this
+        input may actually have ndims>3; it is just assumed that the last
+        two dimensions have size 3, representing the matrix.
+
+    Returns
+    -------
+    q: array of quaternions
+        Unit quaternions resulting in rotations corresponding to input
+        rotations.  Output shape is rot.shape[:-2].
+
+    Raises
+    ------
+    LinAlgError
+        If any of the eigenvalue solutions does not converge
+
+    """
+    from operator import mul
+    from functools import reduce
+    from scipy import linalg
+
+    rot = np.array(rot, copy=False)
+    shape = rot.shape[:-2]
+
+    K3 = np.empty(shape+(4, 4))
+    K3[..., 0, 0] = (rot[..., 0, 0] - rot[..., 1, 1] - rot[..., 2, 2])/3.0
+    K3[..., 0, 1] = (rot[..., 1, 0] + rot[..., 0, 1])/3.0
+    K3[..., 0, 2] = (rot[..., 2, 0] + rot[..., 0, 2])/3.0
+    K3[..., 0, 3] = (rot[..., 1, 2] - rot[..., 2, 1])/3.0
+    K3[..., 1, 0] = K3[..., 0, 1]
+    K3[..., 1, 1] = (rot[..., 1, 1] - rot[..., 0, 0] - rot[..., 2, 2])/3.0
+    K3[..., 1, 2] = (rot[..., 2, 1] + rot[..., 1, 2])/3.0
+    K3[..., 1, 3] = (rot[..., 2, 0] - rot[..., 0, 2])/3.0
+    K3[..., 2, 0] = K3[..., 0, 2]
+    K3[..., 2, 1] = K3[..., 1, 2]
+    K3[..., 2, 2] = (rot[..., 2, 2] - rot[..., 0, 0] - rot[..., 1, 1])/3.0
+    K3[..., 2, 3] = (rot[..., 0, 1] - rot[..., 1, 0])/3.0
+    K3[..., 3, 0] = K3[..., 0, 3]
+    K3[..., 3, 1] = K3[..., 1, 3]
+    K3[..., 3, 2] = K3[..., 2, 3]
+    K3[..., 3, 3] = (rot[..., 0, 0] + rot[..., 1, 1] + rot[..., 2, 2])/3.0
+
+    if not shape:
+        q = zero.copy()
+        eigvals, eigvecs = linalg.eigh(K3.T, eigvals=(3, 3))
+        q.components[0] = eigvecs[-1]
+        q.components[1:] = -eigvecs[:-1].flatten()
+        return q
+    else:
+        q = np.empty(shape+(4,), dtype=np.float)
+        for flat_index in range(reduce(mul, shape)):
+            multi_index = np.unravel_index(flat_index, shape)
+            eigvals, eigvecs = linalg.eigh(K3[multi_index], eigvals=(3, 3))
+            q[multi_index, 0] = eigvecs[-1]
+            q[multi_index, 1:] = -eigvecs[:-1].flatten()
+        return as_quat_array(q)
+
+
+def as_rotation_vector(q):
+    """Convert input quaternion to the axis-angle representation
+
+    Note that if any of the input quaternions has norm zero, no error is
+    raised, but NaNs will appear in the output.
+
+    Parameters
+    ----------
+    q: quaternion or array of quaternions
+        The quaternion(s) need not be normalized, but must all be nonzero
+
+    Returns
+    -------
+    rot: float array
+        Output shape is q.shape+(3,).  Each vector represents the axis of
+        the rotation, with norm proportional to the angle of the rotation.
+
+    """
+    return as_float_array(2*np.log(np.normalized(q)))[..., 1:]
+
+
+def from_rotation_vector(rot):
+    """Convert input 3-vector in axis-angle representation to unit quaternion
+
+    Parameters
+    ----------
+    rot: (Nx3) float array
+        Each vector represents the axis of the rotation, with norm
+        proportional to the angle of the rotation.
+
+    Returns
+    -------
+    q: array of quaternions
+        Unit quaternions resulting in rotations corresponding to input
+        rotations.  Output shape is rot.shape[:-1].
+
+    """
+    rot = np.array(rot, copy=False)
+    quats = np.zeros(rot.shape[:-1]+(4,))
+    quats[..., 1:] = rot[...]/2
+    quats = as_quat_array(quats)
+    return np.exp(quats)
+
+
+def as_euler_angles(q):
+    """Open Pandora's Box
+
+    If somebody is trying to make you use Euler angles, tell them no,
+    and walk away, and go and tell your mum.
+
+    You don't want to use Euler angles.  They are awful.  Stay away.
+    It's one thing to convert from Euler angles to quaternions; at least
+    you're moving in the right direction.  But to go the other way?!  It's
+    just not right.
+
+    Parameters
+    ----------
+    q: quaternion or array of quaternions
+        The quaternion(s) need not be normalized, but must all be nonzero
+
+    Returns
+    -------
+    alpha_beta_gamma: float array
+        Output shape is q.shape+(3,).  These represent the angles
+        (alpha, beta, gamma), where the normalized input quaternion
+        represents `exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)`.
+
+    Raises
+    ------
+    AllHell
+        If you try to actually use Euler angles, when you could have been
+        using quaternions like a sensible person.
+
+    """
+    alpha_beta_gamma = np.empty(q.shape + (3,), dtype=np.float)
+    n = np.norm(q)
+    q = as_float_array(q)
+    alpha_beta_gamma[..., 0] = np.arctan2(q[..., 3], q[..., 0]) + np.arctan2(-q[..., 1], q[..., 2])
+    alpha_beta_gamma[..., 1] = 2*np.arccos(np.sqrt((q[..., 0]**2 + q[..., 3]**2)/n))
+    alpha_beta_gamma[..., 2] = np.arctan2(q[..., 3], q[..., 0]) - np.arctan2(-q[..., 1], q[..., 2])
+    return alpha_beta_gamma
 
 
 def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, verbose=False):
@@ -166,24 +379,24 @@ def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, verbose=False):
 
     xinf = np.isinf(x)
     yinf = np.isinf(y)
-    if any(xinf) or any(yinf):
+    if np.any(xinf) or np.any(yinf):
         # Check that x and y have inf's only in the same positions
-        if not all(xinf == yinf):
+        if not np.all(xinf == yinf):
             if verbose:
                 print('not all(xinf == yinf)')
                 equal = (xinf == yinf)
-                for i, val in enumerate(equal):
+                for i, val in enumerate(equal.flatten()):
                     if not val:
-                        print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x[i], y[i]))
+                        print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x.flatten()[i], y.flatten()[i]))
             return False
         # Check that sign of inf's in x and y is the same
-        if not all(x[xinf] == y[xinf]):
+        if not np.all(x[xinf] == y[xinf]):
             if verbose:
                 print('not all(x[xinf] == y[xinf])')
                 equal = (x[xinf] == y[xinf])
-                for i, val in enumerate(equal):
+                for i, val in enumerate(equal.flatten()):
                     if not val:
-                        print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x[xinf][i], y[xinf][i]))
+                        print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x[xinf].flatten()[i], y[xinf].flatten()[i]))
             return False
 
         x = x[~xinf]
@@ -191,13 +404,14 @@ def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, verbose=False):
 
     # ignore invalid fpe's
     with np.errstate(invalid='ignore'):
-        r = all(np.less_equal(abs(x - y), atol + rtol * abs(y)))
+        r = np.all(np.less_equal(abs(x - y), atol + rtol * abs(y)))
         if verbose and not r:
             lessequal = np.less_equal(abs(x - y), atol + rtol * abs(y))
-            for i, val in enumerate(lessequal):
+            for i, val in enumerate(lessequal.flatten()):
                 if not val:
-                    print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x[i], y[i])
-                          + '\n{0} > {1} + {2} * {3} = {4}'.format(abs(x[i] - y[i]), atol, rtol, abs(y[i]),
-                                                                   atol + rtol * abs(y[i])))
+                    print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x.flatten()[i], y.flatten()[i])
+                          + '\n{0} > {1} + {2} * {3} = {4}'.format(abs(x.flatten()[i] - y.flatten()[i]),
+                                                                   atol, rtol, abs(y.flatten()[i]),
+                                                                   atol + rtol * abs(y.flatten()[i])))
 
     return r
