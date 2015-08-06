@@ -19,6 +19,10 @@ install:
   - python --version
   - which python
   - type -a python
+  - which py.test
+  - type -a py.test
+  - ls $HOME/miniconda
+  - ls $HOME/miniconda/bin
   - python setup.py install
 
 script:
