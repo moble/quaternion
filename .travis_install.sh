@@ -14,3 +14,4 @@ conda config --set always_yes yes --set changeps1 no
 conda update -q conda
 conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy numba pip pytest anaconda-client
 source activate test-environment
+
