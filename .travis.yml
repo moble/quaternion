@@ -13,7 +13,7 @@ env:
 
 install:
   - lsb_release -a
-  - [[ "${CONDA}" == "true" ]] && ./.travis_install.sh && source activate test-environment
+  #- [[ "${CONDA}" == "true" ]] && ./.travis_install.sh && source activate test-environment
   - python setup.py install
 
 script:
