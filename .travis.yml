@@ -15,11 +15,7 @@ env:
 
 install:
   - lsb_release -a
-  - if [[ "${CONDA}" == "true" ]]; then
-      ./.travis_conda.sh
-    else
-      python setup.py install
-    fi
+  - ./.travis_install.sh
 
 script:
   - py.test
