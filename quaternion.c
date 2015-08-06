@@ -1,12 +1,10 @@
-// Copyright (c) 2014, Michael Boyle
+// Copyright (c) 2015, Michael Boyle
 // See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 #include <math.h>
 #include <stdio.h>
 
 #include "quaternion.h"
-
-#define _QUAT_EPS 1e-14
 
 quaternion
 quaternion_create_from_spherical_coords(double vartheta, double varphi) {
@@ -33,7 +31,7 @@ quaternion_sqrt(quaternion q)
 {
   double c;
   double absolute = quaternion_absolute(q);
-  if(fabs(1+q.w/absolute)<_QUAT_EPS*absolute) {
+  if(fabs(1+q.w/absolute)<_QUATERNION_EPS*absolute) {
     return (quaternion) {0.0, 1.0, 0.0, 0.0};
   }
   c = sqrt(absolute/(2+2*q.w/absolute));
@@ -44,10 +42,10 @@ quaternion
 quaternion_log(quaternion q)
 {
   double b = sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
-  if(fabs(b) <= _QUAT_EPS*fabs(q.w)) {
+  if(fabs(b) <= _QUATERNION_EPS*fabs(q.w)) {
     if(q.w<0.0) {
       // fprintf(stderr, "Input quaternion(%.15g, %.15g, %.15g, %.15g) has no unique logarithm; returning one arbitrarily.", q.w, q.x, q.y, q.z);
-      if(fabs(q.w+1)>_QUAT_EPS) {
+      if(fabs(q.w+1)>_QUATERNION_EPS) {
         return (quaternion) {log(-q.w), M_PI, 0., 0.};
       }
       return (quaternion) {0., M_PI, 0., 0.};
@@ -84,7 +82,7 @@ quaternion
 quaternion_exp(quaternion q)
 {
   double vnorm = sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
-  if (vnorm > _QUAT_EPS) {
+  if (vnorm > _QUATERNION_EPS) {
     double s = sin(vnorm) / vnorm;
     double e = exp(q.w);
     return (quaternion) {e*cos(vnorm), e*s*q.x, e*s*q.y, e*s*q.z};

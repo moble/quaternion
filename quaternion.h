@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Michael Boyle
+// Copyright (c) 2015, Michael Boyle
 // See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 #ifndef __QUATERNION_H__
@@ -7,6 +7,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+  #define _QUATERNION_EPS 1e-14
 
   #if defined(_MSC_VER)
     #define NPY_INLINE __inline
@@ -103,7 +105,7 @@ extern "C" {
   }
 
   // Unary float returners
-  quaternion quaternion_log(quaternion q);
+  quaternion quaternion_log(quaternion q); // Pre-declare; declared again below, in its rightful place
   static NPY_INLINE double quaternion_norm(quaternion q) {
     return q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z;
   }

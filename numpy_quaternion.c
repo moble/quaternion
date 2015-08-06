@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Michael Boyle
+// Copyright (c) 2015, Michael Boyle
 // See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 #define NPY_NO_DEPRECATED_API NPY_API_VERSION
@@ -1016,7 +1016,10 @@ static void register_cast_function(int sourceType, int destType, PyArray_VectorU
 UNARY_UFUNC(isnan, npy_bool)
 UNARY_UFUNC(isinf, npy_bool)
 UNARY_UFUNC(isfinite, npy_bool)
+UNARY_UFUNC(norm, npy_double)
 UNARY_UFUNC(absolute, npy_double)
+UNARY_UFUNC(angle, npy_double)
+UNARY_UFUNC(sqrt, quaternion)
 UNARY_UFUNC(log, quaternion)
 UNARY_UFUNC(exp, quaternion)
 UNARY_UFUNC(negative, quaternion)
@@ -1073,6 +1076,8 @@ BINARY_UFUNC(equal, npy_bool)
 BINARY_UFUNC(not_equal, npy_bool)
 BINARY_UFUNC(less, npy_bool)
 BINARY_UFUNC(less_equal, npy_bool)
+BINARY_SCALAR_UFUNC(add, quaternion)
+BINARY_SCALAR_UFUNC(subtract, quaternion)
 BINARY_SCALAR_UFUNC(multiply, quaternion)
 BINARY_SCALAR_UFUNC(divide, quaternion)
 BINARY_GEN_UFUNC(true_divide_scalar, divide_scalar, quaternion, npy_double, quaternion)
@@ -1254,7 +1259,6 @@ static PyMethodDef QuaternionMethods[] = {
 };
 
 
-
 #if PY_MAJOR_VERSION >= 3
 
 static struct PyModuleDef moduledef = {
@@ -1398,61 +1402,69 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   #define REGISTER_UFUNC_SCALAR(name)                                   \
     PyUFunc_RegisterLoopForType((PyUFuncObject *)PyDict_GetItemString(numpy_dict, #name), \
                                 quaternion_descr->type_num, quaternion_##name##_scalar_ufunc, arg_types, NULL)
-  #define REGISTER_NEW_UFUNC(name, nargin, nargout, doc)                \
+  #define REGISTER_NEW_UFUNC_GENERAL(pyname, cname, nargin, nargout, doc) \
     tmp_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, nargin, nargout, \
-                                        PyUFunc_None, #name, doc, 0);   \
+                                        PyUFunc_None, #pyname, doc, 0); \
     PyUFunc_RegisterLoopForType((PyUFuncObject *)tmp_ufunc,             \
-                                quaternion_descr->type_num, quaternion_##name##_ufunc, arg_types, NULL); \
-    PyDict_SetItemString(numpy_dict, #name, tmp_ufunc);                 \
+                                quaternion_descr->type_num, quaternion_##cname##_ufunc, arg_types, NULL); \
+    PyDict_SetItemString(numpy_dict, #pyname, tmp_ufunc);               \
     Py_DECREF(tmp_ufunc)
-
+  #define REGISTER_NEW_UFUNC(name, nargin, nargout, doc)                \
+    REGISTER_NEW_UFUNC_GENERAL(name, name, nargin, nargout, doc)
 
   // quat -> bool
   arg_types[0] = quaternion_descr->type_num;
   arg_types[1] = NPY_BOOL;
   REGISTER_UFUNC(isnan);
+  /* // Already works: REGISTER_UFUNC(nonzero); */
   REGISTER_UFUNC(isinf);
   REGISTER_UFUNC(isfinite);
 
   // quat -> double
   arg_types[0] = quaternion_descr->type_num;
   arg_types[1] = NPY_DOUBLE;
+  REGISTER_NEW_UFUNC(norm, 1, 1,
+                     "Return norm of each quaternion.\n");
   REGISTER_UFUNC(absolute);
+  REGISTER_NEW_UFUNC_GENERAL(angle_of_rotor, angle, 1, 1,
+                             "Return angle of rotation, assuming input is a unit rotor\n");
 
   // quat -> quat
   arg_types[0] = quaternion_descr->type_num;
   arg_types[1] = quaternion_descr->type_num;
+  REGISTER_NEW_UFUNC_GENERAL(sqrt_of_rotor, sqrt, 1, 1,
+                             "Return square-root of rotor.  Assumes input has unit norm.\n");
   REGISTER_UFUNC(log);
   REGISTER_UFUNC(exp);
+  REGISTER_NEW_UFUNC(normalized, 1, 1,
+                     "Normalize all quaternions in this array\n");
+  REGISTER_NEW_UFUNC(x_parity_conjugate, 1, 1,
+                     "Reflect across y-z plane (note spinorial character)\n");
+  REGISTER_NEW_UFUNC(x_parity_symmetric_part, 1, 1,
+                     "Part invariant under reflection across y-z plane (note spinorial character)\n");
+  REGISTER_NEW_UFUNC(x_parity_antisymmetric_part, 1, 1,
+                     "Part anti-invariant under reflection across y-z plane (note spinorial character)\n");
+  REGISTER_NEW_UFUNC(y_parity_conjugate, 1, 1,
+                     "Reflect across x-z plane (note spinorial character)\n");
+  REGISTER_NEW_UFUNC(y_parity_symmetric_part, 1, 1,
+                     "Part invariant under reflection across x-z plane (note spinorial character)\n");
+  REGISTER_NEW_UFUNC(y_parity_antisymmetric_part, 1, 1,
+                     "Part anti-invariant under reflection across x-z plane (note spinorial character)\n");
+  REGISTER_NEW_UFUNC(z_parity_conjugate, 1, 1,
+                     "Reflect across x-y plane (note spinorial character)\n");
+  REGISTER_NEW_UFUNC(z_parity_symmetric_part, 1, 1,
+                     "Part invariant under reflection across x-y plane (note spinorial character)\n");
+  REGISTER_NEW_UFUNC(z_parity_antisymmetric_part, 1, 1,
+                     "Part anti-invariant under reflection across x-y plane (note spinorial character)\n");
+  REGISTER_NEW_UFUNC(parity_conjugate, 1, 1,
+                     "Reflect all dimensions (note spinorial character)\n");
+  REGISTER_NEW_UFUNC(parity_symmetric_part, 1, 1,
+                     "Part invariant under reversal of all vectors (note spinorial character)\n");
+  REGISTER_NEW_UFUNC(parity_antisymmetric_part, 1, 1,
+                     "Part anti-invariant under reversal of all vectors (note spinorial character)\n");
   REGISTER_UFUNC(negative);
   REGISTER_UFUNC(conjugate);
   REGISTER_UFUNC(invert);
-  REGISTER_NEW_UFUNC(normalized, 1, 1,
-                     "Normalize all quaternions in this array");
-  REGISTER_NEW_UFUNC(x_parity_conjugate, 1, 1,
-                     "Reflect across y-z plane (note spinorial character)");
-  REGISTER_NEW_UFUNC(x_parity_symmetric_part, 1, 1,
-                     "Part invariant under reflection across y-z plane (note spinorial character)");
-  REGISTER_NEW_UFUNC(x_parity_antisymmetric_part, 1, 1,
-                     "Part anti-invariant under reflection across y-z plane (note spinorial character)");
-  REGISTER_NEW_UFUNC(y_parity_conjugate, 1, 1,
-                     "Reflect across x-z plane (note spinorial character)");
-  REGISTER_NEW_UFUNC(y_parity_symmetric_part, 1, 1,
-                     "Part invariant under reflection across x-z plane (note spinorial character)");
-  REGISTER_NEW_UFUNC(y_parity_antisymmetric_part, 1, 1,
-                     "Part anti-invariant under reflection across x-z plane (note spinorial character)");
-  REGISTER_NEW_UFUNC(z_parity_conjugate, 1, 1,
-                     "Reflect across x-y plane (note spinorial character)");
-  REGISTER_NEW_UFUNC(z_parity_symmetric_part, 1, 1,
-                     "Part invariant under reflection across x-y plane (note spinorial character)");
-  REGISTER_NEW_UFUNC(z_parity_antisymmetric_part, 1, 1,
-                     "Part anti-invariant under reflection across x-y plane (note spinorial character)");
-  REGISTER_NEW_UFUNC(parity_conjugate, 1, 1,
-                     "Reflect all dimensions (note spinorial character)");
-  REGISTER_NEW_UFUNC(parity_symmetric_part, 1, 1,
-                     "Part invariant under reversal of all vectors (note spinorial character)");
-  REGISTER_NEW_UFUNC(parity_antisymmetric_part, 1, 1,
-                     "Part anti-invariant under reversal of all vectors (note spinorial character)");
 
   // quat, quat -> bool
   arg_types[0] = quaternion_descr->type_num;
@@ -1467,6 +1479,8 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   arg_types[0] = NPY_DOUBLE;
   arg_types[1] = quaternion_descr->type_num;
   arg_types[2] = quaternion_descr->type_num;
+  REGISTER_SCALAR_UFUNC(add);
+  REGISTER_SCALAR_UFUNC(subtract);
   REGISTER_SCALAR_UFUNC(multiply);
   REGISTER_SCALAR_UFUNC(divide);
   REGISTER_SCALAR_UFUNC(true_divide);
@@ -1477,6 +1491,8 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   arg_types[0] = quaternion_descr->type_num;
   arg_types[1] = NPY_DOUBLE;
   arg_types[2] = quaternion_descr->type_num;
+  REGISTER_UFUNC_SCALAR(add);
+  REGISTER_UFUNC_SCALAR(subtract);
   REGISTER_UFUNC_SCALAR(multiply);
   REGISTER_UFUNC_SCALAR(divide);
   REGISTER_UFUNC_SCALAR(true_divide);
@@ -1521,6 +1537,9 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   PyDict_SetItemString(numpy_dict, "squad_loop", squad_evaluate_ufunc);
   Py_DECREF(squad_evaluate_ufunc);
 
+  // Add the constant `_QUATERNION_EPS` to the module as `quaternion._eps`
+  PyModule_AddObject(module, "_eps", PyFloat_FromDouble(_QUATERNION_EPS));
+ 
   // Finally, add this quaternion object to the quaternion module itself
   PyModule_AddObject(module, "quaternion", (PyObject *)&PyQuaternion_Type);
 
