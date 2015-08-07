@@ -66,7 +66,8 @@ git subtree add --prefix=auto_version auto_version --squash master
 Now, any time the super-repo is checked out, the subtree will be there
 automatically.
 
-If you want to merge new changes in the subtree, run this:
+If you want to merge new changes that have been made in this subtree into the
+super-repo, run something like this:
 
 ```sh
 git fetch auto_version
