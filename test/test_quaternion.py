@@ -156,13 +156,12 @@ def test_as_rotation_matrix(Rs):
 
 
 def test_from_rotation_matrix(Rs):
+    rot_mat_eps = 10*eps
     try:
         from scipy import linalg
-        rot_mat_eps = 10*eps
     except ImportError:
-        rot_mat_eps = 10*math.sqrt(eps)
+        rot_mat_eps = 400*eps
 
-    print()
     for i, R1 in enumerate(Rs):
         R2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(R1))
         d = quaternion.rotation_intrinsic_distance(R1, R2)

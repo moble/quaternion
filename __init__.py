@@ -74,6 +74,8 @@ def as_quat_array(a):
 
     """
     assert a.dtype == np.dtype(np.float)
+    if a.shape == (4,):
+        return quaternion(a[0], a[1], a[2], a[3])
     av = a.view(np.quaternion)
     if a.shape[-1] == 4:
         av = av.reshape(a.shape[:-1])
@@ -193,7 +195,7 @@ def from_rotation_matrix(rot):
     rot = np.array(rot, copy=False)
     shape = rot.shape[:-2]
 
-    if False: #linalg:
+    if linalg:
         from operator import mul
         from functools import reduce
 
@@ -233,27 +235,59 @@ def from_rotation_matrix(rot):
     else:  # No scipy.linalg
         if not shape:
             import math
-            w = math.sqrt(max(0.0, 1.0 + rot[0, 0] + rot[1, 1] + rot[2, 2])) / 2.0
-            x = math.sqrt(max(0.0, 1.0 + rot[0, 0] - rot[1, 1] - rot[2, 2])) / 2.0
-            y = math.sqrt(max(0.0, 1.0 - rot[0, 0] + rot[1, 1] - rot[2, 2])) / 2.0
-            z = math.sqrt(max(0.0, 1.0 - rot[0, 0] - rot[1, 1] + rot[2, 2])) / 2.0
-            print(rot)
-            print(w,x,y,z)
-            x = math.copysign(x, rot[2, 1] - rot[1, 2])
-            y = math.copysign(y, rot[0, 2] - rot[2, 0])
-            z = math.copysign(z, rot[1, 0] - rot[0, 1])
-            print(w,x,y,z)
-            return quaternion(w, x, y, z)
+            q = np.empty(shape+(4,), dtype=np.float)
+            q[0] = (1 + rot[0, 0] + rot[1, 1] + rot[2, 2]) / 4
+            if q[0] > _eps:
+                q[0] = math.sqrt(q[0])
+                q[1] = (rot[1, 2] - rot[2, 1]) / (-4*q[0])
+                q[2] = (rot[2, 0] - rot[0, 2]) / (-4*q[0])
+                q[3] = (rot[0, 1] - rot[1, 0]) / (-4*q[0])
+            else:
+                q[0] = 0.0
+                q[1] = (rot[1, 1] + rot[2, 2]) / -2.0
+                if q[1] > _eps:
+                    q[1] = math.sqrt(q[1])
+                    q[2] = rot[0, 1] / (2*q[1])
+                    q[3] = rot[0, 2] / (2*q[1])
+                else:
+                    q[1] = 0.0
+                    q[2] = (1.0 - rot[2, 2]) / 2.0
+                    if q[2] > _eps:
+                        q[2] = math.sqrt(q[2])
+                        q[3] = rot[1, 2] / (2*q[2])
+                    else:
+                        q[2] = 0.0
+                        q[3] = 1.0
         else:
             q = np.empty(shape+(4,), dtype=np.float)
-            q[..., 0] = np.sqrt(np.max(0.0, 1.0 + rot[..., 0, 0] + rot[..., 1, 1] + rot[..., 2, 2])) / 2.0;
-            q[..., 1] = np.sqrt(np.max(0.0, 1.0 + rot[..., 0, 0] - rot[..., 1, 1] - rot[..., 2, 2])) / 2.0;
-            q[..., 2] = np.sqrt(np.max(0.0, 1.0 - rot[..., 0, 0] + rot[..., 1, 1] - rot[..., 2, 2])) / 2.0;
-            q[..., 3] = np.sqrt(np.max(0.0, 1.0 - rot[..., 0, 0] - rot[..., 1, 1] + rot[..., 2, 2])) / 2.0;
-            q[..., 1] = np.copysign(q[..., 1], rot[..., 2, 1] - rot[..., 1, 2])
-            q[..., 2] = np.copysign(q[..., 2], rot[..., 0, 2] - rot[..., 2, 0])
-            q[..., 3] = np.copysign(q[..., 3], rot[..., 1, 0] - rot[..., 0, 1])
-            return as_quat_array(q)
+            q[..., 0] = (1 + rot[..., 0, 0] + rot[..., 1, 1] + rot[..., 2, 2]) / 4
+            w2_gtr_eps = (q[..., 0] > _eps)
+            # w**2 > eps
+            q[w2_gtr_eps, 0] = np.sqrt(q[w2_gtr_eps, 0])
+            q[w2_gtr_eps, 1] = (rot[w2_gtr_eps, 1, 2] - rot[w2_gtr_eps, 2, 1]) / (-4*q[w2_gtr_eps, 0])
+            q[w2_gtr_eps, 2] = (rot[w2_gtr_eps, 2, 0] - rot[w2_gtr_eps, 0, 2]) / (-4*q[w2_gtr_eps, 0])
+            q[w2_gtr_eps, 3] = (rot[w2_gtr_eps, 0, 1] - rot[w2_gtr_eps, 1, 0]) / (-4*q[w2_gtr_eps, 0])
+            # w**2 <= eps
+            q[~w2_gtr_eps, 0] = 0.0
+            q[~w2_gtr_eps, 1] = (rot[~w2_gtr_eps, 1, 1] + rot[~w2_gtr_eps, 2, 2]) / -2.0
+            x2_gtr_eps = np.logical_and(~w2_gtr_eps, q[..., 1] > _eps)
+            x2_leq_eps = np.logical_and(~w2_gtr_eps, q[..., 1] <= _eps)
+            # w**2 <= eps and x**2 > eps
+            q[x2_gtr_eps, 1] = np.sqrt(q[x2_gtr_eps, 1])
+            q[x2_gtr_eps, 2] = rot[x2_gtr_eps, 0, 1] / (2*q[x2_gtr_eps, 1])
+            q[x2_gtr_eps, 3] = rot[x2_gtr_eps, 0, 2] / (2*q[x2_gtr_eps, 1])
+            # w**2 <= eps and x**2 <= eps
+            q[x2_leq_eps, 1] = 0.0
+            q[x2_leq_eps, 2] = (1.0 - rot[x2_leq_eps, 2, 2]) / 2.0
+            y2_gtr_eps = np.logical_and(x2_leq_eps, q[..., 2] > _eps)
+            y2_leq_eps = np.logical_and(x2_leq_eps, q[..., 2] <= _eps)
+            # w**2 <= eps and x**2 <= eps and y**2 > eps
+            q[y2_gtr_eps, 2] = np.sqrt(q[y2_gtr_eps, 2])
+            q[y2_gtr_eps, 3] = rot[y2_gtr_eps, 1, 2] / (2*q[y2_gtr_eps, 2])
+            # w**2 <= eps and x**2 <= eps and y**2 <= eps
+            q[y2_leq_eps, 2] = 0.0
+            q[y2_leq_eps, 3] = 1.0
+        return as_quat_array(q)
 
 
 
