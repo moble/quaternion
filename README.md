@@ -15,8 +15,7 @@ quaternions (and to fix a few bugs).
 ## Dependencies
 
 The basic requirements for this code are reasonably current versions
-of `python` and `numpy`.  In particular, `python` versions 2.6, 2.7,
-3.2, 3.3, and 3.4 are
+of `python` and `numpy`.  In particular, `python` versions 2.7 and 3.4 are
 [routinely tested](https://travis-ci.org/moble/quaternion), and
 any `numpy` version greater than 1.7.0 should work.
 
@@ -62,7 +61,7 @@ conda install -c moble quaternion
 
 But I might not be great about updating the OS X version of the package.
 (It's easy, but I just forget to do it; if you want the package updated,
-just ping me.)
+feel free to ping me by opening an issue on github.)
 
 If you refuse to use anaconda, you might want to install inside your
 home directory without root privileges.  (Anaconda does this by
