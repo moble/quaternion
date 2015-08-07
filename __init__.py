@@ -185,45 +185,76 @@ def from_rotation_matrix(rot):
         If any of the eigenvalue solutions does not converge
 
     """
-    from operator import mul
-    from functools import reduce
-    from scipy import linalg
+    try:
+        from scipy import linalg
+    except ImportError:
+        linalg = False
 
     rot = np.array(rot, copy=False)
     shape = rot.shape[:-2]
 
-    K3 = np.empty(shape+(4, 4))
-    K3[..., 0, 0] = (rot[..., 0, 0] - rot[..., 1, 1] - rot[..., 2, 2])/3.0
-    K3[..., 0, 1] = (rot[..., 1, 0] + rot[..., 0, 1])/3.0
-    K3[..., 0, 2] = (rot[..., 2, 0] + rot[..., 0, 2])/3.0
-    K3[..., 0, 3] = (rot[..., 1, 2] - rot[..., 2, 1])/3.0
-    K3[..., 1, 0] = K3[..., 0, 1]
-    K3[..., 1, 1] = (rot[..., 1, 1] - rot[..., 0, 0] - rot[..., 2, 2])/3.0
-    K3[..., 1, 2] = (rot[..., 2, 1] + rot[..., 1, 2])/3.0
-    K3[..., 1, 3] = (rot[..., 2, 0] - rot[..., 0, 2])/3.0
-    K3[..., 2, 0] = K3[..., 0, 2]
-    K3[..., 2, 1] = K3[..., 1, 2]
-    K3[..., 2, 2] = (rot[..., 2, 2] - rot[..., 0, 0] - rot[..., 1, 1])/3.0
-    K3[..., 2, 3] = (rot[..., 0, 1] - rot[..., 1, 0])/3.0
-    K3[..., 3, 0] = K3[..., 0, 3]
-    K3[..., 3, 1] = K3[..., 1, 3]
-    K3[..., 3, 2] = K3[..., 2, 3]
-    K3[..., 3, 3] = (rot[..., 0, 0] + rot[..., 1, 1] + rot[..., 2, 2])/3.0
+    if False: #linalg:
+        from operator import mul
+        from functools import reduce
 
-    if not shape:
-        q = zero.copy()
-        eigvals, eigvecs = linalg.eigh(K3.T, eigvals=(3, 3))
-        q.components[0] = eigvecs[-1]
-        q.components[1:] = -eigvecs[:-1].flatten()
-        return q
-    else:
-        q = np.empty(shape+(4,), dtype=np.float)
-        for flat_index in range(reduce(mul, shape)):
-            multi_index = np.unravel_index(flat_index, shape)
-            eigvals, eigvecs = linalg.eigh(K3[multi_index], eigvals=(3, 3))
-            q[multi_index, 0] = eigvecs[-1]
-            q[multi_index, 1:] = -eigvecs[:-1].flatten()
-        return as_quat_array(q)
+        K3 = np.empty(shape+(4, 4))
+        K3[..., 0, 0] = (rot[..., 0, 0] - rot[..., 1, 1] - rot[..., 2, 2])/3.0
+        K3[..., 0, 1] = (rot[..., 1, 0] + rot[..., 0, 1])/3.0
+        K3[..., 0, 2] = (rot[..., 2, 0] + rot[..., 0, 2])/3.0
+        K3[..., 0, 3] = (rot[..., 1, 2] - rot[..., 2, 1])/3.0
+        K3[..., 1, 0] = K3[..., 0, 1]
+        K3[..., 1, 1] = (rot[..., 1, 1] - rot[..., 0, 0] - rot[..., 2, 2])/3.0
+        K3[..., 1, 2] = (rot[..., 2, 1] + rot[..., 1, 2])/3.0
+        K3[..., 1, 3] = (rot[..., 2, 0] - rot[..., 0, 2])/3.0
+        K3[..., 2, 0] = K3[..., 0, 2]
+        K3[..., 2, 1] = K3[..., 1, 2]
+        K3[..., 2, 2] = (rot[..., 2, 2] - rot[..., 0, 0] - rot[..., 1, 1])/3.0
+        K3[..., 2, 3] = (rot[..., 0, 1] - rot[..., 1, 0])/3.0
+        K3[..., 3, 0] = K3[..., 0, 3]
+        K3[..., 3, 1] = K3[..., 1, 3]
+        K3[..., 3, 2] = K3[..., 2, 3]
+        K3[..., 3, 3] = (rot[..., 0, 0] + rot[..., 1, 1] + rot[..., 2, 2])/3.0
+
+        if not shape:
+            q = zero.copy()
+            eigvals, eigvecs = linalg.eigh(K3.T, eigvals=(3, 3))
+            q.components[0] = eigvecs[-1]
+            q.components[1:] = -eigvecs[:-1].flatten()
+            return q
+        else:
+            q = np.empty(shape+(4,), dtype=np.float)
+            for flat_index in range(reduce(mul, shape)):
+                multi_index = np.unravel_index(flat_index, shape)
+                eigvals, eigvecs = linalg.eigh(K3[multi_index], eigvals=(3, 3))
+                q[multi_index, 0] = eigvecs[-1]
+                q[multi_index, 1:] = -eigvecs[:-1].flatten()
+            return as_quat_array(q)
+
+    else:  # No scipy.linalg
+        if not shape:
+            import math
+            w = math.sqrt(max(0.0, 1.0 + rot[0, 0] + rot[1, 1] + rot[2, 2])) / 2.0
+            x = math.sqrt(max(0.0, 1.0 + rot[0, 0] - rot[1, 1] - rot[2, 2])) / 2.0
+            y = math.sqrt(max(0.0, 1.0 - rot[0, 0] + rot[1, 1] - rot[2, 2])) / 2.0
+            z = math.sqrt(max(0.0, 1.0 - rot[0, 0] - rot[1, 1] + rot[2, 2])) / 2.0
+            print(rot)
+            print(w,x,y,z)
+            x = math.copysign(x, rot[2, 1] - rot[1, 2])
+            y = math.copysign(y, rot[0, 2] - rot[2, 0])
+            z = math.copysign(z, rot[1, 0] - rot[0, 1])
+            print(w,x,y,z)
+            return quaternion(w, x, y, z)
+        else:
+            q = np.empty(shape+(4,), dtype=np.float)
+            q[..., 0] = np.sqrt(np.max(0.0, 1.0 + rot[..., 0, 0] + rot[..., 1, 1] + rot[..., 2, 2])) / 2.0;
+            q[..., 1] = np.sqrt(np.max(0.0, 1.0 + rot[..., 0, 0] - rot[..., 1, 1] - rot[..., 2, 2])) / 2.0;
+            q[..., 2] = np.sqrt(np.max(0.0, 1.0 - rot[..., 0, 0] + rot[..., 1, 1] - rot[..., 2, 2])) / 2.0;
+            q[..., 3] = np.sqrt(np.max(0.0, 1.0 - rot[..., 0, 0] - rot[..., 1, 1] + rot[..., 2, 2])) / 2.0;
+            q[..., 1] = np.copysign(q[..., 1], rot[..., 2, 1] - rot[..., 1, 2])
+            q[..., 2] = np.copysign(q[..., 2], rot[..., 0, 2] - rot[..., 2, 0])
+            q[..., 3] = np.copysign(q[..., 3], rot[..., 1, 0] - rot[..., 0, 1])
+            return as_quat_array(q)
+
 
 
 def as_rotation_vector(q):

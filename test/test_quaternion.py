@@ -156,17 +156,22 @@ def test_as_rotation_matrix(Rs):
 
 
 def test_from_rotation_matrix(Rs):
-    scipy = pytest.importorskip("scipy")
+    try:
+        from scipy import linalg
+        rot_mat_eps = 10*eps
+    except ImportError:
+        rot_mat_eps = 10*math.sqrt(eps)
 
-    for R1 in Rs:
+    print()
+    for i, R1 in enumerate(Rs):
         R2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(R1))
         d = quaternion.rotation_intrinsic_distance(R1, R2)
-        assert d < 10*eps, (R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
+        assert d < rot_mat_eps, (i, R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
 
     Rs2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(Rs))
     for R1, R2 in zip(Rs, Rs2):
         d = quaternion.rotation_intrinsic_distance(R1, R2)
-        assert d < 10*eps, (R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
+        assert d < rot_mat_eps, (R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
 
 
 def test_as_rotation_vector():
