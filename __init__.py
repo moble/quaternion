@@ -155,17 +155,23 @@ def as_rotation_matrix(q):
             return m
 
 
-def from_rotation_matrix(rot):
+def from_rotation_matrix(rot, accurate=True):
     """Convert input 3x3 rotation matrix to unit quaternion
 
-    This uses Bar-Itzhack's algorithm to allow for non-orthogonal matrices.
-    J. Guidance, Vol. 23, No. 6, p. 1085 <http://dx.doi.org/10.2514/2.4654>
+    By default, if scipy.linalg is available, this function uses
+    Bar-Itzhack's algorithm to allow for non-orthogonal matrices.
+    [J. Guidance, Vol. 23, No. 6, p. 1085 <http://dx.doi.org/10.2514/2.4654>]
     This will almost certainly be quite a bit slower than simpler versions,
     though it will be more robust to numerical errors in the rotation matrix.
     Also note that Bar-Itzhack uses some pretty weird conventions.  The last
     component of the quaternion appears to represent the scalar, and the
     quaternion itself is conjugated relative to the convention used
     throughout this module.
+
+    If scipy.linalg is not available or if the optional `accurate` parameter
+    is set to `False`, this function falls back to the possibly faster, but
+    less accurate, algorithm of Shoemake [ACM SIGGRAPH Comp. Graph., Vol. 19,
+    No. 3, p. 245 (1985), <http://dx.doi.org/10.1145/325165.325242>].
 
     Parameters
     ----------
@@ -174,6 +180,9 @@ def from_rotation_matrix(rot):
         a column vector to produce a rotated column vector.  Note that this
         input may actually have ndims>3; it is just assumed that the last
         two dimensions have size 3, representing the matrix.
+    accurate: bool, optional
+        If scipy.linalg is available, use the more accurate algorithm of
+        Bar-Itzhack.  Default value is True.
 
     Returns
     -------
@@ -195,7 +204,7 @@ def from_rotation_matrix(rot):
     rot = np.array(rot, copy=False)
     shape = rot.shape[:-2]
 
-    if linalg:
+    if linalg and accurate:
         from operator import mul
         from functools import reduce
 
@@ -232,7 +241,7 @@ def from_rotation_matrix(rot):
                 q[multi_index, 1:] = -eigvecs[:-1].flatten()
             return as_quat_array(q)
 
-    else:  # No scipy.linalg
+    else:  # No scipy.linalg or not `accurate`
         if not shape:
             import math
             q = np.empty(shape+(4,), dtype=np.float)
