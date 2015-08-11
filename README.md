@@ -46,31 +46,36 @@ conda install pip numpy scipy numba
 
 ## Installation
 
-Installation is simple with `pip` (which should be present in any
-reasonably new installation of `python`):
-
-```sh
-pip install git+git://github.com/moble/quaternion
-```
-
-Of course, you could also just use `conda` with
+Assuming you use `conda` to manage your python installation (like any sane
+python user), you can install this package simply as
 
 ```sh
 conda install -c moble quaternion
 ```
 
-But I might not be great about updating the OS X version of the package.
-(It's easy, but I just forget to do it; if you want the package updated,
-feel free to ping me by opening an issue on github.)
+If you prefer to use `pip` (whether or not you use `conda`), you can also do
 
-If you refuse to use anaconda, you might want to install inside your
-home directory without root privileges.  (Anaconda does this by
-default anyway.)  This is done by adding `--user` to the above
-command:
+```sh
+pip install git+git://github.com/moble/quaternion
+```
+
+If you refuse to use `conda`, you might want to install inside your home
+directory without root privileges.  (Anaconda does this by default anyway.)
+This is done by adding `--user` to the above command:
 
 ```sh
 pip install --user git+git://github.com/moble/quaternion
 ```
+
+Finally, there's also the fully manual option of just downloading the code,
+changing to the code directory, and issuing
+
+```sh
+python setup.py install
+```
+
+This should work regardless of the installation method, as long as you have a
+compiler hanging around.
 
 
 ## Usage
@@ -122,44 +127,43 @@ real or complex types.
 
 ## Bug reports and feature requests
 
-Bug reports and feature requests are entirely welcome.  The best way
-to do this is to open an
+Bug reports and feature requests are entirely welcome.  The best way to do this
+is to open an
 [issue on this code's github page](https://github.com/moble/quaternion/issues).
-For bug reports, please try to include a minimal working example
-demonstrating the problem.
+For bug reports, please try to include a minimal working example demonstrating
+the problem.
 
-[Pull requests](https://help.github.com/articles/using-pull-requests/)
-are also entirely welcome, of course, if you have an idea where the
-code is going wrong, or have an idea for a new feature that you know
-how to implement.
+[Pull requests](https://help.github.com/articles/using-pull-requests/) are also
+entirely welcome, of course, if you have an idea where the code is going wrong,
+or have an idea for a new feature that you know how to implement.
 
-This code is
-[routinely tested](https://travis-ci.org/moble/quaternion) on
-recent versions of both python (2.x and 3.x) and numpy (>=1.7).  But
-the test coverage is not necessarily as complete as it should be, so
-bugs may certainly be present, especially in the higher-level
-functions like `mean_rotor_...`.
+This code is [routinely tested](https://travis-ci.org/moble/quaternion) on
+recent versions of both python (2.x and 3.x) and numpy (>=1.7).  But the test
+coverage is not necessarily as complete as it could be, so bugs may certainly
+be present, especially in the higher-level functions like `mean_rotor_...`.
 
 
 ## Acknowledgments
 
-This code is, of course, hosted on github.  Because it is an
-open-source project, the hosting is free, and all the wonderful
-features of github are available, including free wiki space and web
-page hosting, pull requests, a nice interface to the git logs, etc.
-Github user Hannes Ovrén (hovren) pointed out some errors in a
-previous version of this code and suggested some nice utility functions
-for rotation matrices, etc.
+This code is, of course, hosted on github.  Because it is an open-source
+project, the hosting is free, and all the wonderful features of github are
+available, including free wiki space and web page hosting, pull requests, a
+nice interface to the git logs, etc.  Github user Hannes Ovrén (hovren) pointed
+out some errors in a previous version of this code and suggested some nice
+utility functions for rotation matrices, etc.
 
 Every change in this code is
 [auomatically tested](https://travis-ci.org/moble/quaternion) on
-[Travis-CI](https://travis-ci.org/).  This is a free service (for
-open-source projects like this one), which integrates beautifully with
-github, detecting each commit and automatically re-running the tests.
-The code is downloaded and installed fresh each time, and then tested,
-on each of the five different versions of python.  This ensures that
-no change I make to the code breaks either installation or any of the
-features that I have written tests for.
+[Travis-CI](https://travis-ci.org/).  This is a free service (for open-source
+projects like this one), which integrates beautifully with github, detecting
+each commit and automatically re-running the tests.  The code is downloaded and
+installed fresh each time, and then tested, on each of the five different
+versions of python.  This ensures that no change I make to the code breaks
+either installation or any of the features that I have written tests for.
+
+Finally, the code is automatically compiled, and the binaries hosted for
+download by `conda` on [anaconda.org](https://anaconda.org/moble/quaternion).
+This is also a free service for open-source projects like this one.
 
 The work of creating this code was supported in part by the Sherman
 Fairchild Foundation and by NSF Grants No. PHY-1306125 and
