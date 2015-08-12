@@ -5,7 +5,7 @@ from __future__ import print_function, division, absolute_import
 
 import numpy as np
 import quaternion
-from quaternion.numba_wrapper import njit, xrange
+from quaternion.numba_wrapper import njit
 
 
 def squad(R_in, t_in, t_out):
@@ -43,52 +43,35 @@ def squad(R_in, t_in, t_out):
     # though the difference is probably totally washed out here.  In
     # any case, it might be useful to test again.
     #
-    A = R_in * np.exp((np.log((~R_in) * np.roll(R_in, -1))
+    A = R_in * np.exp((- np.log((~R_in) * np.roll(R_in, -1))
                        + np.log((~np.roll(R_in, 1)) * R_in) * ((np.roll(t_in, -1) - t_in) / (t_in - np.roll(t_in, 1)))
-                       - np.log((~R_in) * np.roll(R_in, -1)) * 2) * 0.25)
+                       ) * 0.25)
     B = np.roll(R_in, -1) * np.exp((np.log((~np.roll(R_in, -1)) * np.roll(R_in, -2))
                                     * ((np.roll(t_in, -1) - t_in) / (np.roll(t_in, -2) - np.roll(t_in, -1)))
                                     - np.log((~R_in) * np.roll(R_in, -1))) * -0.25)
 
-    # Correct the first one and last two time steps
+    # Correct the first and last A time steps, and last two B time steps
     A[0] = R_in[0] * np.exp((np.log((~R_in[0])*R_in[1])
                              + np.log((~(R_in[0]*(~R_in[1])*R_in[0]))*R_in[0])
                              - 2 * np.log((~R_in[0]) * R_in[1])
                              ) * 0.25)
-    # B[0] = R_in[1] * np.exp((((t_in[1]-t_in[0])/(t_in[2]-t_in[1])) * np.log((~R_in[1]) * R_in[2])
-    #                          + np.log((~R_in[0]) * R_in[1])
-    #                          - 2 * np.log((~R_in[0]) * R_in[1])
-    #                          ) * -0.25)
-    Dtim1 = t_in[-2:]-t_in[-3:-1]
-    Dti = t_in[-1]-t_in[-2:]
-    Qim1 = R_in[-3:-1]
-    Qi = R_in[-2:]
-    Qip1 = R_in[-1]
-    Qip2 = R_in[-1]*(~R_in[-2:])*R_in[-1]
-    # A[-2:] = Qi * np.exp((np.log((~Qi)*Qip1)
-    #                       + (Dti/Dtim1)*np.log((~Qim1)*Qi)
-    #                       - 2 * np.log((~Qi)*Qip1)) * 0.25)
-    # B[-2:] = Qip1 * np.exp((np.log((~Qip1)*Qip2) + np.log((~Qi)*Qip1) - 2 * np.log((~Qi)*Qip1)) * -0.25)
-    A[-1:] = R_in[-1:] * np.exp((np.log((~R_in[-2:]) * R_in[-1])
-                                 + ((t_in[-1] - t_in[-2:]) / (t_in[-2:] - t_in[-3:-1]))
-                                   * np.log((~R_in[-3:-1]) * R_in[-2:])
-                                 - 2 * np.log((~R_in[-2:]) * R_in[-1])) * 0.25)[1]
-    # A[-2:] = R_in[-2:] * np.exp((np.log((~R_in[-2:]) * R_in[-1])
-    #                              + ((t_in[-1] - t_in[-2:]) / (t_in[-2:] - t_in[-3:-1]))
-    #                                * np.log((~R_in[-3:-1]) * R_in[-2:])
-    #                              - 2 * np.log((~R_in[-2:]) * R_in[-1])) * 0.25)
-    # B[-2:] = R_in[-1] * np.exp((np.log((~R_in[-1]) * Qip2) - np.log((~R_in[-2:]) * R_in[-1])) * -0.25)
+    A[-1] = R_in[-1]
+    B[-2] = R_in[-1]
+    B[-1] = quaternion.one
 
     # Use the coefficients at the corresponding t_out indices to
     # compute the squad interpolant
+    R_ip1 = np.array(np.roll(R_in, -1)[i_in_for_out])
+    R_ip1[-1] = R_ip1[-2]*(~R_ip1[-3])*R_ip1[-2]
     tau = (t_out - t_in[i_in_for_out]) / ((np.roll(t_in, -1) - t_in)[i_in_for_out])
-    R_out = np.squad_loop(tau, R_in[i_in_for_out], A[i_in_for_out], B[i_in_for_out], np.roll(R_in, -1)[i_in_for_out])
+    R_out = np.squad_loop(tau, R_in[i_in_for_out], A[i_in_for_out], B[i_in_for_out], R_ip1)
 
     return R_out
 
 
 @njit
 def frame_from_angular_velocity_integrand(rfrak, Omega):
+    import math
     rfrakMag = math.sqrt(rfrak[0] * rfrak[0] + rfrak[1] * rfrak[1] + rfrak[2] * rfrak[2])
     OmegaMag = math.sqrt(Omega[0] * Omega[0] + Omega[1] * Omega[1] + Omega[2] * Omega[2])
     # If the matrix is really close to the identity, return
