@@ -18,7 +18,7 @@ def configuration(parent_package='', top_path=None):
     #     compile_args = ['-O3']
     # else:
     #     compile_args = ['-ffast-math', '-O3']
-    compile_args = ['-O3']
+    compile_args = ['-ffast-math', '-O3']
     config = Configuration('quaternion', parent_package, top_path)
     config.add_extension('numpy_quaternion',
                          ['quaternion.c', 'numpy_quaternion.c'],
