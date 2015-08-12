@@ -25,6 +25,8 @@ def squad(R_in, t_in, t_out):
     silently bad results if these conditions are violated.
 
     """
+    if R_in.size == 0 or t_out.size == 0:
+        return np.array((), dtype=np.quaternion)
 
     # This list contains an index for each `t_out` such that
     # t_in[i-1] <= t_out < t_in[i]
