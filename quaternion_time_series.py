@@ -59,7 +59,7 @@ def squad(R_in, t_in, t_out):
                              ) * 0.25)
     A[-1] = R_in[-1]
     B[-2] = R_in[-1]
-    B[-1] = quaternion.one
+    #B[-1] = quaternion.one
 
     # Use the coefficients at the corresponding t_out indices to
     # compute the squad interpolant
