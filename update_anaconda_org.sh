@@ -4,7 +4,7 @@ set -e
 PWD=`pwd`
 DIR=`basename $PWD`
 
-anaconda-build trigger moble/${DIR}
+# anaconda-build trigger moble/${DIR}
 
 export CONDA_NPY=19
 CONDA_PYs=( 27 34 )
