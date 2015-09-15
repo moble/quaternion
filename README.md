@@ -14,10 +14,11 @@ quaternions (and to fix a few bugs).
 
 ## Dependencies
 
-The basic requirements for this code are reasonably current versions
-of `python` and `numpy`.  In particular, `python` versions 2.7 and 3.4 are
-[routinely tested](https://travis-ci.org/moble/quaternion), and
-any `numpy` version greater than 1.7.0 should work.
+The basic requirements for this code are reasonably current versions of
+`python` and `numpy`.  In particular, `python` versions 2.7, 3.4, and 3.5 are
+[routinely tested](https://travis-ci.org/moble/quaternion).  Also, any `numpy`
+version greater than 1.7.0 should work, but the tests are run on the most
+recent release at the time of the test.
 
 However, certain advanced functions in this package (including
 `squad`, `mean_rotor_in_intrinsic_metric`,
