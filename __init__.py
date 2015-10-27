@@ -48,6 +48,7 @@ def as_float_array(a):
     array, but is otherwise the same shape.
 
     """
+    a = np.atleast_1d(a)
     assert a.dtype == np.dtype(np.quaternion)
     if a.shape == ():
         return a.components
@@ -94,6 +95,7 @@ def as_spinor_array(a):
     "advanced indexing" required to swap the columns.
 
     """
+    a = np.atleast_1d(a)
     assert a.dtype == np.dtype(np.quaternion)
     # I'm not sure why it has to be so complicated, but all of these steps
     # appear to be necessary in this case.
