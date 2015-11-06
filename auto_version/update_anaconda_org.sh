@@ -6,7 +6,7 @@ DIR=`basename $PWD`
 
 # anaconda-build trigger moble/${DIR}
 
-export CONDA_NPY=19
+export CONDA_NPY=110
 CONDA_PYs=( 27 34 35 )
 
 for CONDA_PY in "${CONDA_PYs[@]}"
