@@ -30,13 +30,13 @@ do
     echo CONDA_PY=${CONDA_PY}
     export CONDA_PY
     conda build --no-binstar-upload ${CONDA_DIR}
+    conda server upload --force `conda build ${CONDA_DIR} --output`
     mkdir -p ${CONDA_DIR}/conversions
     for conversion in "${CONVERSIONS[@]}"; do
         conda convert -f -p ${conversion} -o ${CONDA_DIR}/conversions `conda build ${CONDA_DIR} --output`
     done
 
 done
-conda server upload --force `conda build ${CONDA_DIR} --output`
 if [ ${#CONVERSIONS[@]} != 0 ]; then
     conda server upload --force ${CONDA_DIR}/conversions/*/*tar.bz2
 fi
