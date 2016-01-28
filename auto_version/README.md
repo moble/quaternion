@@ -25,7 +25,7 @@ The `build_py_copy_version` class wraps the basic `build_py` class used in
 the standard setup function, but adds a step at the end to create a file named
 `_version.py` that gets copied into the installed module.
 
-# Usage
+# Usage for finding version in code
 
 To use both of these in the enclosing package, the enclosing `setup.py` file
 could contain something like this:
@@ -52,6 +52,15 @@ Then, in other code you would see the version normally:
 import enclosing_package_name
 print(enclosing_package_name.__version__)
 ```
+
+# Usage for updating anaconda
+
+A script `update_anaconda_org.sh` also accompanies this repo that allows for easy updating of the package distributed on
+anaconda.org (and even pypi, if you use it).  The script has three optional arguments, though preceding arguments
+must be given if you wish to give only the third, for example.  For more details, run
+
+    update_anaconda_org.sh --help
+
 
 # Git subtrees
 
