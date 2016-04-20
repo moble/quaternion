@@ -217,6 +217,7 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
     NpyIter_IterNextFunc *in_iternext;                                  \
     NpyIter_IterNextFunc *out_iternext;                                 \
     quaternion p = {0};                                                 \
+    quaternion ** out_dataptr;                                          \
     PyQuaternion_AsQuaternion(p, a);                                    \
     out_array = PyArray_NewLikeArray(in_array, NPY_ANYORDER, quaternion_descr, 0); \
     if (out_array == NULL) return NULL;                                 \
@@ -236,7 +237,7 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
       NpyIter_Deallocate(out_iter);                                     \
       goto fail;                                                        \
     }                                                                   \
-    quaternion ** out_dataptr = (quaternion **) NpyIter_GetDataPtrArray(out_iter); \
+    out_dataptr = (quaternion **) NpyIter_GetDataPtrArray(out_iter);    \
     if(PyArray_EquivTypes(PyArray_DESCR((PyArrayObject*) b), quaternion_descr)) { \
       quaternion ** in_dataptr = (quaternion **) NpyIter_GetDataPtrArray(in_iter); \
       do {                                                              \
