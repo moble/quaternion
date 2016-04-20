@@ -32,7 +32,7 @@ static NPY_INLINE int PyInt_Check(PyObject *op) {
 
 // The basic python object holding a quaternion
 typedef struct {
-  PyObject_HEAD;
+  PyObject_HEAD
   quaternion obval;
 } PyQuaternion;
 
