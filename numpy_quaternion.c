@@ -32,7 +32,7 @@ static NPY_INLINE int PyInt_Check(PyObject *op) {
 
 // The basic python object holding a quaternion
 typedef struct {
-  PyObject_HEAD;
+  PyObject_HEAD
   quaternion obval;
 } PyQuaternion;
 
@@ -217,6 +217,7 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
     NpyIter_IterNextFunc *in_iternext;                                  \
     NpyIter_IterNextFunc *out_iternext;                                 \
     quaternion p = {0};                                                 \
+    quaternion ** out_dataptr;                                          \
     PyQuaternion_AsQuaternion(p, a);                                    \
     out_array = PyArray_NewLikeArray(in_array, NPY_ANYORDER, quaternion_descr, 0); \
     if (out_array == NULL) return NULL;                                 \
@@ -236,7 +237,7 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
       NpyIter_Deallocate(out_iter);                                     \
       goto fail;                                                        \
     }                                                                   \
-    quaternion ** out_dataptr = (quaternion **) NpyIter_GetDataPtrArray(out_iter); \
+    out_dataptr = (quaternion **) NpyIter_GetDataPtrArray(out_iter);    \
     if(PyArray_EquivTypes(PyArray_DESCR((PyArrayObject*) b), quaternion_descr)) { \
       quaternion ** in_dataptr = (quaternion **) NpyIter_GetDataPtrArray(in_iter); \
       do {                                                              \
@@ -804,6 +805,7 @@ static npy_bool
 QUATERNION_nonzero (char *ip, PyArrayObject *ap)
 {
   quaternion q;
+  quaternion zero = {0,0,0,0};
   if (ap == NULL || PyArray_ISBEHAVED_RO(ap)) {
     q = *(quaternion *)ip;
   }
@@ -816,7 +818,7 @@ QUATERNION_nonzero (char *ip, PyArrayObject *ap)
     descr->f->copyswap(&q.z, ip+24, !PyArray_ISNOTSWAPPED(ap), NULL);
     Py_DECREF(descr);
   }
-  return (npy_bool) !quaternion_equal(q, (quaternion) {0,0,0,0});
+  return (npy_bool) !quaternion_equal(q, zero);
 }
 
 static void
