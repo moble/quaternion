@@ -804,6 +804,7 @@ static npy_bool
 QUATERNION_nonzero (char *ip, PyArrayObject *ap)
 {
   quaternion q;
+  quaternion zero = {0,0,0,0};
   if (ap == NULL || PyArray_ISBEHAVED_RO(ap)) {
     q = *(quaternion *)ip;
   }
@@ -816,7 +817,7 @@ QUATERNION_nonzero (char *ip, PyArrayObject *ap)
     descr->f->copyswap(&q.z, ip+24, !PyArray_ISNOTSWAPPED(ap), NULL);
     Py_DECREF(descr);
   }
-  return (npy_bool) !quaternion_equal(q, (quaternion) {0,0,0,0});
+  return (npy_bool) !quaternion_equal(q, zero);
 }
 
 static void
