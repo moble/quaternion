@@ -67,8 +67,10 @@ def Qs():
     Q = quaternion.quaternion(1.1, 2.2, 3.3, 4.4)
     Qneg = quaternion.quaternion(-1.1, -2.2, -3.3, -4.4)
     Qbar = quaternion.quaternion(1.1, -2.2, -3.3, -4.4)
-    Qnormalized = quaternion.quaternion(0.18257418583505539, 0.36514837167011077,
-                                        0.54772255750516607, 0.73029674334022154)
+    Qnormalized = quaternion.quaternion(0.18257418583505537115232326093360,
+                                        0.36514837167011074230464652186720,
+                                        0.54772255750516611345696978280080,
+                                        0.73029674334022148460929304373440)
     Qlog = quaternion.quaternion(1.7959088706354, 0.515190292664085,
                                  0.772785438996128, 1.03038058532817)
     Qexp = quaternion.quaternion(2.81211398529184, -0.392521193481878,
@@ -255,7 +257,7 @@ def test_as_euler_angles():
         R1 = quaternion.from_euler_angles(alpha, beta, gamma)
         R2 = quaternion.from_euler_angles(*list(quaternion.as_euler_angles(R1)))
         d = quaternion.rotation_intrinsic_distance(R1, R2)
-        assert d < 4e3*eps, ((alpha, beta, gamma), R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
+        assert d < 6e3*eps, ((alpha, beta, gamma), R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
 
 
 # Unary bool returners
@@ -434,7 +436,7 @@ def test_angle(Rs):
 
 
 def test_quaternion_normalized(Qs):
-    assert Qs[Q].normalized() == Qs[Qnormalized]
+    assert abs(Qs[Q].normalized()-Qs[Qnormalized]) < 4e-16
     for q in Qs[Qs_finitenonzero]:
         assert abs(q.normalized().abs() - 1.0) < 1.e-15
 
@@ -749,9 +751,9 @@ def test_metrics(Rs):
     for R1 in Rs:
         for R2 in Rs:
             assert bool(quaternion.rotor_chordal_distance(R1, R2) > 0.) != bool(R1 == R2)
-            assert bool(quaternion.rotor_intrinsic_distance(R1, R2) > 0.) != bool(R1 == R2)
+            assert bool(quaternion.rotor_intrinsic_distance(R1, R2) > 5.e-16) != bool(R1 == R2)
             assert bool(quaternion.rotation_chordal_distance(R1, R2) > 0.) != bool(R1 == R2 or R1 == -R2)
-            assert bool(quaternion.rotation_intrinsic_distance(R1, R2) > 0.) != bool(R1 == R2 or R1 == -R2)
+            assert bool(quaternion.rotation_intrinsic_distance(R1, R2) > 5.e-16) != bool(R1 == R2 or R1 == -R2)
     # Check symmetry
     for R1 in Rs:
         for R2 in Rs:
@@ -781,16 +783,16 @@ def test_metrics(Rs):
     for R in Rs:
         # All distances from self should be 0.0
         assert quaternion.rotor_chordal_distance(R, R) == 0.0
-        assert quaternion.rotor_intrinsic_distance(R, R) == 0.0
+        assert quaternion.rotor_intrinsic_distance(R, R) < 5.e-16
         assert quaternion.rotation_chordal_distance(R, R) == 0.0
-        assert quaternion.rotation_intrinsic_distance(R, R) == 0.0
+        assert quaternion.rotation_intrinsic_distance(R, R) < 5.e-16
         # Chordal rotor distance from -self should be 2
         assert abs(quaternion.rotor_chordal_distance(R, -R) - 2.0) < metric_precision
         # Intrinsic rotor distance from -self should be 2pi
         assert abs(quaternion.rotor_intrinsic_distance(R, -R) - 2.0 * np.pi) < metric_precision
         # Rotation distances from -self should be 0
         assert quaternion.rotation_chordal_distance(R, -R) == 0.0
-        assert quaternion.rotation_intrinsic_distance(R, -R) == 0.0
+        assert quaternion.rotation_intrinsic_distance(R, -R) < 5.e-16
     # We expect the chordal distance to be smaller than the intrinsic distance (or equal, if the distance is zero)
     for R in Rs:
         assert (
