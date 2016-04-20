@@ -8,6 +8,12 @@
 extern "C" {
 #endif
 
+  #if defined(_MSC_VER)
+    #include "math_msvc_compatibility.h"
+  #else
+    #include <math.h>
+  #endif
+
   #define _QUATERNION_EPS 1e-14
 
   #if defined(_MSC_VER)

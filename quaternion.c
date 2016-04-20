@@ -1,7 +1,16 @@
 // Copyright (c) 2015, Michael Boyle
 // See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
-#include <math.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#if defined(_MSC_VER)
+  #include "math_msvc_compatibility.h"
+#else
+  #include <math.h>
+#endif
+
 #include <stdio.h>
 
 #include "quaternion.h"
@@ -105,3 +114,7 @@ quaternion_exp(quaternion q)
     return r;
   }
 }
+
+#ifdef __cplusplus
+}
+#endif
