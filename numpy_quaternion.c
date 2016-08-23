@@ -193,19 +193,6 @@ pyquaternion_positive(PyObject* self, PyObject* b) {
 /* QQ_BINARY_QUATERNION_RETURNER(subtract) */
 QQ_BINARY_QUATERNION_RETURNER(copysign)
 
-#define QQ_BINARY_QUATERNION_INPLACE(name)                              \
-  static PyObject*                                                      \
-  pyquaternion_inplace_##name(PyObject* a, PyObject* b) {               \
-    quaternion* p = {0};                                                \
-    quaternion q = {0};                                                 \
-    PyQuaternion_AsQuaternionPointer(p, a);                             \
-    PyQuaternion_AsQuaternion(q, b);                                    \
-    quaternion_inplace_##name(p,q);                                     \
-    return a;                                                           \
-  }
-/* QQ_BINARY_QUATERNION_INPLACE(add) */
-/* QQ_BINARY_QUATERNION_INPLACE(subtract) */
-
 #define QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(fake_name, name)       \
   static PyObject*                                                      \
   pyquaternion_##fake_name##_array_operator(PyObject* a, PyObject* b) { \
@@ -304,21 +291,24 @@ QQ_QS_SQ_BINARY_QUATERNION_RETURNER(power)
 #define QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(fake_name, name)        \
   static PyObject*                                                      \
   pyquaternion_inplace_##fake_name(PyObject* a, PyObject* b) {          \
-    /* fprintf (stderr, "file %s, line %d, pyquaternion_inplace_%s(PyObject* a, PyObject* b).\n", __FILE__, __LINE__); */ \
     quaternion* p = {0};                                                \
+    /* fprintf (stderr, "file %s, line %d, pyquaternion_inplace_"#fake_name"(PyObject* a, PyObject* b).\n", __FILE__, __LINE__); \ */ \
     if(PyFloat_Check(a) || PyInt_Check(a)) {                            \
-      pyquaternion_inplace_##fake_name(b,a);                            \
-      return a;                                                         \
+      PyErr_SetString(PyExc_TypeError, "Cannot in-place "#fake_name" a scalar by a quaternion; should be handled by python."); \
+      return NULL;                                                      \
     }                                                                   \
     PyQuaternion_AsQuaternionPointer(p, a);                             \
     if(PyQuaternion_Check(b)) {                                         \
       quaternion_inplace_##name(p,((PyQuaternion*)b)->obval);           \
+      Py_INCREF(a);                                                     \
       return a;                                                         \
     } else if(PyFloat_Check(b)) {                                       \
       quaternion_inplace_##name##_scalar(p,PyFloat_AsDouble(b));        \
+      Py_INCREF(a);                                                     \
       return a;                                                         \
     } else if(PyInt_Check(b)) {                                         \
       quaternion_inplace_##name##_scalar(p,PyInt_AsLong(b));            \
+      Py_INCREF(a);                                                     \
       return a;                                                         \
     }                                                                   \
     PyErr_SetString(PyExc_TypeError, "Binary in-place operation involving quaternion and neither float nor quaternion."); \
@@ -540,6 +530,12 @@ static PyNumberMethods pyquaternion_as_number = {
   pyquaternion_inplace_divide,    // nb_inplace_floor_divide
   pyquaternion_inplace_divide,    // nb_inplace_true_divide
   0,                              // nb_index
+  #if PY_MAJOR_VERSION >= 3
+  #if PY_MINOR_VERSION >= 5
+  0,                              // nb_matrix_multiply
+  0,                              //  nb_inplace_matrix_multiply
+  #endif
+  #endif
 };
 
 

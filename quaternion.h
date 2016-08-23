@@ -275,7 +275,7 @@ extern "C" {
     return r;
   }
   static NPY_INLINE void quaternion_inplace_multiply(quaternion* q1a, quaternion q2) {
-    quaternion q1 = *q1a;
+    quaternion q1 = {q1a->w, q1a->x, q1a->y, q1a->z};
     q1a->w = q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z;
     q1a->x = q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y;
     q1a->y = q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x;
