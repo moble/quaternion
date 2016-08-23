@@ -598,6 +598,7 @@ pyquaternion_get_vec(PyObject *self, void *closure)
 static int
 pyquaternion_set_vec(PyObject *self, PyObject *value, void *closure)
 {
+  PyObject *element;
   quaternion *q = &((PyQuaternion *)self)->obval;
   if (value == NULL) {
     PyErr_SetString(PyExc_TypeError, "Cannot set quaternion to empty value");
@@ -608,9 +609,19 @@ pyquaternion_set_vec(PyObject *self, PyObject *value, void *closure)
                     "A quaternion's vector components must be set to something of length 3");
     return -1;
   }
-  q->x = PyFloat_AsDouble(PySequence_GetItem(value, 0));
-  q->y = PyFloat_AsDouble(PySequence_GetItem(value, 1));
-  q->z = PyFloat_AsDouble(PySequence_GetItem(value, 2));
+  /* PySequence_GetItem INCREFs element. */
+  element = PySequence_GetItem(value, 0);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->x = PyFloat_AsDouble(element);
+  Py_DECREF(element);
+  element = PySequence_GetItem(value, 1);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->y = PyFloat_AsDouble(element);
+  Py_DECREF(element);
+  element = PySequence_GetItem(value, 2);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->z = PyFloat_AsDouble(element);
+  Py_DECREF(element);
   return 0;
 }
 
@@ -636,6 +647,7 @@ pyquaternion_get_components(PyObject *self, void *closure)
 static int
 pyquaternion_set_components(PyObject *self, PyObject *value, void *closure)
 {
+  PyObject *element;
   quaternion *q = &((PyQuaternion *)self)->obval;
   if (value == NULL) {
     PyErr_SetString(PyExc_ValueError, "Cannot set quaternion to empty value");
@@ -646,10 +658,22 @@ pyquaternion_set_components(PyObject *self, PyObject *value, void *closure)
                     "A quaternion's components must be set to something of length 4");
     return -1;
   }
-  q->w = PyFloat_AsDouble(PySequence_GetItem(value, 0));
-  q->x = PyFloat_AsDouble(PySequence_GetItem(value, 1));
-  q->y = PyFloat_AsDouble(PySequence_GetItem(value, 2));
-  q->z = PyFloat_AsDouble(PySequence_GetItem(value, 3));
+  element = PySequence_GetItem(value, 0);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->w = PyFloat_AsDouble(element);
+  Py_DECREF(element);
+  element = PySequence_GetItem(value, 1);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->x = PyFloat_AsDouble(element);
+  Py_DECREF(element);
+  element = PySequence_GetItem(value, 2);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->y = PyFloat_AsDouble(element);
+  Py_DECREF(element);
+  element = PySequence_GetItem(value, 3);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->z = PyFloat_AsDouble(element);
+  Py_DECREF(element);
   return 0;
 }
 
@@ -847,14 +871,27 @@ QUATERNION_copyswapn(quaternion *dst, npy_intp dstride,
 
 static int QUATERNION_setitem(PyObject* item, void* data, void* ap)
 {
+  PyObject *element;
   quaternion q = {0};
   if(PyQuaternion_Check(item)) {
     memcpy(data,&(((PyQuaternion *)item)->obval),sizeof(quaternion));
   } else if(PySequence_Check(item) && PySequence_Length(item)==4) {
-    q.w = PyFloat_AsDouble(PySequence_GetItem(item, 0));
-    q.x = PyFloat_AsDouble(PySequence_GetItem(item, 1));
-    q.y = PyFloat_AsDouble(PySequence_GetItem(item, 2));
-    q.z = PyFloat_AsDouble(PySequence_GetItem(item, 3));
+    element = PySequence_GetItem(item, 0);
+    if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+    q.w = PyFloat_AsDouble(element);
+    Py_DECREF(element);
+    element = PySequence_GetItem(item, 1);
+    if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+    q.x = PyFloat_AsDouble(element);
+    Py_DECREF(element);
+    element = PySequence_GetItem(item, 2);
+    if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+    q.y = PyFloat_AsDouble(element);
+    Py_DECREF(element);
+    element = PySequence_GetItem(item, 3);
+    if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+    q.z = PyFloat_AsDouble(element);
+    Py_DECREF(element);
   } else {
     PyErr_SetString(PyExc_TypeError,
                     "Unknown input to QUATERNION_setitem");
