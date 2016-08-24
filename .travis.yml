@@ -14,7 +14,7 @@ env:
 install:
   - lsb_release -a
   - if [[ "${CONDA}" == "true" ]]; then
-      source auto_version/travis_install_conda.sh numpy scipy numba pip pytest conda-build anaconda-client;
+      source auto_version/travis_install_conda.sh numpy scipy numba pip pytest;
     fi
   - python setup.py install
 
