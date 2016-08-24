@@ -7,24 +7,32 @@
 
 # I stole these ideas from Yoav Ram <https://gist.github.com/yoavram/05a3c04ddcf317a517d5>
 
+echo "Trying to run deploy script"
+
 set -e
 
-if [[ "${CONDA}" != "true" ]]; then
-    exit 0
+if [[ "${CONDA}" == "true" ]]; then
+
+    conda config --set anaconda_upload no;
+
+    conda install -n root conda-build anaconda-client
+
+    echo "Building package"
+    conda build .
+
+    echo "Converting conda package..."
+    conda convert --platform all $HOME/miniconda/conda-bld/linux-64/quaternion-*.tar.bz2 --output-dir conda-bld/
+
+    echo "Deploying to Anaconda.org..."
+    anaconda -t $ANACONDA_TOKEN upload conda-bld/**/quaternion-*.tar.bz2
+
+    echo "Successfully deployed to Anaconda.org."
+
+else
+
+    echo "Skipping deployment"
+
 fi
 
-conda config --set anaconda_upload no;
 
-conda install -n root conda-build anaconda-client
-
-echo "Building package"
-conda build .
-
-echo "Converting conda package..."
-conda convert --platform all $HOME/miniconda/conda-bld/linux-64/quaternion-*.tar.bz2 --output-dir conda-bld/
-
-echo "Deploying to Anaconda.org..."
-anaconda -t $ANACONDA_TOKEN upload conda-bld/**/quaternion-*.tar.bz2
-
-echo "Successfully deployed to Anaconda.org."
 exit 0
