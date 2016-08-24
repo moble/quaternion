@@ -29,6 +29,4 @@ deploy:
  # Deploy to Anaconda.org
   - provider: script
     script: ./deploy_anaconda.sh
-    on:
-      tags: true
     skip_cleanup: true
