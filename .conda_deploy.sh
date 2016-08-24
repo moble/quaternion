@@ -21,7 +21,7 @@ if [[ "${CONDA}" == "true" ]]; then
     conda build .
 
     echo "Converting conda package..."
-    conda convert --platform all $HOME/miniconda/conda-bld/linux-64/quaternion-*.tar.bz2 --output-dir conda-bld/
+    conda convert -f --platform osx-64,linux-32,linux-64 $HOME/miniconda/conda-bld/linux-64/quaternion-*.tar.bz2 --output-dir conda-bld/
 
     echo "Deploying to Anaconda.org..."
     anaconda -t $ANACONDA_TOKEN upload conda-bld/**/quaternion-*.tar.bz2
