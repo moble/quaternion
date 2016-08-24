@@ -28,5 +28,5 @@ after_success:
 deploy:
  # Deploy to Anaconda.org
   - provider: script
-    script: ./deploy_anaconda.sh
+    script: "./deploy_anaconda.sh"
     skip_cleanup: true
