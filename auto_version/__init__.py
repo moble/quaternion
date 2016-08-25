@@ -43,11 +43,12 @@ def calculate_version():
         date, time, utc_offset, short_hash = git_revision.split(' ')
         date = date.replace('-', '.').strip()  # make date an acceptable version string
         short_hash = short_hash.strip()  # remove newline and any other whitespace
+        short_hash = int(short_hash, 16)  # So that it's a valid PEP 440 version identifier
         dirty = bool(subprocess.call("git diff-files --quiet --", shell=True))
         dirty = dirty or bool(subprocess.call("git diff-index --cached --quiet HEAD --", shell=True))
         version = '{0}.dev{1}'.format(date, short_hash)
         if dirty:
-            version += '.dirty'
+            version += '+dirty'
         exec('putative__version__ = "{0}"'.format(version))  # see if this will raise an error for some reason
     except Exception as e:
         # If any of the above failed for any reason whatsoever, fall back on this dumb version
