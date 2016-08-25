@@ -24,7 +24,6 @@ after_success:
 - chmod +x ./.conda_deploy.sh
 
 deploy:
-  matrix:
   - provider: script
     script: "./.conda_deploy.sh"
     skip_cleanup: true
@@ -35,3 +34,5 @@ deploy:
     on:
       distributions: sdist bdist_wheel
       repo: moble/quaternion
+      python: '3.5'
+      condition: $CONDA = 'false'
