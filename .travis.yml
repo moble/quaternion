@@ -3,8 +3,8 @@ sudo: false
 language: python
 
 python:
-  - "2.7"
-  - "3.5"
+  - '2.7'
+  - '3.5'
 
 env:
   - CONDA=true
@@ -21,11 +21,14 @@ script:
   - py.test
 
 after_success:
-# Change permissions for Anaconda deployment script
   - chmod +x ./.conda_deploy.sh
 
 deploy:
- # Deploy to Anaconda.org
+  matrix:
   - provider: script
     script: "./.conda_deploy.sh"
     skip_cleanup: true
+  - provider: pypi
+    user: moboyle79
+    password:
+      secure: SRfvy1ly3R+allSeQncMn4Zc+y6oix6LoabfdkuhTVa0BaSUle+EL+RAOiyZckZ6wQtxn6TQIkXsdbJVRqR2XW75US5UybsDpKXwJOUDse6mJrhwemJxrMjobSrf/IEKBQ5pOj69/phvp/fA3m0fW1FLD5wGkG1l/5HJvH/rTWQ=
