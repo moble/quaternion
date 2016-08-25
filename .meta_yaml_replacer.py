@@ -8,7 +8,7 @@ from __future__ import print_function
 import fileinput
 from auto_version import calculate_version
 
-version_string = calculate_version()
+version_string = calculate_version().replace('+dirty', '')
 
 f = fileinput.FileInput('meta.yaml', inplace=True)
 for line in f:
