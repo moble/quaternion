@@ -3,25 +3,25 @@ sudo: false
 language: python
 
 python:
-  - '2.7'
-  - '3.5'
+- '2.7'
+- '3.5'
 
 env:
-  - CONDA=true
-  - CONDA=false
+- CONDA=true
+- CONDA=false
 
 install:
-  - lsb_release -a
-  - if [[ "${CONDA}" == "true" ]]; then
-      source auto_version/travis_install_conda.sh numpy scipy numba pip pytest;
-    fi
-  - python setup.py install
+- lsb_release -a
+- if [[ "${CONDA}" == "true" ]]; then
+    source auto_version/travis_install_conda.sh numpy scipy numba pip pytest;
+  fi
+- python setup.py install
 
 script:
-  - py.test
+- py.test
 
 after_success:
-  - chmod +x ./.conda_deploy.sh
+- chmod +x ./.conda_deploy.sh
 
 deploy:
   matrix:
@@ -31,4 +31,7 @@ deploy:
   - provider: pypi
     user: moboyle79
     password:
-      secure: SRfvy1ly3R+allSeQncMn4Zc+y6oix6LoabfdkuhTVa0BaSUle+EL+RAOiyZckZ6wQtxn6TQIkXsdbJVRqR2XW75US5UybsDpKXwJOUDse6mJrhwemJxrMjobSrf/IEKBQ5pOj69/phvp/fA3m0fW1FLD5wGkG1l/5HJvH/rTWQ=
+      secure: D0OzSdZn5hWjXX5H41g4pnqme1TJaABKGmUpe14PGMaRf8DjisVMZStAsVVWfocxFqQX3gress+KKtxEvdySXxcfkXAp8VTBvZ+V/uzQQFSYmf5KFwTR/yywff7vdCO+eSHztIcdOhz8Uw2poL/f4/BmO9Y5OoHXJPTkvr6MbIk=
+    on:
+      distributions: sdist bdist_wheel
+      repo: moble/quaternion
