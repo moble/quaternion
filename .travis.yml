@@ -22,6 +22,7 @@ script:
 
 after_success:
 - chmod +x ./.conda_deploy.sh
+- python ./.meta_yaml_replacer.py
 
 deploy:
   - provider: script
