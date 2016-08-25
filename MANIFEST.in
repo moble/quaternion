@@ -1,2 +1,2 @@
 include README.md numpy_quaternion.c quaternion.c quaternion.h
-recursive-include *.py
+recursive-include . *.py
