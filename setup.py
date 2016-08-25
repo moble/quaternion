@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2014, Michael Boyle
+# Copyright (c) 2016, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 from auto_version import calculate_version, build_py_copy_version
@@ -31,5 +31,5 @@ if __name__ == "__main__":
           cmdclass={'build_py': build_py_copy_version},
           url='https://github.com/moble/quaternion',
           author='Michael Boyle',
-          author_email='boyle@astro.cornell.edu',
+          author_email='',
     )

@@ -1,4 +1,4 @@
-// Copyright (c) 2015, Michael Boyle
+// Copyright (c) 2016, Michael Boyle
 // See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 #ifndef __MATH_MSVC_COMPATIBILITY_H__
