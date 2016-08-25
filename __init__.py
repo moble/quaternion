@@ -402,7 +402,8 @@ def as_spherical_coords(q):
     vartheta_varphi: float array
         Output shape is q.shape+(2,).  These represent the angles
         (vartheta, varphi), where the normalized input quaternion
-        represents `exp(varphi*z/2) * exp(vartheta*y/2)`.
+        represents `exp(varphi*z/2) * exp(vartheta*y/2)`, up to an
+        arbitrary inital rotation about `z`.
 
     """
     return as_euler_angles(q)[..., 1::-1]
