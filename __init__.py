@@ -385,6 +385,29 @@ def as_euler_angles(q):
     return alpha_beta_gamma
 
 
+def as_spherical_coords(q):
+    """Return the spherical coordinates corresponding to this quaternion
+
+    Obviously, spherical coordinates do not contain as much information as a quaternion, so this function does lose
+    some information.  However, the returned spherical coordinates will represent the point(s) on the sphere to which
+    the input quaternion(s) rotate the z axis.
+
+    Parameters
+    ----------
+    q: quaternion or array of quaternions
+        The quaternion(s) need not be normalized, but must be nonzero
+
+    Returns
+    -------
+    vartheta_varphi: float array
+        Output shape is q.shape+(2,).  These represent the angles
+        (vartheta, varphi), where the normalized input quaternion
+        represents `exp(varphi*z/2) * exp(vartheta*y/2)`.
+
+    """
+    return as_euler_angles(q)[..., 1::-1]
+
+
 def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, verbose=False):
     """
     Returns True if two arrays are element-wise equal within a tolerance.

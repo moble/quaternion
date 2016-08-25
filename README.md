@@ -125,6 +125,53 @@ quaternions, with their single imaginary component becoming the first
 imaginary component of the quaternion. Quaternions may not be cast to
 real or complex types.
 
+Several array-conversion functions are also included.  For example, to convert an Nx4 array of floats to an
+N-dimensional array of quaternions, use `as_quat_array`:
+```python
+>>> import numpy as np
+>>> import quaternion
+>>> a = np.random.rand(7, 4)
+>>> a
+array([[ 0.93138726,  0.46972279,  0.18706385,  0.86605021],
+       [ 0.70633523,  0.69982741,  0.93303559,  0.61440879],
+       [ 0.79334456,  0.65912598,  0.0711557 ,  0.46622885],
+       [ 0.88185987,  0.9391296 ,  0.73670503,  0.27115149],
+       [ 0.49176628,  0.56688076,  0.13216632,  0.33309146],
+       [ 0.11951624,  0.86804078,  0.77968826,  0.37229404],
+       [ 0.33187593,  0.53391165,  0.8577846 ,  0.18336855]])
+>>> qs = quaternion.as_quat_array(a)
+>>> qs
+array([ quaternion(0.931387262880247, 0.469722787598354, 0.187063852060487, 0.866050210100621),
+       quaternion(0.706335233363319, 0.69982740767353, 0.933035590130247, 0.614408786768725),
+       quaternion(0.793344561317281, 0.659125976566815, 0.0711557025000925, 0.466228847713644),
+       quaternion(0.881859869074069, 0.939129602918467, 0.736705031709562, 0.271151494174001),
+       quaternion(0.491766284854505, 0.566880763189927, 0.132166320200012, 0.333091463422536),
+       quaternion(0.119516238634238, 0.86804077992676, 0.779688263524229, 0.372294043850009),
+       quaternion(0.331875925159073, 0.533911652483908, 0.857784598617977, 0.183368547490701)], dtype=quaternion)
+```
+[Note that quaternions are printed with full precision, unlike floats, which is why you see extra digits above.  But
+the actual data is identical in the two cases.]  To convert an N-dimensional array of quaternions to an Nx4 array of
+floats, use `as_float_array`:
+```python
+>>> b = quaternion.as_float_array(qs)
+>>> b
+array([[ 0.93138726,  0.46972279,  0.18706385,  0.86605021],
+       [ 0.70633523,  0.69982741,  0.93303559,  0.61440879],
+       [ 0.79334456,  0.65912598,  0.0711557 ,  0.46622885],
+       [ 0.88185987,  0.9391296 ,  0.73670503,  0.27115149],
+       [ 0.49176628,  0.56688076,  0.13216632,  0.33309146],
+       [ 0.11951624,  0.86804078,  0.77968826,  0.37229404],
+       [ 0.33187593,  0.53391165,  0.8577846 ,  0.18336855]])
+```
+
+It is also possible to convert a quaternion to or from a 3x3 array of floats representing a rotation matrix, or an
+array of N quaternions to or from an Nx3x3 array of floats representing N rotation matrices, using
+`as_rotation_matrix` and `from_rotation_matrix`.  Similar conversions are possible for rotation vectors using
+`as_rotation_vector` and `from_rotation_vector`, and for spherical coordinates using `as_spherical_coords` and
+`from_spherical_coords`.  Finally, it is possible to derive the Euler angles from a quaternion using
+`as_euler_angles`, or create a quaternion from Euler angles using `from_euler_angles` — though be aware that Euler
+angles are basically the worst things ever.<sup>[1](#1-euler-angles-are-awful)</sup>
+
 
 ## Bug reports and feature requests
 
@@ -169,3 +216,19 @@ This is also a free service for open-source projects like this one.
 The work of creating this code was supported in part by the Sherman
 Fairchild Foundation and by NSF Grants No. PHY-1306125 and
 AST-1333129.
+
+
+
+
+<br/>
+---
+###### <sup>1</sup> Euler angles are awful
+
+Euler angles are pretty much
+[the worst things ever](http://moble.github.io/spherical_functions/#euler-angles)
+and it makes me feel bad even supporting them.  Quaternions are
+faster, more accurate, basically free of singularities, more
+intuitive, and generally easier to understand.  You can work entirely
+without Euler angles (I certainly do).  You absolutely never need
+them.  But if you're so old fashioned that you really can't give them
+up, they are fully supported.

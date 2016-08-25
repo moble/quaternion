@@ -233,6 +233,22 @@ def test_from_spherical_coords():
                    - quaternion.from_spherical_coords(vartheta, varphi)) < 1.e-15
 
 
+def test_as_spherical_coords(Rs):
+    np.random.seed(1843)
+    # First test on rotors that are precisely spherical-coordinate rotors
+    random_angles = [[np.random.uniform(0, np.pi), np.random.uniform(0, 2*np.pi)]
+                     for i in range(5000)]
+    for vartheta, varphi in random_angles:
+        vartheta2, varphi2 = quaternion.as_spherical_coords(quaternion.from_spherical_coords(vartheta, varphi))
+        assert abs(vartheta - vartheta2) < 5e-13, ((vartheta, varphi), (vartheta2, varphi2))
+        assert abs(varphi - varphi2) < 5e-13, ((vartheta, varphi), (vartheta2, varphi2))
+    # Now test that arbitrary rotors rotate z to the appropriate location
+    for R in Rs:
+        vartheta, varphi = quaternion.as_spherical_coords(R)
+        R2 = quaternion.from_spherical_coords(vartheta, varphi)
+        assert (R*quaternion.z*R.inverse() - R2*quaternion.z*R2.inverse()).abs() < 2.e-15, (R, R2, (vartheta, varphi))
+
+
 def test_from_euler_angles():
     np.random.seed(1843)
     random_angles = [[np.random.uniform(-np.pi, np.pi),
