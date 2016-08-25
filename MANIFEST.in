@@ -1,1 +1,3 @@
-include README.md numpy_quaternion.c quaternion.c quaternion.h
+include README.md
+include numpy_quaternion.c quaternion.c quaternion.h
+include auto_version/__init__.py
