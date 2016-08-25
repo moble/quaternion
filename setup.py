@@ -28,4 +28,8 @@ if __name__ == "__main__":
     setup(name='numpy-',
           configuration=configuration,
           version=calculate_version(),
-          cmdclass={'build_py': build_py_copy_version},)
+          cmdclass={'build_py': build_py_copy_version},
+          url='https://github.com/moble/quaternion',
+          author='Michael Boyle',
+          author_email='boyle@astro.cornell.edu',
+    )
