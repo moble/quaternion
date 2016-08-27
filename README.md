@@ -193,25 +193,29 @@ be present, especially in the higher-level functions like `mean_rotor_...`.
 
 ## Acknowledgments
 
-This code is, of course, hosted on github.  Because it is an open-source
-project, the hosting is free, and all the wonderful features of github are
-available, including free wiki space and web page hosting, pull requests, a
-nice interface to the git logs, etc.  Github user Hannes Ovrén (hovren) pointed
-out some errors in a previous version of this code and suggested some nice
-utility functions for rotation matrices, etc.
+This code is, of course, hosted on github.  Because it is an
+open-source project, the hosting is free, and all the wonderful
+features of github are available, including free wiki space and web
+page hosting, pull requests, a nice interface to the git logs, etc.
+Github user Hannes Ovrén (hovren) pointed out some errors in a
+previous version of this code and suggested some nice utility
+functions for rotation matrices, etc.  Github user Stijn van Drongelen
+(rhymoid) contributed some code that makes compilation work with
+MSVC++.
 
 Every change in this code is
 [auomatically tested](https://travis-ci.org/moble/quaternion) on
-[Travis-CI](https://travis-ci.org/).  This is a free service (for open-source
-projects like this one), which integrates beautifully with github, detecting
-each commit and automatically re-running the tests.  The code is downloaded and
-installed fresh each time, and then tested, on each of the five different
-versions of python.  This ensures that no change I make to the code breaks
-either installation or any of the features that I have written tests for.
-
-Finally, the code is automatically compiled, and the binaries hosted for
-download by `conda` on [anaconda.org](https://anaconda.org/moble/quaternion).
-This is also a free service for open-source projects like this one.
+[Travis-CI](https://travis-ci.org/).  This service integrates
+beautifully with github, detecting each commit and automatically
+re-running the tests.  The code is downloaded and installed fresh each
+time, and then tested, on each of the five different versions of
+python.  This ensures that no change I make to the code breaks either
+installation or any of the features that I have written tests for.
+Travis-CI also automatically builds the `conda` and `pip` versions of
+the code hosted on
+[anaconda.org](https://anaconda.org/moble/quaternion) and
+[pypi](https://pypi.python.org/pypi/numpy-quaternion) respectively.
+These are all free services for open-source projects like this one.
 
 The work of creating this code was supported in part by the Sherman
 Fairchild Foundation and by NSF Grants No. PHY-1306125 and
