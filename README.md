@@ -1,6 +1,6 @@
 <a href="https://travis-ci.org/moble/quaternion"><img align="right" hspace="3" alt="Status of automatic build and test suite" src="https://travis-ci.org/moble/quaternion.svg?branch=master"></a> <a href="https://github.com/moble/quaternion/blob/master/LICENSE"><img align="right" hspace="3" alt="Code distributed under the open-source MIT license" src="http://moble.github.io/spherical_functions/images/MITLicenseBadge.svg"></a>
 
-# Quaternion modules
+# Quaternions in numpy
 
 This Python module adds a quaternion dtype to NumPy.
 
@@ -57,7 +57,7 @@ conda install -c moble quaternion
 If you prefer to use `pip` (whether or not you use `conda`), you can also do
 
 ```sh
-pip install git+git://github.com/moble/quaternion
+pip install numpy-quaternion
 ```
 
 If you refuse to use `conda`, you might want to install inside your home
@@ -65,7 +65,7 @@ directory without root privileges.  (Anaconda does this by default anyway.)
 This is done by adding `--user` to the above command:
 
 ```sh
-pip install --user git+git://github.com/moble/quaternion
+pip install --user numpy-quaternion
 ```
 
 Finally, there's also the fully manual option of just downloading the code,
