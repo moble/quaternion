@@ -13,7 +13,7 @@ PACKAGENAME="quaternion"
 
 if [[ "${CONDA}" == "true" ]]; then
 
-    conda config --set anaconda_upload no;
+    conda config --set anaconda_upload no
 
     conda install -n root conda-build anaconda-client
 
@@ -21,7 +21,7 @@ if [[ "${CONDA}" == "true" ]]; then
     conda build .
 
     echo "Deploying to Anaconda.org..."
-    anaconda -t $ANACONDA_TOKEN upload --force --no-progress conda-bld/**/${PACKAGENAME}-*.tar.bz2
+    anaconda -t $ANACONDA_TOKEN upload --force --no-progress ${HOME}/miniconda/conda-bld/**/${PACKAGENAME}-*.tar.bz2
     echo "Successfully deployed to Anaconda.org."
 
 else
