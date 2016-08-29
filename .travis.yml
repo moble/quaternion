@@ -35,8 +35,10 @@ matrix:
 #   - CONDA=true
 #   - CONDA=false
 
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then lsb_release -a ; fi
+
 install:
-  - lsb_release -a
   - if [[ "${CONDA}" == "true" ]]; then
       PYTHON_VERSION="$TRAVIS_PYTHON_VERSION" CONDA_INSTALLER_OS="${TRAVIS_OS_NAME:-linux}" source auto_version/travis_install_conda.sh numpy scipy numba pip pytest;
     fi
