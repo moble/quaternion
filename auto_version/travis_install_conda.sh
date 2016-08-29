@@ -35,20 +35,6 @@ esac
 # Download the appropriate miniconda installer
 wget http://repo.continuum.io/miniconda/${Miniconda}-latest-${CondaOS}-x86_64.sh -O miniconda.sh;
 
-# if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
-#     if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
-#         wget http://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh -O miniconda.sh;
-#     else
-#         wget http://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
-#     fi
-# else
-#     if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
-#         wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
-#     else
-#         wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-#     fi
-# fi
-
 # Run the installer
 bash miniconda.sh -b -p $HOME/miniconda
 

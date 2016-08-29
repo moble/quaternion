@@ -20,18 +20,8 @@ if [[ "${CONDA}" == "true" ]]; then
     echo "Building package"
     conda build .
 
-    # echo "Converting conda package..."
-    # conda convert -f --platform osx-64 $HOME/miniconda/conda-bld/linux-64/${PACKAGENAME}-*.tar.bz2 --output-dir conda-bld/
-    # conda convert -f --platform linux-32 $HOME/miniconda/conda-bld/linux-64/${PACKAGENAME}-*.tar.bz2 --output-dir conda-bld/
-    # conda convert -f --platform linux-64 $HOME/miniconda/conda-bld/linux-64/${PACKAGENAME}-*.tar.bz2 --output-dir conda-bld/
-
     echo "Deploying to Anaconda.org..."
-    # anaconda -t $ANACONDA_TOKEN upload --force --no-progress conda-bld/**/${PACKAGENAME}-*.tar.bz2
-    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    echo "Skipping anaconda upload for testing purposes"
-    echo "Don't forget to unset `all_branches: true`"
-    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-
+    anaconda -t $ANACONDA_TOKEN upload --force --no-progress conda-bld/**/${PACKAGENAME}-*.tar.bz2
     echo "Successfully deployed to Anaconda.org."
 
 else

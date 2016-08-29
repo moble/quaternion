@@ -57,8 +57,7 @@ deploy:
     skip_cleanup: true
     on:
       repo: moble/quaternion
-      condition: $CONDA = 'true'
-      all_branches: true
+      condition: "$CONDA = 'true'"
   - provider: pypi
     user: moboyle79
     password:
@@ -67,4 +66,4 @@ deploy:
       distributions: sdist bdist_wheel
       repo: moble/quaternion
       python: '3.5'
-      condition: $CONDA = 'false'
+      condition: "$CONDA = 'false' && ${TRAVIS_OS_NAME:-linux} = 'linux'"
