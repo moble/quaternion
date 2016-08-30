@@ -38,23 +38,31 @@ if "check_output" not in dir(subprocess):
 
 
 def calculate_version():
+    from sys import platform
+    on_windows = ('win' in platform.lower() and not 'darwin' in platform.lower())
+    use_shell = not on_windows
     try:
-        git_revision = subprocess.check_output("git show -s --format='%ci %h' HEAD", shell=True).decode('ascii')
+        git_revision = subprocess.check_output("""git show -s --format="%ci %h" HEAD""", shell=use_shell).decode('ascii').rstrip()
         date, time, utc_offset, short_hash = git_revision.split(' ')
         date = date.replace('-', '.').strip()  # make date an acceptable version string
         short_hash = short_hash.strip()  # remove newline and any other whitespace
         short_hash = int(short_hash, 16)  # So that it's a valid PEP 440 version identifier
-        dirty = bool(subprocess.call("git diff-files --quiet --", shell=True))
-        dirty = dirty or bool(subprocess.call("git diff-index --cached --quiet HEAD --", shell=True))
+        dirty = bool(subprocess.call("git diff-files --quiet --", shell=use_shell))
+        dirty = dirty or bool(subprocess.call("git diff-index --cached --quiet HEAD --", shell=use_shell))
         version = '{0}.dev{1}'.format(date, short_hash)
         if dirty:
             version += '+dirty'
         exec('putative__version__ = "{0}"'.format(version))  # see if this will raise an error for some reason
     except Exception as e:
-        # If any of the above failed for any reason whatsoever, fall back on this dumb version
+        # If any of the above failed for any reason whatsoever, fall back on this dumb version, unless we're on a CI
+        from os import getenv
         print('\nThe `calculate_version` function failed to get the git version.')
-        print('Maybe your version of python (<2.7?) is too old.')
+        print('Maybe your version of python (<2.7?) is too old.  Here\'s the exception:')
         print(e)
+        if getenv('CI') is not None:
+            if getenv('CI').lower() == 'true':
+                print('Raising exception because environment variable `CI` is "{0}"'.format(getenv('CI')))
+                raise e
         print('This should not be a problem, unless you need an accurate version number.')
         print('Continuing on, in spite of it all...\n')
         from datetime import datetime

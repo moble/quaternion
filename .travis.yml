@@ -23,17 +23,9 @@ matrix:
       language: generic
       env: CONDA=true TRAVIS_PYTHON_VERSION=3.5
 
-# os:
-#   - linux
-#   - osx
-
-# python:
-#   - '2.7'
-#   - '3.5'
-
-# env:
-#   - CONDA=true
-#   - CONDA=false
+branches:
+  except:
+    - appveyor
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then lsb_release -a ; fi

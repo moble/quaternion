@@ -255,8 +255,10 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
   }                                                                     \
   static PyObject*                                                      \
   pyquaternion_##fake_name(PyObject* a, PyObject* b) {                  \
-    /* fprintf (stderr, "\nfile %s, line %d, pyquaternion_%s(PyObject* a, PyObject* b).\n", __FILE__, __LINE__, #fake_name); */ \
-    npy_int64 val;                                                      \
+    /* PyObject *a_type, *a_repr, *b_type, *b_repr, *a_repr2, *b_repr2;    \ */ \
+    /* char* a_char, b_char, a_char2, b_char2;                             \ */ \
+    npy_int64 val64;                                                    \
+    npy_int32 val32;                                                    \
     quaternion p = {0};                                                 \
     if(PyArray_Check(b)) { return pyquaternion_##fake_name##_array_operator(a, b); } \
     if(PyFloat_Check(a) && PyQuaternion_Check(b)) {                     \
@@ -273,10 +275,32 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
     } else if(PyInt_Check(b)) {                                         \
       return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyInt_AsLong(b))); \
     } else if(PyObject_TypeCheck(b, &PyInt64ArrType_Type)) {            \
-      PyArray_ScalarAsCtype(b, &val);                                   \
-      return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p, val)); \
+      PyArray_ScalarAsCtype(b, &val64);                                 \
+      return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p, val64)); \
+    } else if(PyObject_TypeCheck(b, &PyInt32ArrType_Type)) {            \
+      PyArray_ScalarAsCtype(b, &val32);                                 \
+      return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p, val32)); \
     }                                                                   \
-    PyErr_SetString(PyExc_TypeError, "Binary operation involving quaternion and neither float nor quaternion."); \
+    /* a_type = PyObject_Type(a);                                          \ */ \
+    /* a_repr = PyObject_Repr(a_type);                                     \ */ \
+    /* a_char = PyString_AsString(a_repr);                                 \ */ \
+    /* b_type = PyObject_Type(b);                                          \ */ \
+    /* b_repr = PyObject_Repr(b_type);                                     \ */ \
+    /* b_char = PyString_AsString(b_repr);                                 \ */ \
+    /* a_repr2 = PyObject_Repr(a);                                         \ */ \
+    /* a_char2 = PyString_AsString(a_repr2);                               \ */ \
+    /* b_repr2 = PyObject_Repr(b);                                         \ */ \
+    /* b_char2 = PyString_AsString(b_repr2);                               \ */ \
+    /* fprintf (stderr, "\nfile %s, line %d, pyquaternion_%s(PyObject* a, PyObject* b).\n", __FILE__, __LINE__, #fake_name); \ */ \
+    /* fprintf (stderr, "\na: '%s'\tb: '%s'", a_char, b_char);             \ */ \
+    /* fprintf (stderr, "\na: '%s'\tb: '%s'", a_char2, b_char2);           \ */ \
+    /* Py_DECREF(a_type);                                                  \ */ \
+    /* Py_DECREF(a_repr);                                                  \ */ \
+    /* Py_DECREF(b_type);                                                  \ */ \
+    /* Py_DECREF(b_repr);                                                  \ */ \
+    /* Py_DECREF(a_repr2);                                                 \ */ \
+    /* Py_DECREF(b_repr2);                                                 \ */ \
+    PyErr_SetString(PyExc_TypeError, "Binary operation involving quaternion and \\neither float nor quaternion."); \
     return NULL;                                                        \
   }
 #define QQ_QS_SQ_BINARY_QUATERNION_RETURNER(name) QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(name, name)

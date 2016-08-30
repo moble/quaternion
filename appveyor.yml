@@ -1,0 +1,36 @@
+environment:
+  ANACONDA_TOKEN:
+    secure: aXf7QcgcvgracENCmAHEC2Hxk2oBDp+dMsRi79RTLBHJGe5ht0PGFnuwbbjk82n6
+
+  global:
+    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\.appveyor\\run_with_env.cmd"
+
+  matrix:
+    - MINICONDA: "C:\\Miniconda"
+      PYTHON_VERSION: "2.7"
+
+    - MINICONDA: "C:\\Miniconda35-x64"
+      PYTHON_VERSION: "3.5"
+
+install:
+  - set PATH=%MINICONDA%;%MINICONDA%\Scripts;%PATH%
+  - cmd: "conda info -a"
+  - cmd: "conda config --set always_yes yes --set changeps1 no"
+  - cmd: "conda update -q conda"
+  - cmd: "conda update -q --all"
+  - cmd: "conda install -q -y numpy scipy numba pip pytest conda-build anaconda-client"
+  - python .meta_yaml_replacer.py
+  - cmd: "conda build ."
+  - python .appveyor\move-conda-package.py .
+  - python setup.py install
+
+build: false
+
+test_script:
+  - py.test
+
+artifacts:
+  - path: '*.tar.bz2'
+
+on_success:
+  - python .appveyor\anaconda-push.py
