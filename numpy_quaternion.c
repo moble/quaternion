@@ -1630,7 +1630,9 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   arg_dtypes[5] = quaternion_descr;
   squad_evaluate_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, 5, 1,
                                                  PyUFunc_None, "squad_vectorized",
-                                                 "Calculate squad from arrays of (tau, q_i, a_i, b_ip1, q_ip1)", 0);
+                                                 "Calculate squad from arrays of (tau, q_i, a_i, b_ip1, q_ip1)\n\n"
+                                                 "See `quaternion.squad` for an easier-to-use version of this function",
+                                                  0);
   PyUFunc_RegisterLoopForDescr((PyUFuncObject*)squad_evaluate_ufunc,
                                quaternion_descr,
                                &squad_loop,
@@ -1647,7 +1649,9 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   arg_dtypes[2] = PyArray_DescrFromType(NPY_DOUBLE);
   slerp_evaluate_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, 3, 1,
                                                  PyUFunc_None, "slerp_vectorized",
-                                                 "Calculate slerp from arrays of (q_1, q_2, tau)", 0);
+                                                 "Calculate slerp from arrays of (q_1, q_2, tau)\n\n"
+                                                 "See `quaternion.slerp` for an easier-to-use version of this function",
+                                                  0);
   PyUFunc_RegisterLoopForDescr((PyUFuncObject*)slerp_evaluate_ufunc,
                                quaternion_descr,
                                &slerp_loop,
