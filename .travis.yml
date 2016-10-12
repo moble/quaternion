@@ -27,6 +27,9 @@ branches:
   except:
     - appveyor
 
+before_script:
+  - rvm get head # https://github.com/travis-ci/travis-ci/issues/6307
+
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then lsb_release -a ; fi
 
