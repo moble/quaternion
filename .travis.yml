@@ -27,9 +27,6 @@ branches:
   except:
     - appveyor
 
-before_script:
-  - rvm get head # https://github.com/travis-ci/travis-ci/issues/6307
-
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then lsb_release -a ; fi
 
@@ -38,6 +35,9 @@ install:
       PYTHON_VERSION="$TRAVIS_PYTHON_VERSION" CONDA_INSTALLER_OS="${TRAVIS_OS_NAME:-linux}" source auto_version/travis_install_conda.sh numpy scipy numba pip pytest;
     fi
   - python setup.py install
+
+before_script:
+  - rvm get head # https://github.com/travis-ci/travis-ci/issues/6307
 
 script:
   - py.test
