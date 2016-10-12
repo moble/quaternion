@@ -1220,7 +1220,7 @@ pyquaternion_rotation_chordal_distance(PyObject *self, PyObject *args)
 
 // Interface to the module-level slerp function
 static PyObject*
-pyquaternion_slerp(PyObject *self, PyObject *args)
+pyquaternion_slerp_evaluate(PyObject *self, PyObject *args)
 {
   double tau;
   PyObject* Q1 = {0};
@@ -1346,10 +1346,16 @@ static PyMethodDef QuaternionMethods[] = {
    "Distance measure intrinsic to rotation manifold"},
   {"rotation_chordal_distance", pyquaternion_rotation_chordal_distance, METH_VARARGS,
    "Distance measure from embedding of rotation manifold"},
-  {"slerp", pyquaternion_slerp, METH_VARARGS,
-   "Interpolate linearly along the geodesic between two rotors"},
+  {"slerp_evaluate", pyquaternion_slerp_evaluate, METH_VARARGS,
+   "Interpolate linearly along the geodesic between two rotors \n\n"
+   "See also `numpy.slerp_vectorized` for a vectorized version of this function, and\n"
+   "`quaternion.slerp` for the most useful form, which automatically finds the correct\n"
+   "rotors to interpolate and the relative time to which they must be interpolated."},
   {"squad_evaluate", pyquaternion_squad_evaluate, METH_VARARGS,
-   "Interpolate linearly along the geodesic between two rotors"},
+   "Interpolate linearly along the geodesic between two rotors\n\n"
+   "See also `numpy.squad_vectorized` for a vectorized version of this function, and\n"
+   "`quaternion.squad` for the most useful form, which automatically finds the correct\n"
+   "rotors to interpolate and the relative time to which they must be interpolated."},
   {NULL, NULL, 0, NULL}
 };
 
@@ -1623,14 +1629,14 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   arg_dtypes[4] = quaternion_descr;
   arg_dtypes[5] = quaternion_descr;
   squad_evaluate_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, 5, 1,
-                                                 PyUFunc_None, "squad",
+                                                 PyUFunc_None, "squad_vectorized",
                                                  "Calculate squad from arrays of (tau, q_i, a_i, b_ip1, q_ip1)", 0);
   PyUFunc_RegisterLoopForDescr((PyUFuncObject*)squad_evaluate_ufunc,
                                quaternion_descr,
                                &squad_loop,
                                arg_dtypes,
                                NULL);
-  PyDict_SetItemString(numpy_dict, "squad", squad_evaluate_ufunc);
+  PyDict_SetItemString(numpy_dict, "squad_vectorized", squad_evaluate_ufunc);
   Py_DECREF(squad_evaluate_ufunc);
 
   // Create a custom ufunc and register it for loops.  The method for
@@ -1640,14 +1646,14 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   arg_dtypes[1] = quaternion_descr;
   arg_dtypes[2] = PyArray_DescrFromType(NPY_DOUBLE);
   slerp_evaluate_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, 3, 1,
-                                                 PyUFunc_None, "slerp",
+                                                 PyUFunc_None, "slerp_vectorized",
                                                  "Calculate slerp from arrays of (q_1, q_2, tau)", 0);
   PyUFunc_RegisterLoopForDescr((PyUFuncObject*)slerp_evaluate_ufunc,
                                quaternion_descr,
                                &slerp_loop,
                                arg_dtypes,
                                NULL);
-  PyDict_SetItemString(numpy_dict, "slerp", slerp_evaluate_ufunc);
+  PyDict_SetItemString(numpy_dict, "slerp_vectorized", slerp_evaluate_ufunc);
   Py_DECREF(slerp_evaluate_ufunc);
 
   // Add the constant `_QUATERNION_EPS` to the module as `quaternion._eps`

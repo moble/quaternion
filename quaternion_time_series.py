@@ -8,6 +8,33 @@ import quaternion
 from quaternion.numba_wrapper import njit
 
 
+def slerp(R1, R2, t1, t2, t_out):
+    """Spherical linear interpolation of rotors
+
+    This function uses a simpler interface than the more fundamental
+    `slerp_evaluate` and `slerp_vectorized` functions.  The latter
+    are fast, being implemented at the C level, but take input `tau`
+    instead of time.  This function adjusts the time accordingly.
+
+    Parameters
+    ----------
+    R1: quaternion
+        Quaternion at beginning of interpolation
+    R2: quaternion
+        Quaternion at end of interpolation
+    t1: float
+        Time corresponding to R1
+    t2: float
+        Time corresponding to R2
+    t_out: float or array of floats
+        Times to which the rotors should be interpolated
+
+
+    """
+    tau = (t_out-t1)/(t2-t1)
+    return np.slerp_vectorized(R1, R2, tau)
+
+
 def squad(R_in, t_in, t_out):
     """Spherical "quadrangular" interpolation of rotors with a cubic spline
 
@@ -23,6 +50,21 @@ def squad(R_in, t_in, t_out):
     (no sign flips), and the input `t` arrays are assumed to be
     sorted.  No checking is done for either case, and you may get
     silently bad results if these conditions are violated.
+
+    This function simplifies the calling, compared to `squad_evaluate`
+    (which takes a set of four quaternions forming the edges of the
+    "quadrangle", and the normalized time `tau`) and `squad_vectorized`
+    (which takes the same arguments, but in array form, and efficiently
+    loops over them).
+
+    Parameters
+    ----------
+    R_in: array of quaternions
+        A time-series of rotors (unit quaternions) to be interpolated
+    t_in: array of float
+        The times corresponding to R_in
+    t_out: array of float
+        The times to which R_in should be interpolated
 
     """
     if R_in.size == 0 or t_out.size == 0:
@@ -66,7 +108,7 @@ def squad(R_in, t_in, t_out):
     R_ip1 = np.array(np.roll(R_in, -1)[i_in_for_out])
     R_ip1[-1] = R_ip1[-2]*(~R_ip1[-3])*R_ip1[-2]
     tau = (t_out - t_in[i_in_for_out]) / ((np.roll(t_in, -1) - t_in)[i_in_for_out])
-    R_out = np.squad_loop(tau, R_in[i_in_for_out], A[i_in_for_out], B[i_in_for_out], R_ip1)
+    R_out = np.squad_vectorized(tau, R_in[i_in_for_out], A[i_in_for_out], B[i_in_for_out], R_ip1)
 
     return R_out
 
@@ -74,13 +116,15 @@ def squad(R_in, t_in, t_out):
 @njit
 def frame_from_angular_velocity_integrand(rfrak, Omega):
     import math
+    from numpy import dot, cross
+    from .numpy_quaternion import _eps
     rfrakMag = math.sqrt(rfrak[0] * rfrak[0] + rfrak[1] * rfrak[1] + rfrak[2] * rfrak[2])
     OmegaMag = math.sqrt(Omega[0] * Omega[0] + Omega[1] * Omega[1] + Omega[2] * Omega[2])
     # If the matrix is really close to the identity, return
-    if rfrakMag < Quaternion_Epsilon * OmegaMag:
+    if rfrakMag < _eps * OmegaMag:
         return Omega[0] / 2.0, Omega[1] / 2.0, Omega[2] / 2.0
     # If the matrix is really close to singular, it's equivalent to the identity, so return
-    if abs(math.sin(rfrakMag)) < Quaternion_Epsilon:
+    if abs(math.sin(rfrakMag)) < _eps:
         return Omega[0] / 2.0, Omega[1] / 2.0, Omega[2] / 2.0
 
     OmegaOver2 = Omega[0] / 2.0, Omega[1] / 2.0, Omega[2] / 2.0
