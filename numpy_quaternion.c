@@ -1252,6 +1252,42 @@ pyquaternion_squad_evaluate(PyObject *self, PyObject *args)
   return (PyObject*)Q;
 }
 
+// This will be used to create the ufunc needed for `slerp`, which
+// evaluates the interpolant at a point.  The method for doing this
+// was pieced together from examples given on the page
+// <http://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
+static void
+slerp_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
+{
+  npy_intp i;
+  double tau_i;
+  quaternion *q_1, *q_2;
+
+  npy_intp is1=steps[0];
+  npy_intp is2=steps[1];
+  npy_intp is3=steps[2];
+  npy_intp os=steps[3];
+  npy_intp n=dimensions[0];
+
+  char *i1=args[0];
+  char *i2=args[1];
+  char *i3=args[2];
+  char *op=args[3];
+
+  for (i = 0; i < n; i++) {
+    q_1 = (quaternion*)i1;
+    q_2 = (quaternion*)i2;
+    tau_i = *(double *)i3;
+
+    *((quaternion *)op) = slerp(*q_1, *q_2, tau_i);
+
+    i1 += is1;
+    i2 += is2;
+    i3 += is3;
+    op += os;
+  }
+}
+
 // This will be used to create the ufunc needed for `squad`, which
 // evaluates the interpolant at a point.  The method for doing this
 // was pieced together from examples given on the page
@@ -1349,6 +1385,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   PyObject *module;
   PyObject *module_dict;
   PyObject *tmp_ufunc;
+  PyObject *slerp_evaluate_ufunc;
   PyObject *squad_evaluate_ufunc;
   int quaternionNum;
   int arg_types[3];
@@ -1586,15 +1623,32 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   arg_dtypes[4] = quaternion_descr;
   arg_dtypes[5] = quaternion_descr;
   squad_evaluate_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, 5, 1,
-                                                 PyUFunc_None, "squad_loop",
+                                                 PyUFunc_None, "squad",
                                                  "Calculate squad from arrays of (tau, q_i, a_i, b_ip1, q_ip1)", 0);
   PyUFunc_RegisterLoopForDescr((PyUFuncObject*)squad_evaluate_ufunc,
                                quaternion_descr,
                                &squad_loop,
                                arg_dtypes,
                                NULL);
-  PyDict_SetItemString(numpy_dict, "squad_loop", squad_evaluate_ufunc);
+  PyDict_SetItemString(numpy_dict, "squad", squad_evaluate_ufunc);
   Py_DECREF(squad_evaluate_ufunc);
+
+  // Create a custom ufunc and register it for loops.  The method for
+  // doing this was pieced together from examples given on the page
+  // <http://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
+  arg_dtypes[0] = quaternion_descr;
+  arg_dtypes[1] = quaternion_descr;
+  arg_dtypes[2] = PyArray_DescrFromType(NPY_DOUBLE);
+  slerp_evaluate_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, 3, 1,
+                                                 PyUFunc_None, "slerp",
+                                                 "Calculate slerp from arrays of (q_1, q_2, tau)", 0);
+  PyUFunc_RegisterLoopForDescr((PyUFuncObject*)slerp_evaluate_ufunc,
+                               quaternion_descr,
+                               &slerp_loop,
+                               arg_dtypes,
+                               NULL);
+  PyDict_SetItemString(numpy_dict, "slerp", slerp_evaluate_ufunc);
+  Py_DECREF(slerp_evaluate_ufunc);
 
   // Add the constant `_QUATERNION_EPS` to the module as `quaternion._eps`
   PyModule_AddObject(module, "_eps", PyFloat_FromDouble(_QUATERNION_EPS));
