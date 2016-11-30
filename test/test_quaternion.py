@@ -1087,5 +1087,64 @@ def test_numpy_array_conversion(Qs):
     assert np.array_equal(quaternion.as_quat_array(p), P)  # Check that we can go backwards
 
 
+def test_integrate_angular_velocity():
+    import math
+    import numpy as np
+    import quaternion
+
+    t0 = 0.0
+    t2 = 10000.0
+    Omega_orb = 2 * math.pi * 100 / t2
+    Omega_prec = 2 * math.pi * 10 / t2
+    alpha = 0.125 * math.pi
+    alphadot = 2 * alpha / t2
+    nu = 0.2 * alpha
+    Omega_nu = Omega_prec
+    R0 = np.exp(-1.1 * alpha * quaternion.x / 2)
+
+    def R(t):
+        return (R0
+                * np.exp(Omega_prec * t * quaternion.z / 2) * np.exp((alpha + alphadot * t) * quaternion.x / 2)
+                * np.exp(-Omega_prec * t * quaternion.z / 2)
+                * np.exp(Omega_orb * t * quaternion.z / 2)
+                * np.exp(nu * np.cos(Omega_nu * t) * quaternion.y / 2))
+
+    def Rdot(t):
+        R_dynamic = R0.inverse() * R(t)
+        R_prec = np.exp(Omega_prec * t * quaternion.z / 2)
+        R_nu = np.exp(nu * np.cos(Omega_nu * t) * quaternion.y / 2)
+        return R0 * (0.5 * Omega_prec * quaternion.z * R_dynamic
+                     + 0.5 * alphadot * R_prec * quaternion.x * R_prec.conj() * R_dynamic
+                     + 0.5 * (Omega_orb - Omega_prec) * R_dynamic * R_nu.inverse() * quaternion.z * R_nu
+                     + 0.5 * (-Omega_nu * nu * np.sin(Omega_nu * t)) * R_dynamic * quaternion.y)
+
+    def Omega_tot(t):
+        Rotor = R(t)
+        RotorDot = Rdot(t)
+        return (2 * RotorDot * Rotor.inverse()).vec
+
+    # Test with exact Omega function
+    t, R_approx = quaternion.integrate_angular_velocity(Omega_tot, 0.0, t2, R0=R(t0))
+    R_exact = R(t)
+    ϕΔ = np.array([quaternion.rotation_intrinsic_distance(e, a) for e, a in zip(R_exact, R_approx)])
+    assert np.max(ϕΔ) < 1e-10, np.max(ϕΔ)
+
+    # Test with exact Omega function taking two arguments
+    t, R_approx = quaternion.integrate_angular_velocity(lambda t, R: Omega_tot(t), 0.0, t2, R0=R(t0))
+    R_exact = R(t)
+    ϕΔ = np.array([quaternion.rotation_intrinsic_distance(e, a) for e, a in zip(R_exact, R_approx)])
+    assert np.max(ϕΔ) < 1e-10, np.max(ϕΔ)
+
+    # Test with explicit values, given at the moments output above
+    v = np.array([Omega_tot(ti) for ti in t])
+    t, R_approx = quaternion.integrate_angular_velocity((t, v), 0.0, t2, R0=R(t0))
+    R_exact = R(t)
+    ϕΔ = np.array([quaternion.rotation_intrinsic_distance(e, a) for e, a in zip(R_exact, R_approx)])
+    assert np.max(ϕΔ) < 1e-4, np.max(ϕΔ)
+
 if __name__ == '__main__':
     print("The tests should be run automatically via py.test (pip install pytest)")
+
+
+
+

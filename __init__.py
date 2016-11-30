@@ -13,7 +13,7 @@ from .numpy_quaternion import (quaternion, _eps,
                                # slerp_vectorized, squad_vectorized,
                                # slerp, squad,
                                )
-from .quaternion_time_series import slerp, squad
+from .quaternion_time_series import slerp, squad, integrate_angular_velocity
 from .calculus import derivative, definite_integral, indefinite_integral
 from ._version import __version__
 
@@ -81,7 +81,11 @@ def as_quat_array(a):
     assert a.dtype == np.dtype(np.float)
     if a.shape == (4,):
         return quaternion(a[0], a[1], a[2], a[3])
-    av = a.view(np.quaternion)
+    try:
+        av = a.view(np.quaternion)
+    except ValueError:
+        a = a.copy()
+        av = a.view(np.quaternion)
     if a.shape[-1] == 4:
         av = av.reshape(a.shape[:-1])
         # return a.view(np.quaternion).reshape(a.shape[:-1])

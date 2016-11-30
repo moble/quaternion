@@ -44,4 +44,4 @@ def optimal_alignment_in_chordal_metric(Ra, Rb, t=None):
 
 
 def mean_rotor_in_intrinsic_metric(R, t=None):
-    pass
+    raise NotImplementedError()

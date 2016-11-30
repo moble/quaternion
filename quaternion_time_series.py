@@ -132,3 +132,106 @@ def frame_from_angular_velocity_integrand(rfrak, Omega):
 
     return ((OmegaOver2 - rfrakHat * dot(rfrakHat, OmegaOver2)) * (rfrakMag / math.tan(rfrakMag))
             + rfrakHat * dot(rfrakHat, OmegaOver2) + cross(OmegaOver2, rfrak))
+
+
+class appending_array(object):
+    def __init__(self, shape, dtype=np.float, initial_array=None):
+        self._a = np.empty(shape, dtype=dtype)
+        self.n = 0
+        if initial_array is not None:
+            assert initial_array.dtype == dtype
+            assert initial_array.shape[1:] == shape[1:]
+            assert initial_array.shape[0] <= shape[0]
+            self.n = initial_array.shape[0]
+            self._a[:self.n, ...] = initial_array[:]
+
+    def append(self, row):
+        self.n += 1
+        if self.n > self._a.shape[0]:
+            self._a = np.resize(self._a, (2*self._a.shape[0],)+self._a.shape[1:])
+        self._a[self.n-1, ...] = row
+
+    @property
+    def a(self):
+        return self._a[:self.n, ...]
+
+
+def integrate_angular_velocity(Omega, t0, t1, R0=None, tolerance=1e-12):
+    """Compute frame with given angular velocity
+
+    Parameters
+    ==========
+    Omega: tuple or callable
+        Angular velocity from which to compute frame.  Can be
+          1) a 2-tuple of float arrays (t, v) giving the angular velocity vector at a series of times,
+          2) a function of time that returns the 3-vector angular velocity, or
+          3) a function of time and orientation (t, R) that returns the 3-vector angular velocity
+        In case 1, the angular velocity will be interpolated to the required times.  Note that accuracy
+        is poor in case 1.
+    t0: float
+        Initial time
+    t1: float
+        Final time
+    R0: quaternion, optional
+        Initial frame orientation.  Defaults to 1 (the identity orientation).
+    tolerance: float, optional
+        Absolute tolerance used in integration.  Defaults to 1e-12.
+
+    Returns
+    =======
+    t: float array
+    R: quaternion array
+
+    """
+    import warnings
+    from scipy.integrate import ode
+
+    if R0 is None:
+        R0 = quaternion.one
+
+    try:
+        t_Omega, v = Omega
+        from scipy.interpolate import InterpolatedUnivariateSpline
+        Omega_x = InterpolatedUnivariateSpline(t_Omega, v[:, 0])
+        Omega_y = InterpolatedUnivariateSpline(t_Omega, v[:, 1])
+        Omega_z = InterpolatedUnivariateSpline(t_Omega, v[:, 2])
+        def Omega_func(t, R):
+            return [Omega_x(t), Omega_y(t), Omega_z(t)]
+        Omega_func(t0, R0)
+    except (TypeError, ValueError):
+        def Omega_func(t, R):
+            return Omega(t, R)
+        try:
+            Omega_func(t0, R0)
+        except TypeError:
+            def Omega_func(t, R):
+                return Omega(t)
+            Omega_func(t0, R0)
+
+    def RHS(t, y):
+        R = quaternion.quaternion(*y)
+        return (0.5 * quaternion.quaternion(0.0, *Omega_func(t, R)) * R).components
+
+    y0 = R0.components
+
+    solver = ode(RHS)
+    solver.set_integrator('dop853', nsteps=1, atol=tolerance, rtol=0.0)
+    solver.set_initial_value(y0, t0)
+    solver._integrator.iwork[2] = -1  # suppress Fortran-printed warning
+
+    t = appending_array((int(t1-t0),))
+    t.append(solver.t)
+    R = appending_array((int(t1-t0), 4))
+    R.append(solver.y)
+
+    warnings.filterwarnings("ignore", category=UserWarning)
+    while solver.t < t1:
+        solver.integrate(t1, step=True)
+        t.append(solver.t)
+        R.append(solver.y)
+    warnings.resetwarnings()
+
+    t = t.a
+    R = quaternion.as_quat_array(R.a)
+
+    return t, R
