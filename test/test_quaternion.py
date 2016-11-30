@@ -1087,6 +1087,7 @@ def test_numpy_array_conversion(Qs):
     assert np.array_equal(quaternion.as_quat_array(p), P)  # Check that we can go backwards
 
 
+@pytest.mark.skipif(os.environ.get('CONDA') == 'false', reason="Pip doesn't install scipy well")
 def test_integrate_angular_velocity():
     import math
     import numpy as np
