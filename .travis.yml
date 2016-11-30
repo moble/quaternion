@@ -34,7 +34,7 @@ install:
   - if [[ "${CONDA}" == "true" ]]; then
       PYTHON_VERSION="$TRAVIS_PYTHON_VERSION" CONDA_INSTALLER_OS="${TRAVIS_OS_NAME:-linux}" source auto_version/travis_install_conda.sh numpy scipy numba pip pytest;
     else
-      pip install --upgrade -r requirements.txt
+      pip install --upgrade -r requirements.txt;
     fi
   - python setup.py install
 
