@@ -1126,21 +1126,21 @@ def test_integrate_angular_velocity():
     # Test with exact Omega function
     t, R_approx = quaternion.integrate_angular_velocity(Omega_tot, 0.0, t2, R0=R(t0))
     R_exact = R(t)
-    ϕΔ = np.array([quaternion.rotation_intrinsic_distance(e, a) for e, a in zip(R_exact, R_approx)])
-    assert np.max(ϕΔ) < 1e-10, np.max(ϕΔ)
+    phi_Delta = np.array([quaternion.rotation_intrinsic_distance(e, a) for e, a in zip(R_exact, R_approx)])
+    assert np.max(phi_Delta) < 1e-10, np.max(phi_Delta)
 
     # Test with exact Omega function taking two arguments
     t, R_approx = quaternion.integrate_angular_velocity(lambda t, R: Omega_tot(t), 0.0, t2, R0=R(t0))
     R_exact = R(t)
-    ϕΔ = np.array([quaternion.rotation_intrinsic_distance(e, a) for e, a in zip(R_exact, R_approx)])
-    assert np.max(ϕΔ) < 1e-10, np.max(ϕΔ)
+    phi_Delta = np.array([quaternion.rotation_intrinsic_distance(e, a) for e, a in zip(R_exact, R_approx)])
+    assert np.max(phi_Delta) < 1e-10, np.max(phi_Delta)
 
     # Test with explicit values, given at the moments output above
     v = np.array([Omega_tot(ti) for ti in t])
     t, R_approx = quaternion.integrate_angular_velocity((t, v), 0.0, t2, R0=R(t0))
     R_exact = R(t)
-    ϕΔ = np.array([quaternion.rotation_intrinsic_distance(e, a) for e, a in zip(R_exact, R_approx)])
-    assert np.max(ϕΔ) < 1e-4, np.max(ϕΔ)
+    phi_Delta = np.array([quaternion.rotation_intrinsic_distance(e, a) for e, a in zip(R_exact, R_approx)])
+    assert np.max(phi_Delta) < 1e-4, np.max(phi_Delta)
 
 if __name__ == '__main__':
     print("The tests should be run automatically via py.test (pip install pytest)")
