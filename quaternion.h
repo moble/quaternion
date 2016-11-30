@@ -204,6 +204,53 @@ extern "C" {
     return r;
   }
 
+  // Quaternion-vector binary void returner
+//  static inline void _cross(double a[], double b[], double c[]) {
+//    c[0] = a[1]*b[2] - a[2]*b[1];
+//    c[1] = a[2]*b[0] - a[0]*b[2];
+//    c[2] = a[0]*b[1] - a[1]*b[0];
+//    return;
+//  }
+//  static inline void _cross_times_scalar(double s, double a[], double b[], double c[]) {
+//    c[0] = s*(a[1]*b[2] - a[2]*b[1]);
+//    c[1] = s*(a[2]*b[0] - a[0]*b[2]);
+//    c[2] = s*(a[0]*b[1] - a[1]*b[0]);
+//    return;
+//  }
+  static inline void _sv_plus_rxv(quaternion q, double v[], double w[]) {
+    w[0] = q.w * v[0] + q.y*v[2] - q.z*v[1];
+    w[1] = q.w * v[1] + q.z*v[0] - q.x*v[2];
+    w[2] = q.w * v[2] + q.x*v[1] - q.y*v[0];
+    return;
+  }
+  static inline void _v_plus_2rxvprime_over_m(quaternion q, double v[], double w[], double two_over_m, double vprime[]) {
+    vprime[0] = v[0] + two_over_m * (q.y*w[2] - q.z*w[1]);
+    vprime[1] = v[1] + two_over_m * (q.z*w[0] - q.x*w[2]);
+    vprime[2] = v[2] + two_over_m * (q.x*w[1] - q.y*w[0]);
+    return;
+  }
+  static NPY_INLINE void quaternion_rotate_vector(quaternion q, double v[], double vprime[]) {
+    // The most efficient formula I know of for rotating a vector by a quaternion is
+    //     v' = v + 2 * r x (s * v + r x v) / m
+    // where x represents the cross product, s and r are the scalar and vector parts of the quaternion, respectively,
+    // and m is the sum of the squares of the components of the quaternion.  This requires 22 multiplications and
+    // 14 additions, as opposed to 32 and 24 for naive application of `q*v*q.conj()`.  In this function, I will further
+    // reduce the operation count to 18 and 12 by skipping the normalization by `m`.  The full version will be
+    // implemented in another function.
+    double w[3];
+    _sv_plus_rxv(q, v, w);
+    _v_plus_2rxvprime_over_m(q, v, w, 2, vprime);
+    return;
+  }
+  static NPY_INLINE void quaternion_rotate_vector_and_normalize(quaternion q, double v[], double vprime[]) {
+    // This applies the algorithm described above, but also includes normalization of the quaternion.
+    double w[3];
+    double m = q.x*q.x+q.y*q.y+q.z*q.z;
+    _sv_plus_rxv(q, v, w);
+    _v_plus_2rxvprime_over_m(q, v, w, 2/m, vprime);
+    return;
+  }
+
   // Quaternion-quaternion/quaternion-scalar binary quaternion returners
   static NPY_INLINE quaternion quaternion_add(quaternion q1, quaternion q2) {
     quaternion r = {

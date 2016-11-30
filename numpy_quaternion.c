@@ -1332,6 +1332,44 @@ squad_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
   }
 }
 
+// This will be used to create the ufunc needed for `rotate_vector`,
+// which is more efficient than naively conjugating by the rotor.
+// The method for doing this was pieced together from examples given on
+// <http://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
+static void
+rotate_vector_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
+{
+  npy_intp i;
+  quaternion *q_i;
+  double *v_i;
+  double *vprime_i;
+
+  npy_intp is1 = steps[0];
+  npy_intp is2 = steps[1];
+  npy_intp os = steps[2];
+  npy_intp n = dimensions[0];
+
+  char *i1 = args[0];
+  char *i2 = args[1];
+  char *op = args[2];
+
+  fprintf (stderr, "file %s, line %d., rotate_vector_loop\n", __FILE__, __LINE__);
+  fprintf (stderr, "\tn=%ld; n2=%ld; n3=%ld; is1=%ld; is2=%ld; os=%ld\n", n, dimensions[1], dimensions[2], is1, is2, os);
+
+  for (i = 0; i < n; i++) {
+    q_i = (quaternion*)i1;
+    v_i = (double*)i2;
+    vprime_i = (double*)op;
+
+    quaternion_rotate_vector(*q_i, v_i, vprime_i);
+
+    i1 += is1;
+    i2 += is2;
+    op += os;
+  }
+}
+
+
 // This contains assorted other top-level methods for the module
 static PyMethodDef QuaternionMethods[] = {
   {"from_spherical_coords", quaternion_from_spherical_coords, METH_VARARGS,
@@ -1393,6 +1431,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   PyObject *tmp_ufunc;
   PyObject *slerp_evaluate_ufunc;
   PyObject *squad_evaluate_ufunc;
+  PyObject *rotate_vector_ufunc;
   int quaternionNum;
   int arg_types[3];
   PyArray_Descr* arg_dtypes[6];
@@ -1659,6 +1698,23 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
                                NULL);
   PyDict_SetItemString(numpy_dict, "slerp_vectorized", slerp_evaluate_ufunc);
   Py_DECREF(slerp_evaluate_ufunc);
+
+  // Create a custom ufunc and register it for loops.  The method for
+  // doing this was pieced together from examples given on the page
+  // <http://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
+  arg_dtypes[0] = quaternion_descr;
+  arg_dtypes[1] = PyArray_DescrFromType(NPY_DOUBLE);
+  rotate_vector_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, 2, 1,
+                                                PyUFunc_None, "rotate_vector",
+                                                "Use quaternion q to rotate vector v; arguments as (q, v)\n\n",
+                                                0);
+  PyUFunc_RegisterLoopForDescr((PyUFuncObject*)rotate_vector_ufunc,
+                               quaternion_descr,
+                               &rotate_vector_loop,
+                               arg_dtypes,
+                               NULL);
+  PyDict_SetItemString(numpy_dict, "rotate_vectors", rotate_vector_ufunc);
+  Py_DECREF(rotate_vector_ufunc);
 
   // Add the constant `_QUATERNION_EPS` to the module as `quaternion._eps`
   PyModule_AddObject(module, "_eps", PyFloat_FromDouble(_QUATERNION_EPS));
