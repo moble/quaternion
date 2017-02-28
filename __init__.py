@@ -77,7 +77,7 @@ def as_quat_array(a):
     definitions of the spinors.
 
     """
-    a = np.asarray(a)
+    a = np.ascontiguousarray(a)
     assert a.dtype == np.dtype(np.float)
     if a.shape == (4,):
         return quaternion(a[0], a[1], a[2], a[3])
