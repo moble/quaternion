@@ -16,12 +16,21 @@ matrix:
     - os: linux
       python: '3.5'
       env: CONDA=false
+    - os: linux
+      python: '3.6'
+      env: CONDA=true
+    - os: linux
+      python: '3.6'
+      env: CONDA=false
     - os: osx
       language: generic
       env: CONDA=true TRAVIS_PYTHON_VERSION=2.7
     - os: osx
       language: generic
       env: CONDA=true TRAVIS_PYTHON_VERSION=3.5
+    - os: osx
+      language: generic
+      env: CONDA=true TRAVIS_PYTHON_VERSION=3.6
 
 branches:
   except:
