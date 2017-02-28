@@ -46,4 +46,5 @@ conda config --set always_yes yes --set changeps1 no
 conda update -q conda
 conda create -q -n test-environment python="${PYTHON_VERSION:-3}" $*
 source activate test-environment
+conda update -q -y --all
 pip install --upgrade pip

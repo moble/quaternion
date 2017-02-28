@@ -13,7 +13,7 @@ def configuration(parent_package='', top_path=None):
     if numpy.__dict__.get('quaternion') is not None:
         raise DistutilsError('The target NumPy already has a quaternion type')
     from numpy.distutils.misc_util import Configuration
-    compile_args = ['-ffast-math', '-O3']
+    compile_args = ['-O3']
     config = Configuration('quaternion', parent_package, top_path)
     config.add_extension('numpy_quaternion',
                          ['quaternion.c', 'numpy_quaternion.c'],
