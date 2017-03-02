@@ -60,10 +60,6 @@ def calculate_version(validate=False, error_on_invalid=False):
         time = time.replace(':', '.').strip()  # make date an acceptable version string
         short_hash = short_hash.strip()  # remove newline and any other whitespace
         #short_hash = int(short_hash, 16)  # So that it's a valid PEP 440 version identifier
-        print('git status:', subprocess.check_output("""git status""", shell=use_shell).decode('ascii').rstrip())
-        print('git diff:', subprocess.check_output("""git diff""", shell=use_shell).decode('ascii').rstrip())
-        print('git diff-files:', subprocess.check_output("""git diff""", shell=use_shell).decode('ascii').rstrip())
-        print('git diff-index --cached HEAD --:', subprocess.check_output("""git diff-index --cached HEAD --""", shell=use_shell).decode('ascii').rstrip())
         dirty = bool(subprocess.call("git diff-files --quiet --", shell=use_shell))
         dirty = dirty or bool(subprocess.call("git diff-index --cached --quiet HEAD --", shell=use_shell))
         # Note the PEP 440 requirement for "local" version identifiers (the part after the + sign):

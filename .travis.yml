@@ -45,7 +45,6 @@ script:
   - py.test
 
 after_success:
-  - chmod +x ./.conda_deploy.sh
   - python ./.meta_yaml_replacer.py
   - if [[ "${CONDA}" == "true" ]]; then conda build --token "$ANACONDA_TOKEN" . ; fi
 
