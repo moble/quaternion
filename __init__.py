@@ -59,12 +59,18 @@ def calculate_version(validate=False, error_on_invalid=False):
         date = date.replace('-', '.').strip()  # make date an acceptable version string
         time = time.replace(':', '.').strip()  # make date an acceptable version string
         short_hash = short_hash.strip()  # remove newline and any other whitespace
-        short_hash = int(short_hash, 16)  # So that it's a valid PEP 440 version identifier
+        #short_hash = int(short_hash, 16)  # So that it's a valid PEP 440 version identifier
         dirty = bool(subprocess.call("git diff-files --quiet --", shell=use_shell))
         dirty = dirty or bool(subprocess.call("git diff-index --cached --quiet HEAD --", shell=use_shell))
-        version = '{0}.{1}.dev{2}'.format(date, time, short_hash)
+        # Note the PEP 440 requirement for "local" version identifiers (the part after the + sign):
+        #   [...] local version labels MUST be limited to the following set of permitted characters:
+        #     * ASCII letters ( [a-zA-Z] )
+        #     * ASCII digits ( [0-9] )
+        #     * periods ( . )
+        #   Local version labels MUST start and end with an ASCII letter or digit.
+        version = '{0}.{1}+git.{2}'.format(date, time, short_hash)
         if dirty:
-            version += '+dirty'
+            version += '.dirty'
         exec('putative__version__ = "{0}"'.format(version))  # see if this will raise an error for some reason
         if validate:
             try:
@@ -96,7 +102,7 @@ def calculate_version(validate=False, error_on_invalid=False):
         date, time = datetime.now().isoformat().split('T')
         date = date.replace('-', '.').strip()
         time = time[:8].replace(':', '.').strip()
-        version = '0.0.0.dev' + date + '.' + time
+        version = '0.0.0+datetime.' + date + '.' + time
     return version
 
 
