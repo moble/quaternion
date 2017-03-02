@@ -14,18 +14,16 @@ containing enough information to make sense and uniquely identify this
 version in a useful way, but also be automatic.  The result will be of
 the form
 
-    2017.03.01.14.23.18.dev137249574
+    2017.03.01.14.23.18+git.b7ba7cb
 
 where `2017.03.01` represents the date of the commit, `14.23.18` the
-time, and `137249574` is the shortened hash of the commit in integer
-form.  To get the actual (shortened) hash out of this, convert back to
-hex using `hex('137249574')[2:]` — which is `82e4326` in this case.
+time, and `7ba7cb` is the shortened git hash of the commit.
 Additionally, if the code is not in a clean state (changes have been
-made since the last commit), then `+dirty` will be appended to the
+made since the last commit), then `.dirty` will be appended to the
 version.  This form requires the ability to run a few simple `git`
 commands from `python`.  If that is not possible, the system will fall
 back to using the current date and time (at the time of installation),
-preceded by `0.0.0.dev`, so that version ordering will work
+preceded by `0.0.0+datetime.`, so that version ordering will work
 conservatively.  In particular, note that the calling of shell
 functions from python is a little delicate in python 2.6 and lower.
 

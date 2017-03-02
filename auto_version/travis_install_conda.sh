@@ -48,3 +48,6 @@ conda create -q -n test-environment python="${PYTHON_VERSION:-3}" $*
 source activate test-environment
 conda update -q -y --all
 pip install --upgrade pip
+
+
+set +ev
