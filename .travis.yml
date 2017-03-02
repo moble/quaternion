@@ -56,6 +56,7 @@ deploy:
       condition: "$CONDA = 'true'"
   - provider: pypi
     user: moboyle79
+    skip_upload_docs: true
     password:
       secure: D0OzSdZn5hWjXX5H41g4pnqme1TJaABKGmUpe14PGMaRf8DjisVMZStAsVVWfocxFqQX3gress+KKtxEvdySXxcfkXAp8VTBvZ+V/uzQQFSYmf5KFwTR/yywff7vdCO+eSHztIcdOhz8Uw2poL/f4/BmO9Y5OoHXJPTkvr6MbIk=
     on:
