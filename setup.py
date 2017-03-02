@@ -30,8 +30,6 @@ if __name__ == "__main__":
         if getenv('CI').lower() == 'true':
             error_on_invalid = True
 
-    print('Version string:', calculate_version(validate, error_on_invalid))
-
     setup(name='numpy-',
           configuration=configuration,
           version=calculate_version(validate, error_on_invalid),

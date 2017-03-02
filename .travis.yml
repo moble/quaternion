@@ -39,10 +39,6 @@ install:
   - pip install packaging
   - git checkout "${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}"
   - git reset --hard "${TRAVIS_COMMIT}"
-  - git status
-  - git diff
-  - git diff-files
-  - git diff-index --cached HEAD --
   - python setup.py install
 
 script:
