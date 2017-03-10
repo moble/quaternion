@@ -568,15 +568,15 @@ static PyNumberMethods pyquaternion_as_number = {
 // and will be used in the `tp_members` field when definining the
 // PyQuaternion_Type below.
 PyMemberDef pyquaternion_members[] = {
-  {"real", T_DOUBLE, offsetof(PyQuaternion, obval.w), READONLY,
+  {"real", T_DOUBLE, offsetof(PyQuaternion, obval.w), 0,
    "The real component of the quaternion"},
-  {"w", T_DOUBLE, offsetof(PyQuaternion, obval.w), READONLY,
+  {"w", T_DOUBLE, offsetof(PyQuaternion, obval.w), 0,
    "The real component of the quaternion"},
-  {"x", T_DOUBLE, offsetof(PyQuaternion, obval.x), READONLY,
+  {"x", T_DOUBLE, offsetof(PyQuaternion, obval.x), 0,
    "The first imaginary component of the quaternion"},
-  {"y", T_DOUBLE, offsetof(PyQuaternion, obval.y), READONLY,
+  {"y", T_DOUBLE, offsetof(PyQuaternion, obval.y), 0,
    "The second imaginary component of the quaternion"},
-  {"z", T_DOUBLE, offsetof(PyQuaternion, obval.z), READONLY,
+  {"z", T_DOUBLE, offsetof(PyQuaternion, obval.z), 0,
    "The third imaginary component of the quaternion"},
   {NULL}
 };
