@@ -130,7 +130,7 @@ def as_rotation_matrix(q):
         If any of the input quaternions have norm 0.0.
 
     """
-    if q.shape == ():  # This is just a single quaternion
+    if q.shape == () and not isinstance(q, np.ndarray):  # This is just a single quaternion
         n = q.norm()
         if n == 0.0:
             raise ZeroDivisionError("Input to `as_rotation_matrix({0})` has zero norm".format(q))
@@ -396,9 +396,11 @@ def as_euler_angles(q):
 def as_spherical_coords(q):
     """Return the spherical coordinates corresponding to this quaternion
 
-    Obviously, spherical coordinates do not contain as much information as a quaternion, so this function does lose
-    some information.  However, the returned spherical coordinates will represent the point(s) on the sphere to which
-    the input quaternion(s) rotate the z axis.
+    Obviously, spherical coordinates do not contain as much
+    information as a quaternion, so this function does lose some
+    information.  However, the returned spherical coordinates will
+    represent the point(s) on the sphere to which the input
+    quaternion(s) rotate the z axis.
 
     Parameters
     ----------
@@ -415,6 +417,59 @@ def as_spherical_coords(q):
 
     """
     return as_euler_angles(q)[..., 1::-1]
+
+
+def rotate_vectors(R, v, axis=-1):
+    """Rotate vectors by given quaternions
+
+    For simplicity, this function simply converts the input
+    quaternion(s) to a matrix, and rotates the input vector(s) by the
+    usual matrix multiplication.  However, it should be noted that if
+    each input quaternion is only used to rotate a single vector, it
+    is more efficient (in terms of operation counts) to use the
+    formula
+
+      v' = v + 2 * r x (s * v + r x v) / m
+
+    where x represents the cross product, s and r are the scalar and
+    vector parts of the quaternion, respectively, and m is the sum of
+    the squares of the components of the quaternion.  If you are
+    looping over a very large number of quaternions, and just rotating
+    a single vector each time, you might want to implement that
+    alternative algorithm using numba (or something that doesn't use
+    python).
+
+
+    Parameters
+    ==========
+    R: quaternion array
+        Quaternions by which to rotate the input vectors
+    v: float array
+        Three-vectors to be rotated.
+    axis: int
+        Axis of the `v` array to use as the vector dimension.  This
+        axis of `v` must have length 3.
+
+    Returns
+    =======
+    vprime: float array
+        The rotated vectors.  This array has shape R.shape+v.shape.
+
+    """
+    R = np.asarray(R, dtype=np.quaternion)
+    v = np.asarray(v, dtype=float)
+    if v.ndim < 1 or 3 not in v.shape:
+        raise ValueError("Input `v` does not have at least one dimension of length 3")
+    if v.shape[axis] != 3:
+        raise ValueError("Input `v` axis {0} has length {1}, not 3.".format(axis, v.shape[axis]))
+    m = as_rotation_matrix(R)
+    m_axes = list(range(m.ndim))
+    v_axes = list(range(m.ndim, m.ndim+v.ndim))
+    mv_axes = v_axes.copy()
+    mv_axes[axis] = m_axes[-2]
+    mv_axes = m_axes[:-2] + mv_axes
+    v_axes[axis] = m_axes[-1]
+    return np.einsum(m, m_axes, v, v_axes, mv_axes)
 
 
 def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, verbose=False):

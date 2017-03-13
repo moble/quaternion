@@ -213,6 +213,62 @@ def test_from_rotation_vector():
     assert allclose(quats, quats2)
 
 
+def test_rotate_vectors(Rs):
+    np.random.seed(1234)
+    # Test (1)*(1)
+    vecs = np.random.rand(3)
+    quats = quaternion.z
+    vecsprime = quaternion.rotate_vectors(quats, vecs)
+    assert np.allclose(vecsprime,
+                       (quats * quaternion.quaternion(*vecs) * quats.inverse()).vec,
+                       rtol=0.0, atol=0.0)
+    assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
+    # Test (1)*(5)
+    vecs = np.random.rand(5, 3)
+    quats = quaternion.z
+    vecsprime = quaternion.rotate_vectors(quats, vecs)
+    for i, vec in enumerate(vecs):
+        assert np.allclose(vecsprime[i],
+                           (quats * quaternion.quaternion(*vec) * quats.inverse()).vec,
+                           rtol=0.0, atol=0.0)
+    assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
+    # Test (1)*(5) inner axis
+    vecs = np.random.rand(3, 5)
+    quats = quaternion.z
+    vecsprime = quaternion.rotate_vectors(quats, vecs, axis=-2)
+    for i, vec in enumerate(vecs.T):
+        assert np.allclose(vecsprime[:, i],
+                           (quats * quaternion.quaternion(*vec) * quats.inverse()).vec,
+                           rtol=0.0, atol=0.0)
+    assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
+    # Test (N)*(1)
+    vecs = np.random.rand(3)
+    quats = Rs
+    vecsprime = quaternion.rotate_vectors(quats, vecs)
+    assert np.allclose(vecsprime,
+                       [vprime.vec for vprime in quats * quaternion.quaternion(*vecs) * ~quats],
+                       rtol=1e-15, atol=1e-15)
+    assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
+    # Test (N)*(5)
+    vecs = np.random.rand(5, 3)
+    quats = Rs
+    vecsprime = quaternion.rotate_vectors(quats, vecs)
+    for i, vec in enumerate(vecs):
+        assert np.allclose(vecsprime[:, i],
+                           [vprime.vec for vprime in quats * quaternion.quaternion(*vec) * ~quats],
+                           rtol=1e-15, atol=1e-15)
+    assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
+    # Test (N)*(5) inner axis
+    vecs = np.random.rand(3, 5)
+    quats = Rs
+    vecsprime = quaternion.rotate_vectors(quats, vecs, axis=-2)
+    for i, vec in enumerate(vecs.T):
+        assert np.allclose(vecsprime[:, :, i],
+                           [vprime.vec for vprime in quats * quaternion.quaternion(*vec) * ~quats],
+                           rtol=1e-15, atol=1e-15)
+    assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
+
+
 def test_allclose(Qs):
     for q in Qs[Qs_nonnan]:
         assert quaternion.allclose(q, q, rtol=0.0, atol=0.0)
