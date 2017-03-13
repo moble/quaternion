@@ -115,6 +115,13 @@ def test_quaternion_members():
     assert Q.y == 3.3
     assert Q.z == 4.4
 
+    Q = quaternion.quaternion(2.2, 3.3, 4.4)
+    assert Q.real == 0.0
+    assert Q.w == 0.0
+    assert Q.x == 2.2
+    assert Q.y == 3.3
+    assert Q.z == 4.4
+
 
 def test_constants():
     assert quaternion.one == np.quaternion(1.0, 0.0, 0.0, 0.0)

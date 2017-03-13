@@ -91,6 +91,8 @@ pyquaternion_init(PyObject *self, PyObject *args, PyObject *kwds)
   // initialization should take place in `tp_new`, while for mutable
   // types, most initialization should be deferred to `tp_init`."
   // ---Python 2.7.8 docs
+
+  Py_ssize_t size = PyTuple_Size(args);
   quaternion* q;
   q = &(((PyQuaternion*)self)->obval);
   if (kwds && PyDict_Size(kwds)) {
@@ -99,10 +101,13 @@ pyquaternion_init(PyObject *self, PyObject *args, PyObject *kwds)
     return -1;
   }
 
-  if (!PyArg_ParseTuple(args, "dddd", &q->w, &q->x, &q->y, &q->z)) {
+  if (((size == 3) && (!PyArg_ParseTuple(args, "ddd", &q->x, &q->y, &q->z)))
+      || ((size == 4) && (!PyArg_ParseTuple(args, "dddd", &q->w, &q->x, &q->y, &q->z)))) {
     PyErr_SetString(PyExc_TypeError,
-                    "quaternion constructor takes four double (float) arguments");
+                    "quaternion constructor takes three or four float arguments");
     return -1;
+  } else if(size == 3) {
+    q->w = 0.0;
   }
 
   return 0;
