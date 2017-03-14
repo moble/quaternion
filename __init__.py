@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Michael Boyle
+# Copyright (c) 2017, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 from __future__ import division, print_function, absolute_import
@@ -20,12 +20,17 @@ from ._version import __version__
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 
-__all__ = ['quaternion', 'from_spherical_coords', 'from_euler_angles',
+__all__ = ['quaternion',
+           'as_float_array', 'as_quat_array', 'as_spinor_array',
+           'as_rotation_matrix', 'from_rotation_matrix',
+           'as_rotation_vector', 'from_rotation_vector',
+           'as_euler_angles', 'from_euler_angles',
+           'as_spherical_coords', 'from_spherical_coords',
+           'rotate_vectors', 'allclose',
            'rotor_intrinsic_distance', 'rotor_chordal_distance',
            'rotation_intrinsic_distance', 'rotation_chordal_distance',
            'slerp_evaluate', 'squad_evaluate',
-           'zero', 'one', 'x', 'y', 'z',
-           'as_float_array', 'as_quat_array', 'as_spinor_array',
+           'zero', 'one', 'x', 'y', 'z', 'integrate_angular_velocity',
            'squad', 'slerp', 'derivative', 'definite_integral', 'indefinite_integral']
 
 if 'quaternion' in np.__dict__:

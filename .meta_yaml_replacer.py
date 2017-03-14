@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2016, Michael Boyle
+# Copyright (c) 2017, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 from __future__ import print_function

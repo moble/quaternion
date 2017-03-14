@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Michael Boyle
+// Copyright (c) 2017, Michael Boyle
 // See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 #define NPY_NO_DEPRECATED_API NPY_API_VERSION
