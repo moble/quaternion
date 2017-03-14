@@ -171,21 +171,26 @@ def test_as_rotation_matrix(Rs):
 
 
 def test_from_rotation_matrix(Rs):
-    rot_mat_eps = 10*eps
     try:
         from scipy import linalg
+        have_linalg = True
     except ImportError:
-        rot_mat_eps = 400*eps
+        have_linalg = False
 
-    for i, R1 in enumerate(Rs):
-        R2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(R1))
-        d = quaternion.rotation_intrinsic_distance(R1, R2)
-        assert d < rot_mat_eps, (i, R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
+    for nonorthogonal in [True, False]:
+        if nonorthogonal and have_linalg:
+            rot_mat_eps = 10*eps
+        else:
+            rot_mat_eps = 400*eps
+        for i, R1 in enumerate(Rs):
+            R2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(R1), nonorthogonal=nonorthogonal)
+            d = quaternion.rotation_intrinsic_distance(R1, R2)
+            assert d < rot_mat_eps, (i, R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
 
-    Rs2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(Rs))
-    for R1, R2 in zip(Rs, Rs2):
-        d = quaternion.rotation_intrinsic_distance(R1, R2)
-        assert d < rot_mat_eps, (R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
+        Rs2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(Rs), nonorthogonal=nonorthogonal)
+        for R1, R2 in zip(Rs, Rs2):
+            d = quaternion.rotation_intrinsic_distance(R1, R2)
+            assert d < rot_mat_eps, (R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
 
 
 def test_as_rotation_vector():

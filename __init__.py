@@ -170,7 +170,7 @@ def as_rotation_matrix(q):
             return m
 
 
-def from_rotation_matrix(rot, accurate=True):
+def from_rotation_matrix(rot, nonorthogonal=True):
     """Convert input 3x3 rotation matrix to unit quaternion
 
     By default, if scipy.linalg is available, this function uses
@@ -183,20 +183,21 @@ def from_rotation_matrix(rot, accurate=True):
     quaternion itself is conjugated relative to the convention used
     throughout this module.
 
-    If scipy.linalg is not available or if the optional `accurate` parameter
-    is set to `False`, this function falls back to the possibly faster, but
-    less accurate, algorithm of Shoemake [ACM SIGGRAPH Comp. Graph., Vol. 19,
-    No. 3, p. 245 (1985), <http://dx.doi.org/10.1145/325165.325242>].
+    If scipy.linalg is not available or if the optional
+    `nonorthogonal` parameter is set to `False`, this function falls
+    back to the possibly faster, but less robust, algorithm of Markley
+    [J. Guidance, Vol. 31, No. 2, p. 440
+    <http://dx.doi.org/10.2514/1.31730>].
 
     Parameters
     ----------
-    rot: (Nx3x3) float array
+    rot: (...Nx3x3) float array
         Each 3x3 matrix represents a rotation by multiplying (from the left)
         a column vector to produce a rotated column vector.  Note that this
         input may actually have ndims>3; it is just assumed that the last
         two dimensions have size 3, representing the matrix.
-    accurate: bool, optional
-        If scipy.linalg is available, use the more accurate algorithm of
+    nonorthogonal: bool, optional
+        If scipy.linalg is available, use the more robust algorithm of
         Bar-Itzhack.  Default value is True.
 
     Returns
@@ -219,7 +220,7 @@ def from_rotation_matrix(rot, accurate=True):
     rot = np.array(rot, copy=False)
     shape = rot.shape[:-2]
 
-    if linalg and accurate:
+    if linalg and nonorthogonal:
         from operator import mul
         from functools import reduce
 
@@ -256,63 +257,56 @@ def from_rotation_matrix(rot, accurate=True):
                 q[multi_index, 1:] = -eigvecs[:-1].flatten()
             return as_quat_array(q)
 
-    else:  # No scipy.linalg or not `accurate`
-        if not shape:
-            import math
-            q = np.empty(shape+(4,), dtype=np.float)
-            q[0] = (1 + rot[0, 0] + rot[1, 1] + rot[2, 2]) / 4
-            if q[0] > _eps:
-                q[0] = math.sqrt(q[0])
-                q[1] = (rot[1, 2] - rot[2, 1]) / (-4*q[0])
-                q[2] = (rot[2, 0] - rot[0, 2]) / (-4*q[0])
-                q[3] = (rot[0, 1] - rot[1, 0]) / (-4*q[0])
-            else:
-                q[0] = 0.0
-                q[1] = (rot[1, 1] + rot[2, 2]) / -2.0
-                if q[1] > _eps:
-                    q[1] = math.sqrt(q[1])
-                    q[2] = rot[0, 1] / (2*q[1])
-                    q[3] = rot[0, 2] / (2*q[1])
-                else:
-                    q[1] = 0.0
-                    q[2] = (1.0 - rot[2, 2]) / 2.0
-                    if q[2] > _eps:
-                        q[2] = math.sqrt(q[2])
-                        q[3] = rot[1, 2] / (2*q[2])
-                    else:
-                        q[2] = 0.0
-                        q[3] = 1.0
-        else:
-            q = np.empty(shape+(4,), dtype=np.float)
-            q[..., 0] = (1 + rot[..., 0, 0] + rot[..., 1, 1] + rot[..., 2, 2]) / 4
-            w2_gtr_eps = (q[..., 0] > _eps)
-            # w**2 > eps
-            q[w2_gtr_eps, 0] = np.sqrt(q[w2_gtr_eps, 0])
-            q[w2_gtr_eps, 1] = (rot[w2_gtr_eps, 1, 2] - rot[w2_gtr_eps, 2, 1]) / (-4*q[w2_gtr_eps, 0])
-            q[w2_gtr_eps, 2] = (rot[w2_gtr_eps, 2, 0] - rot[w2_gtr_eps, 0, 2]) / (-4*q[w2_gtr_eps, 0])
-            q[w2_gtr_eps, 3] = (rot[w2_gtr_eps, 0, 1] - rot[w2_gtr_eps, 1, 0]) / (-4*q[w2_gtr_eps, 0])
-            # w**2 <= eps
-            q[~w2_gtr_eps, 0] = 0.0
-            q[~w2_gtr_eps, 1] = (rot[~w2_gtr_eps, 1, 1] + rot[~w2_gtr_eps, 2, 2]) / -2.0
-            x2_gtr_eps = np.logical_and(~w2_gtr_eps, q[..., 1] > _eps)
-            x2_leq_eps = np.logical_and(~w2_gtr_eps, q[..., 1] <= _eps)
-            # w**2 <= eps and x**2 > eps
-            q[x2_gtr_eps, 1] = np.sqrt(q[x2_gtr_eps, 1])
-            q[x2_gtr_eps, 2] = rot[x2_gtr_eps, 0, 1] / (2*q[x2_gtr_eps, 1])
-            q[x2_gtr_eps, 3] = rot[x2_gtr_eps, 0, 2] / (2*q[x2_gtr_eps, 1])
-            # w**2 <= eps and x**2 <= eps
-            q[x2_leq_eps, 1] = 0.0
-            q[x2_leq_eps, 2] = (1.0 - rot[x2_leq_eps, 2, 2]) / 2.0
-            y2_gtr_eps = np.logical_and(x2_leq_eps, q[..., 2] > _eps)
-            y2_leq_eps = np.logical_and(x2_leq_eps, q[..., 2] <= _eps)
-            # w**2 <= eps and x**2 <= eps and y**2 > eps
-            q[y2_gtr_eps, 2] = np.sqrt(q[y2_gtr_eps, 2])
-            q[y2_gtr_eps, 3] = rot[y2_gtr_eps, 1, 2] / (2*q[y2_gtr_eps, 2])
-            # w**2 <= eps and x**2 <= eps and y**2 <= eps
-            q[y2_leq_eps, 2] = 0.0
-            q[y2_leq_eps, 3] = 1.0
-        return as_quat_array(q)
+    else:  # No scipy.linalg or not `nonorthogonal`
+        diagonals = np.empty(shape+(4,))
+        diagonals[..., 0] = rot[..., 0, 0]
+        diagonals[..., 1] = rot[..., 1, 1]
+        diagonals[..., 2] = rot[..., 2, 2]
+        diagonals[..., 3] = rot[..., 0, 0] + rot[..., 1, 1] + rot[..., 2, 2]
 
+        indices = np.argmax(diagonals, axis=-1)
+
+        q = diagonals  # reuse storage space
+        indices_i = (indices == 0)
+        if np.any(indices_i):
+            if indices_i.shape == ():
+                indices_i = Ellipsis
+            rot_i = rot[indices_i, :, :]
+            q[indices_i, 0] = rot_i[..., 2, 1] - rot_i[..., 1, 2]
+            q[indices_i, 1] = 1 + rot_i[..., 0, 0] - rot_i[..., 1, 1] - rot_i[..., 2, 2]
+            q[indices_i, 2] = rot_i[..., 0, 1] + rot_i[..., 1, 0]
+            q[indices_i, 3] = rot_i[..., 0, 2] + rot_i[..., 2, 0]
+        indices_i = (indices == 1)
+        if np.any(indices_i):
+            if indices_i.shape == ():
+                indices_i = Ellipsis
+            rot_i = rot[indices_i, :, :]
+            q[indices_i, 0] = rot_i[..., 0, 2] - rot_i[..., 2, 0]
+            q[indices_i, 1] = rot_i[..., 1, 0] + rot_i[..., 0, 1]
+            q[indices_i, 2] = 1 - rot_i[..., 0, 0] + rot_i[..., 1, 1] - rot_i[..., 2, 2]
+            q[indices_i, 3] = rot_i[..., 1, 2] + rot_i[..., 2, 1]
+        indices_i = (indices == 2)
+        if np.any(indices_i):
+            if indices_i.shape == ():
+                indices_i = Ellipsis
+            rot_i = rot[indices_i, :, :]
+            q[indices_i, 0] = rot_i[..., 1, 0] - rot_i[..., 0, 1]
+            q[indices_i, 1] = rot_i[..., 2, 0] + rot_i[..., 0, 2]
+            q[indices_i, 2] = rot_i[..., 2, 1] + rot_i[..., 1, 2]
+            q[indices_i, 3] = 1 - rot_i[..., 0, 0] - rot_i[..., 1, 1] + rot_i[..., 2, 2]
+        indices_i = (indices == 3)
+        if np.any(indices_i):
+            if indices_i.shape == ():
+                indices_i = Ellipsis
+            rot_i = rot[indices_i, :, :]
+            q[indices_i, 0] = 1 + rot_i[..., 0, 0] + rot_i[..., 1, 1] + rot_i[..., 2, 2]
+            q[indices_i, 1] = rot_i[..., 2, 1] - rot_i[..., 1, 2]
+            q[indices_i, 2] = rot_i[..., 0, 2] - rot_i[..., 2, 0]
+            q[indices_i, 3] = rot_i[..., 1, 0] - rot_i[..., 0, 1]
+
+        q /= np.linalg.norm(q, axis=-1)[..., np.newaxis]
+
+        return as_quat_array(q)
 
 
 def as_rotation_vector(q):
