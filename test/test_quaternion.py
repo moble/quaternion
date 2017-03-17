@@ -139,6 +139,9 @@ def test_as_float_quat(Qs):
         assert allclose(quaternion.as_quat_array(floats), quats)
         # Test that we can handle a list just like an array
         assert np.array_equal(quaternion.as_quat_array(floats), quaternion.as_quat_array(floats.tolist()))
+    a = np.arange(12).reshape(3, 4)
+    assert np.array_equal(quaternion.as_float_array(quaternion.as_quat_array(a)),
+                          a.astype(float))
 
 
 def test_as_rotation_matrix(Rs):
