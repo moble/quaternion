@@ -1,4 +1,4 @@
-<a href="https://ci.appveyor.com/api/projects/status/xrh8xsm695pt6t79?svg=true"><img align="right" hspace="3" alt="Status of automatic build and test suite on Appveyor" src="https://ci.appveyor.com/api/projects/status/xrh8xsm695pt6t79?svg=true"></a> <a href="https://travis-ci.org/moble/quaternion"><img align="right" hspace="3" alt="Status of automatic build and test suite on Travis-CI" src="https://travis-ci.org/moble/quaternion.svg?branch=master"></a> <a href="https://github.com/moble/quaternion/blob/master/LICENSE"><img align="right" hspace="3" alt="Code distributed under the open-source MIT license" src="http://moble.github.io/spherical_functions/images/MITLicenseBadge.svg"></a>
+<a href="https://travis-ci.org/moble/quaternion"><img align="right" hspace="3" alt="Status of automatic build and test suite on Travis-CI" src="https://travis-ci.org/moble/quaternion.svg?branch=master"></a> <a href="https://github.com/moble/quaternion/blob/master/LICENSE"><img align="right" hspace="3" alt="Code distributed under the open-source MIT license" src="http://moble.github.io/spherical_functions/images/MITLicenseBadge.svg"></a>
 
 # Quaternions in numpy
 
