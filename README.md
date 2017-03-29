@@ -34,16 +34,18 @@ run all the code without `numba`, but these particular functions are
 roughly 4 to 400 times slower without it.
 
 The only drawback of `numba` is that it is nontrivial to install on
-its own.  Fortunately, the best python installer,
-[`anaconda`](http://continuum.io/downloads), makes it trivial.  Just
-install the main `anaconda` package, which installs both `numba` and
-`scipy`.  If you prefer the smaller download size of
-[`miniconda`](http://conda.pydata.org/miniconda.html) (which comes
+its own.  Fortunately, the best python
+installer, [`anaconda`](http://continuum.io/downloads), makes it
+trivial (except on Windows).  Just install the main `anaconda`
+package, which installs both `numba` and `scipy`.  If you prefer the
+smaller download size
+of [`miniconda`](http://conda.pydata.org/miniconda.html) (which comes
 with no extras beyond python), you'll also have to run this command:
 
 ```sh
 conda install pip numpy scipy numba
 ```
+
 
 ## Installation
 
@@ -54,10 +56,16 @@ python user), you can install this package simply as
 conda install -c moble quaternion
 ```
 
+Unfortunately, Windows is not supported with conda because I do not
+have access to any Windows machine (and
+AppVeyor
+[just doesn't work](https://ci.appveyor.com/project/moble/quaternion/)).
+Instead, you will have to use one of the following options.
+
 If you prefer to use `pip` (whether or not you use `conda`), you can also do
 
 ```sh
-pip install numpy-quaternion
+pip install numpy numpy-quaternion
 ```
 
 If you refuse to use `conda`, you might want to install inside your home
@@ -65,7 +73,7 @@ directory without root privileges.  (Anaconda does this by default anyway.)
 This is done by adding `--user` to the above command:
 
 ```sh
-pip install --user numpy-quaternion
+pip install --user numpy numpy-quaternion
 ```
 
 Finally, there's also the fully manual option of just downloading the code,
@@ -76,7 +84,8 @@ python setup.py install
 ```
 
 This should work regardless of the installation method, as long as you have a
-compiler hanging around.
+compiler hanging around.  However, not that you will need to have at
+least `numpy` installed already, as noted above.
 
 
 ## Usage
