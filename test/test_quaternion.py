@@ -142,6 +142,7 @@ def test_as_float_quat(Qs):
     a = np.arange(12).reshape(3, 4)
     assert np.array_equal(quaternion.as_float_array(quaternion.as_quat_array(a)),
                           a.astype(float))
+    assert quaternion.as_float_array(quaternion.x).ndim == 1
 
 
 def test_as_rotation_matrix(Rs):

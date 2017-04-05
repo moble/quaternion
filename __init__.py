@@ -56,14 +56,12 @@ def as_float_array(a):
     array, but is otherwise the same shape.
 
     """
-    a = np.atleast_1d(a)
-    assert a.dtype == np.dtype(np.quaternion)
-    if a.shape == ():
-        return a.components
+    a = np.asarray(a, dtype=np.quaternion)
+    if a.ndim == 0:
+        return a[()].components
     av = a.view(np.float)
     av = av.reshape(a.shape + (4,))
     return av
-    # return a.view(np.float).reshape(a.shape+(4,))
 
 
 def as_quat_array(a):
