@@ -217,13 +217,13 @@ extern "C" {
 //    c[2] = s*(a[0]*b[1] - a[1]*b[0]);
 //    return;
 //  }
-  static inline void _sv_plus_rxv(quaternion q, double v[], double w[]) {
+  static NPY_INLINE void _sv_plus_rxv(quaternion q, double v[], double w[]) {
     w[0] = q.w * v[0] + q.y*v[2] - q.z*v[1];
     w[1] = q.w * v[1] + q.z*v[0] - q.x*v[2];
     w[2] = q.w * v[2] + q.x*v[1] - q.y*v[0];
     return;
   }
-  static inline void _v_plus_2rxvprime_over_m(quaternion q, double v[], double w[], double two_over_m, double vprime[]) {
+  static NPY_INLINE void _v_plus_2rxvprime_over_m(quaternion q, double v[], double w[], double two_over_m, double vprime[]) {
     vprime[0] = v[0] + two_over_m * (q.y*w[2] - q.z*w[1]);
     vprime[1] = v[1] + two_over_m * (q.z*w[0] - q.x*w[2]);
     vprime[2] = v[2] + two_over_m * (q.x*w[1] - q.y*w[0]);
