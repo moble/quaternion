@@ -545,7 +545,10 @@ def isclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False):
     # Make sure y is an inexact type to avoid bad behavior on abs(MIN_INT).
     # This will cause casting of x later. Also, make sure to allow subclasses
     # (e.g., for numpy.ma).
-    dt = np.dtype(np.quaternion)  # multiarray.result_type(y, 1.)
+    try:
+        dt = np.result_type(y, 1.)
+    except TypeError:
+        dt = np.dtype(np.quaternion)
     y = np.array(y, dtype=dt, copy=False, subok=True)
 
     xfin = np.isfinite(x)
