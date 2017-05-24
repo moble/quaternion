@@ -130,6 +130,32 @@ def test_constants():
     assert quaternion.z == np.quaternion(0.0, 0.0, 0.0, 1.0)
 
 
+def test_isclose():
+    from quaternion import x, y
+
+    assert np.array_equal(quaternion.isclose([1e10*x, 1e-7*y], [1.00001e10*x, 1e-8*y], rtol=1.e-5, atol=2.e-8),
+                          np.array([True, False]))
+    assert np.array_equal(quaternion.isclose([1e10*x, 1e-8*y], [1.00001e10*x, 1e-9*y], rtol=1.e-5, atol=2.e-8),
+                          np.array([True, True]))
+    assert np.array_equal(quaternion.isclose([1e10*x, 1e-8*y], [1.0001e10*x, 1e-9*y], rtol=1.e-5, atol=2.e-8),
+                          np.array([False, True]))
+    assert np.array_equal(quaternion.isclose([x, np.nan*y], [x, np.nan*y]),
+                          np.array([True, False]))
+    assert np.array_equal(quaternion.isclose([x, np.nan*y], [x, np.nan*y], equal_nan=True),
+                          np.array([True, True]))
+
+    np.random.seed(1234)
+    a = quaternion.as_quat_array(np.random.random((3, 5, 4)))
+    assert quaternion.allclose(1e10 * a, 1.00001e10 * a, rtol=1.e-5, atol=2.e-8, verbose=True) == True
+    assert quaternion.allclose(1e-7 * a, 1e-8 * a, rtol=1.e-5, atol=2.e-8) == False
+    assert quaternion.allclose(1e10 * a, 1.00001e10 * a, rtol=1.e-5, atol=2.e-8, verbose=True) == True
+    assert quaternion.allclose(1e-8 * a, 1e-9 * a, rtol=1.e-5, atol=2.e-8, verbose=True) == True
+    assert quaternion.allclose(1e10 * a, 1.0001e10 * a, rtol=1.e-5, atol=2.e-8) == False
+    assert quaternion.allclose(1e-8 * a, 1e-9 * a, rtol=1.e-5, atol=2.e-8, verbose=True) == True
+    assert quaternion.allclose(np.nan * a, np.nan * a) == False
+    assert quaternion.allclose(np.nan * a, np.nan * a, equal_nan=True, verbose=True) == True
+
+
 def test_as_float_quat(Qs):
     qs = Qs[Qs_nonnan]
     for quats in [qs, np.vstack((qs,)*3), np.vstack((qs,)*(3*5)).reshape((3, 5)+qs.shape),

@@ -468,31 +468,147 @@ def rotate_vectors(R, v, axis=-1):
     return np.einsum(m, m_axes, v, v_axes, mv_axes)
 
 
-def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, verbose=False):
+def isclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False):
     """
-    Returns True if two arrays are element-wise equal within a tolerance.
+    Returns a boolean array where two arrays are element-wise equal within a
+    tolerance.
 
-    This function is essentially a copy of the `numpy.allclose` function,
-    with different default tolerances, minor changes necessary to deal
-    correctly with quaternions, and the verbose option.
+    This function is essentially a copy of the `numpy.isclose` function,
+    with different default tolerances and one minor changes necessary to
+    deal correctly with quaternions.
 
     The tolerance values are positive, typically very small numbers.  The
     relative difference (`rtol` * abs(`b`)) and the absolute difference
     `atol` are added together to compare against the absolute difference
     between `a` and `b`.
 
-    If either array contains one or more NaNs, False is returned.
-    Infs are treated as equal if they are in the same place and of the same
-    sign in both arrays.
+    Parameters
+    ----------
+    a, b : array_like
+        Input arrays to compare.
+    rtol : float
+        The relative tolerance parameter (see Notes).
+    atol : float
+        The absolute tolerance parameter (see Notes).
+    equal_nan : bool
+        Whether to compare NaN's as equal.  If True, NaN's in `a` will be
+        considered equal to NaN's in `b` in the output array.
+
+    Returns
+    -------
+    y : array_like
+        Returns a boolean array of where `a` and `b` are equal within the
+        given tolerance. If both `a` and `b` are scalars, returns a single
+        boolean value.
+
+    See Also
+    --------
+    allclose
+
+    Notes
+    -----
+    For finite values, isclose uses the following equation to test whether
+    two floating point values are equivalent:
+
+      absolute(`a` - `b`) <= (`atol` + `rtol` * absolute(`b`))
+
+    The above equation is not symmetric in `a` and `b`, so that
+    `isclose(a, b)` might be different from `isclose(b, a)` in
+    some rare cases.
+
+    Examples
+    --------
+    >>> quaternion.isclose([1e10*quaternion.x, 1e-7*quaternion.y], [1.00001e10*quaternion.x, 1e-8*quaternion.y],
+    ...     rtol=1.e-5, atol=1.e-8)
+    array([True, False])
+    >>> quaternion.isclose([1e10*quaternion.x, 1e-8*quaternion.y], [1.00001e10*quaternion.x, 1e-9*quaternion.y],
+    ...     rtol=1.e-5, atol=1.e-8)
+    array([True, True])
+    >>> quaternion.isclose([1e10*quaternion.x, 1e-8*quaternion.y], [1.0001e10*quaternion.x, 1e-9*quaternion.y],
+    ...     rtol=1.e-5, atol=1.e-8)
+    array([False, True])
+    >>> quaternion.isclose([quaternion.x, np.nan*quaternion.y], [quaternion.x, np.nan*quaternion.y])
+    array([True, False])
+    >>> quaternion.isclose([quaternion.x, np.nan*quaternion.y], [quaternion.x, np.nan*quaternion.y], equal_nan=True)
+    array([True, True])
+    """
+    def within_tol(x, y, atol, rtol):
+        with np.errstate(invalid='ignore'):
+            result = np.less_equal(abs(x-y), atol + rtol * abs(y))
+        if np.isscalar(a) and np.isscalar(b):
+            result = bool(result)
+        return result
+
+    x = np.array(a, copy=False, subok=True, ndmin=1)
+    y = np.array(b, copy=False, subok=True, ndmin=1)
+
+    # Make sure y is an inexact type to avoid bad behavior on abs(MIN_INT).
+    # This will cause casting of x later. Also, make sure to allow subclasses
+    # (e.g., for numpy.ma).
+    dt = np.dtype(np.quaternion)  # multiarray.result_type(y, 1.)
+    y = np.array(y, dtype=dt, copy=False, subok=True)
+
+    xfin = np.isfinite(x)
+    yfin = np.isfinite(y)
+    if np.all(xfin) and np.all(yfin):
+        return within_tol(x, y, atol, rtol)
+    else:
+        finite = xfin & yfin
+        cond = np.zeros_like(finite, subok=True)
+        # Because we're using boolean indexing, x & y must be the same shape.
+        # Ideally, we'd just do x, y = broadcast_arrays(x, y). It's in
+        # lib.stride_tricks, though, so we can't import it here.
+        x = x * np.ones_like(cond)
+        y = y * np.ones_like(cond)
+        # Avoid subtraction with infinite/nan values...
+        cond[finite] = within_tol(x[finite], y[finite], atol, rtol)
+        # Check for equality of infinite values...
+        cond[~finite] = (x[~finite] == y[~finite])
+        if equal_nan:
+            # Make NaN == NaN
+            both_nan = np.isnan(x) & np.isnan(y)
+            cond[both_nan] = both_nan[both_nan]
+
+        if np.isscalar(a) and np.isscalar(b):
+            return bool(cond)
+        else:
+            return cond
+
+
+def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False, verbose=False):
+    """
+    Returns True if two arrays are element-wise equal within a tolerance.
+
+    This function is essentially a wrapper for the `quaternion.isclose`
+    function, but returns a single boolean value of True if all elements
+    of the output from `quaternion.isclose` are True, and False otherwise.
+    This function also adds the option.
+
+    Note that this function has stricter tolerances than the
+    `numpy.allclose` function, as well as the additional `verbose` option.
 
     Parameters
     ----------
     a, b : array_like
         Input arrays to compare.
     rtol : float
-        The relative tolerance parameter (see Notes).  Default 4*eps.
+        The relative tolerance parameter (see Notes).
     atol : float
-        The absolute tolerance parameter (see Notes).  Default 0.0.
+        The absolute tolerance parameter (see Notes).
+    equal_nan : bool
+        Whether to compare NaN's as equal.  If True, NaN's in `a` will be
+        considered equal to NaN's in `b` in the output array.
+    verbose : bool
+        If the return value is False,
+
+    Returns
+    -------
+    allclose : bool
+        Returns True if the two arrays are equal within the given
+        tolerance; False otherwise.
+    See Also
+    --------
+    isclose, numpy.all, numpy.any, numpy.allclose
 
     Returns
     -------
@@ -500,77 +616,24 @@ def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, verbose=False):
         Returns True if the two arrays are equal within the given
         tolerance; False otherwise.
 
-    See Also
-    --------
-    numpy.allclose
 
     Notes
     -----
     If the following equation is element-wise True, then allclose returns
     True.
-     absolute(`a` - `b`) <= (`atol` + `rtol` * absolute(`b`))
+
+      absolute(`a` - `b`) <= (`atol` + `rtol` * absolute(`b`))
+
     The above equation is not symmetric in `a` and `b`, so that
     `allclose(a, b)` might be different from `allclose(b, a)` in
     some rare cases.
 
-    Examples
-    --------
-    >>> import numpy as np
-    >>> import quaternion
-    >>> q1 = quaternion.quaternion(1e10, 0, 0, 0)
-    >>> q2 = quaternion.quaternion(1.00001e10, 0, 0, 0)
-    >>> q3 = quaternion.quaternion(1.0001e10, 0, 0, 0)
-    >>> q4 = quaternion.quaternion(1e-7, 0, 0, 0)
-    >>> q5 = quaternion.quaternion(1e-8, 0, 0, 0)
-    >>> q6 = quaternion.quaternion(1e-9, 0, 0, 0)
-    >>> q7 = quaternion.quaternion(np.nan, 0, 0, 0)
-    >>> quaternion.allclose([q1, q4], [q2, q5], rtol=1.e-5, atol=1.e-8)
-    False
-    >>> quaternion.allclose([q1, q5], [q2, q6], rtol=1.e-5, atol=1.e-8)
-    True
-    >>> quaternion.allclose([q1, q5], [q3, q6], rtol=1.e-5, atol=1.e-8)
-    False
-    >>> quaternion.allclose([quaternion.one, q7], [quaternion.one, q7], rtol=1.e-5, atol=1.e-8)
-    False
     """
-    x = np.array(a, copy=False, ndmin=1)
-    y = np.array(b, copy=False, ndmin=1)
-
-    xinf = np.isinf(x)
-    yinf = np.isinf(y)
-    if np.any(xinf) or np.any(yinf):
-        # Check that x and y have inf's only in the same positions
-        if not np.all(xinf == yinf):
-            if verbose:
-                print('not all(xinf == yinf)')
-                equal = (xinf == yinf)
-                for i, val in enumerate(equal.flatten()):
-                    if not val:
-                        print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x.flatten()[i], y.flatten()[i]))
-            return False
-        # Check that sign of inf's in x and y is the same
-        if not np.all(x[xinf] == y[xinf]):
-            if verbose:
-                print('not all(x[xinf] == y[xinf])')
-                equal = (x[xinf] == y[xinf])
-                for i, val in enumerate(equal.flatten()):
-                    if not val:
-                        print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x[xinf].flatten()[i], y[xinf].flatten()[i]))
-            return False
-
-        x = x[~xinf]
-        y = y[~xinf]
-
-    # ignore invalid fpe's
-    with np.errstate(invalid='ignore'):
-        r = np.all(np.less_equal(abs(x - y), atol + rtol * abs(y)))
-        if verbose and not r:
-            lessequal = np.less_equal(abs(x - y), atol + rtol * abs(y))
-            for i, val in enumerate(lessequal.flatten()):
-                if not val:
-                    print('\nx[{0}]={1}\ny[{0}]={2}'.format(i, x.flatten()[i], y.flatten()[i])
-                          + '\n{0} > {1} + {2} * {3} = {4}'.format(abs(x.flatten()[i] - y.flatten()[i]),
-                                                                   atol, rtol, abs(y.flatten()[i]),
-                                                                   atol + rtol * abs(y.flatten()[i])))
-
-    return r
+    close = isclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan)
+    result = np.all(close)
+    if verbose and not result:
+        print('Non-close values:')
+        for i in np.argwhere(close == False):
+            i = tuple(i)
+            print('\n    x[{0}]={1}\n    y[{0}]={2}'.format(i, a[i], b[i]))
+    return result
