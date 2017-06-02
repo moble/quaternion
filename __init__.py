@@ -80,20 +80,21 @@ def as_quat_array(a):
     definitions of the spinors.
 
     """
-    a = np.ascontiguousarray(a, dtype=np.float)
+    a = np.asarray(a, dtype=np.double)
+
+    # fast path
     if a.shape == (4,):
         return quaternion(a[0], a[1], a[2], a[3])
-    try:
-        av = a.view(np.quaternion)
-    except ValueError:
-        a = a.copy()
-        av = a.view(np.quaternion)
-    if a.shape[-1] == 4:
+
+    # view only works if the last axis is contiguous
+    if a.strides[-1] != a.itemsize:
+        a = a.copy(order='C')
+    av = a.view(np.quaternion)
+
+    # special case - don't create an axis for a single quaternion, to match
+    # the output of as_float_array
+    if av.shape[-1] == 1:
         av = av.reshape(a.shape[:-1])
-        # return a.view(np.quaternion).reshape(a.shape[:-1])
-    else:
-        av = av.reshape(a.shape[:-1] + (a.shape[-1] // 4,))
-        # return a.view(np.quaternion).reshape(a.shape[:-1]+(a.shape[-1]//4,))
     return av
 
 
