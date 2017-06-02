@@ -213,7 +213,7 @@ functions for rotation matrices, etc.  Github user Stijn van Drongelen
 MSVC++.
 
 Every change in this code is
-[auomatically tested](https://travis-ci.org/moble/quaternion) on
+[automatically tested](https://travis-ci.org/moble/quaternion) on
 [Travis-CI](https://travis-ci.org/).  This service integrates
 beautifully with github, detecting each commit and automatically
 re-running the tests.  The code is downloaded and installed fresh each
