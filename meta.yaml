@@ -12,11 +12,11 @@ build:
 requirements:
   build:
     - python
-    - numpy >=1.7
+    - numpy >=1.13
 
   run:
     - python
-    - numpy >=1.7
+    - numpy >=1.13
 
 about:
   home: 'https://github.com/moble/quaternion'
