@@ -529,6 +529,11 @@ def test_quaternion_conjugate(Qs):
     for q in Qs[Qs_nonnan]:
         assert q.conjugate() == q.conj()
         assert q.conjugate().conjugate() == q
+        c = q.conjugate()
+        assert c.w == q.w
+        assert c.x == -q.x
+        assert c.y == -q.y
+        assert c.z == -q.z
 
 
 def test_quaternion_sqrt(Qs):
