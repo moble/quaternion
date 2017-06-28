@@ -711,6 +711,8 @@ PyGetSetDef pyquaternion_getset[] = {
    "The complex number (w+i*z)", NULL},
   {"b", pyquaternion_get_part_b, NULL,
    "The complex number (y+i*x)", NULL},
+  {"imag", pyquaternion_get_vec, pyquaternion_set_vec,
+   "The vector part (x,y,z) of the quaternion as a numpy array", NULL},
   {"vec", pyquaternion_get_vec, pyquaternion_set_vec,
    "The vector part (x,y,z) of the quaternion as a numpy array", NULL},
   {"components", pyquaternion_get_components, pyquaternion_set_components,
@@ -1102,6 +1104,7 @@ UNARY_UFUNC(z_parity_antisymmetric_part, quaternion)
 UNARY_UFUNC(parity_conjugate, quaternion)
 UNARY_UFUNC(parity_symmetric_part, quaternion)
 UNARY_UFUNC(parity_antisymmetric_part, quaternion)
+
 
 // This is a macro that will be used to define the various basic binary
 // quaternion functions, so that they can be applied quickly to a

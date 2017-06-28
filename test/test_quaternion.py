@@ -830,20 +830,25 @@ def test_quaternion_getset(Qs):
     for q in Qs[Qs_nonnan]:
         assert np.array_equal(q.components, np.array([q.w, q.x, q.y, q.z]))
         assert np.array_equal(q.vec, np.array([q.x, q.y, q.z]))
+        assert np.array_equal(q.imag, np.array([q.x, q.y, q.z]))
     # set components/vec from np.array, list, tuple
     for q in Qs[Qs_nonnan]:
         for seq_type in [np.array, list, tuple]:
             p = np.quaternion(*q.components)
             r = np.quaternion(*q.components)
+            s = np.quaternion(*q.components)
             p.components = seq_type((-5.5, 6.6, -7.7, 8.8))
             r.vec = seq_type((6.6, -7.7, 8.8))
+            s.imag = seq_type((6.6, -7.7, 8.8))
             assert np.array_equal(p.components, np.array([-5.5, 6.6, -7.7, 8.8]))
             assert np.array_equal(r.components, np.array([q.w, 6.6, -7.7, 8.8]))
+            assert np.array_equal(s.components, np.array([q.w, 6.6, -7.7, 8.8]))
     # TypeError when setting components with the wrong type or size of thing
     for q in Qs:
         for seq_type in [np.array, list, tuple]:
             p = np.quaternion(*q.components)
             r = np.quaternion(*q.components)
+            s = np.quaternion(*q.components)
             with pytest.raises(TypeError):
                 p.components = '1.1, 2.2, 3.3, 4.4'
             with pytest.raises(TypeError):
@@ -866,6 +871,16 @@ def test_quaternion_getset(Qs):
                 r.vec = seq_type((-5.5, 6.6))
             with pytest.raises(TypeError):
                 r.vec = seq_type((-5.5, 6.6, -7.7, 8.8))
+            with pytest.raises(TypeError):
+                s.vec = '2.2, 3.3, 4.4'
+            with pytest.raises(TypeError):
+                s.vec = seq_type([])
+            with pytest.raises(TypeError):
+                s.vec = seq_type((-5.5,))
+            with pytest.raises(TypeError):
+                s.vec = seq_type((-5.5, 6.6))
+            with pytest.raises(TypeError):
+                s.vec = seq_type((-5.5, 6.6, -7.7, 8.8))
 
 
 @pytest.mark.skipif(os.environ.get('FAST'), reason="Takes ~10 seconds")
