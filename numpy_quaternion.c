@@ -1624,6 +1624,19 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_UFUNC(less);
   REGISTER_UFUNC(less_equal);
 
+  // quat, quat -> quat
+  arg_types[0] = quaternion_descr->type_num;
+  arg_types[1] = quaternion_descr->type_num;
+  arg_types[2] = quaternion_descr->type_num;
+  REGISTER_UFUNC(add);
+  REGISTER_UFUNC(subtract);
+  REGISTER_UFUNC(multiply);
+  REGISTER_UFUNC(divide);
+  REGISTER_UFUNC(true_divide);
+  REGISTER_UFUNC(floor_divide);
+  REGISTER_UFUNC(power);
+  REGISTER_UFUNC(copysign);
+
   // double, quat -> quat
   arg_types[0] = NPY_DOUBLE;
   arg_types[1] = quaternion_descr->type_num;
@@ -1647,19 +1660,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_UFUNC_SCALAR(true_divide);
   REGISTER_UFUNC_SCALAR(floor_divide);
   REGISTER_UFUNC_SCALAR(power);
-
-  // quat, quat -> quat
-  arg_types[0] = quaternion_descr->type_num;
-  arg_types[1] = quaternion_descr->type_num;
-  arg_types[2] = quaternion_descr->type_num;
-  REGISTER_UFUNC(add);
-  REGISTER_UFUNC(subtract);
-  REGISTER_UFUNC(multiply);
-  REGISTER_UFUNC(divide);
-  REGISTER_UFUNC(true_divide);
-  REGISTER_UFUNC(floor_divide);
-  REGISTER_UFUNC(power);
-  REGISTER_UFUNC(copysign);
 
   /* I think before I do the following, I'll have to update numpy_dict
    * somehow, presumably with something related to
