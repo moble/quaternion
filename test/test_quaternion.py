@@ -199,6 +199,9 @@ def test_as_rotation_matrix(Rs):
     # Test incorrectly normalized rotors:
     assert allclose(quat_mat_vec(Rs), quaternion.as_rotation_matrix(1.1*Rs), atol=2*eps)
 
+    # Simply test that this function succeeds and returns the right shape
+    assert quaternion.as_rotation_matrix(Rs.reshape((2, 5, 10))).shape == (2, 5, 10, 3, 3)
+
 
 def test_from_rotation_matrix(Rs):
     try:
@@ -221,6 +224,12 @@ def test_from_rotation_matrix(Rs):
         for R1, R2 in zip(Rs, Rs2):
             d = quaternion.rotation_intrinsic_distance(R1, R2)
             assert d < rot_mat_eps, (R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
+
+        Rs3 = Rs.reshape((2, 5, 10))
+        Rs4 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(Rs3))
+        for R3, R4 in zip(Rs3.flatten(), Rs4.flatten()):
+            d = quaternion.rotation_intrinsic_distance(R3, R4)
+            assert d < rot_mat_eps, (R3, R4, d)  # Can't use allclose here; we don't care about rotor sign
 
 
 def test_as_rotation_vector():

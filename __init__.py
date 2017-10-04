@@ -246,8 +246,8 @@ def from_rotation_matrix(rot, nonorthogonal=True):
             for flat_index in range(reduce(mul, shape)):
                 multi_index = np.unravel_index(flat_index, shape)
                 eigvals, eigvecs = linalg.eigh(K3[multi_index], eigvals=(3, 3))
-                q[multi_index, 0] = eigvecs[-1]
-                q[multi_index, 1:] = -eigvecs[:-1].flatten()
+                q[multi_index+(0,)] = eigvecs[-1]
+                q[multi_index+(slice(1,None),)] = -eigvecs[:-1].flatten()
             return as_quat_array(q)
 
     else:  # No scipy.linalg or not `nonorthogonal`
