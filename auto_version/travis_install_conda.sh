@@ -36,7 +36,7 @@ esac
 wget http://repo.continuum.io/miniconda/${Miniconda}-latest-${CondaOS}-x86_64.sh -O miniconda.sh;
 
 # Run the installer
-bash miniconda.sh -b -p $HOME/miniconda
+bash miniconda.sh -b -f -p $HOME/miniconda
 
 # Update and activate a new conda environment
 export PATH="$HOME/miniconda/bin:$PATH"
