@@ -5,8 +5,15 @@ if [ -z "$ANACONDA_API_TOKEN" ]; then
     exit 1
 fi
 
-export datetime=$(date +"%Y.%m.%d.%H.%M.%S")
-export package_version="${datetime}"
+if [[ -z $(git status -s > /dev/null) ]]; then
+    echo "All changes must be git committed"
+    exit 1
+fi
+
+version=$(git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S' || date +"%Y.%m.%d.%H.%M.%S")
+echo "__version__ = '${version}'" > _version.py
+
+exit 0
 
 # Create a pure source pip package
 python setup.py sdist upload
