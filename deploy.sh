@@ -5,7 +5,7 @@ if [ -z "$ANACONDA_API_TOKEN" ]; then
     exit 1
 fi
 
-if [[ -z $(git status -s > /dev/null | grep -v "^??") ]]; then
+if [[ -z $(git status -uno -s > /dev/null | grep -v "^??") ]]; then
     echo "All changes must be git committed"
     exit 1
 fi
