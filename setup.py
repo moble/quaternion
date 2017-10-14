@@ -36,5 +36,5 @@ if __name__ == "__main__":
           cmdclass={'build_py': build_py_copy_version},
           url='https://github.com/moble/quaternion',
           author='Michael Boyle',
-          author_email='',
+          author_email='mob22@cornell.edu',
     )
