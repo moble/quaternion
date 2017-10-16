@@ -5,6 +5,7 @@
 
 # Construct the version number, starting with spinsfast's own version (104) and appending the date
 # and time this python version was created.
+from os import environ
 if "datetime" in environ:
     version = environ["package_version"]
 else:
@@ -14,7 +15,7 @@ else:
     except:
         from time import strftime, gmtime
         version = strftime("%Y.%m.%d.%H.%M.%S", gmtime())
-with open('python/_version.py', 'w') as f:
+with open('_version.py', 'w') as f:
     f.write('__version__ = "{0}"'.format(version))
 
 

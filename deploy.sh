@@ -11,9 +11,6 @@ fi
 # fi
 
 version=$(git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S' || date +"%Y.%m.%d.%H.%M.%S")
-echo "__version__ = '${version}'" > _version.py
-
-exit 0
 
 # Create a pure source pip package
 python setup.py sdist upload
