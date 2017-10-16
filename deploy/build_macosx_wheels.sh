@@ -41,7 +41,7 @@ for CONDA_ENV in "${CONDA_ENVS[@]}"; do
     source activate "${CONDA_ENV}"
     # Install packages and test ability to import and run simple command
     pip install --upgrade spinsfast --no-index -f "${wheelhouse}"
-    (cd "$HOME"; python -c 'import numpy as np; import quatrernion; print(quaternion.__version__); print("quaternion.z = {0}".format(quaternion.z))')
+    (cd "$HOME"; python -c 'import numpy as np; import quaternion; print(quaternion.__version__); print("quaternion.z = {0}".format(quaternion.z))')
     source deactivate
 done
 

@@ -55,7 +55,7 @@ done
 for PYBIN in "${PYBINS[@]}"; do
     # Install packages and test ability to import and run simple command
     "${PYBIN}/pip" install spinsfast --no-index -f /wheelhouse
-    (cd "$HOME"; "${PYBIN}/python" -c 'import numpy as np; import quatrernion; print(quaternion.__version__); print("quaternion.z = {0}".format(quaternion.z))')
+    (cd "$HOME"; "${PYBIN}/python" -c 'import numpy as np; import quaternion; print(quaternion.__version__); print("quaternion.z = {0}".format(quaternion.z))')
 done
 
 
