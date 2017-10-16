@@ -7,14 +7,23 @@ wheelhouse="${HOME}/Research/Temp/wheelhouse"
 /bin/rm -rf "${wheelhouse}"
 mkdir -p "${wheelhouse}"
 
-PYBINS=( "/Users/boyle/.continuum/anaconda3/envs/py27/bin" "/Users/boyle/.continuum/anaconda3/bin" )
-LAST_PYBIN="${PYBINS[1]}"
+CONDA_ENVS=( py27 py34 py35 py36 )
+
+# Update conda envs
+for CONDA_ENV in "${CONDA_ENVS[@]}"; do
+    source activate "${CONDA_ENV}"
+    conda update -y --all
+    pip install --upgrade pip
+    source deactivate
+done
 
 # Compile wheels
-for PYBIN in "${PYBINS[@]}"; do
+for CONDA_ENV in "${CONDA_ENVS[@]}"; do
+    source activate "${CONDA_ENV}"
     ### NOTE: The path to the requirements file is specialized for spinsfast
-    "${PYBIN}/pip" install -r ./requirements.txt
-    "${PYBIN}/pip" wheel ./ -w "${wheelhouse}/"
+    pip install -r ./requirements.txt
+    pip wheel ./ -w "${wheelhouse}/"
+    source deactivate
 done
 
 # Bundle external shared libraries into the wheels
@@ -28,13 +37,15 @@ done
 
 
 ### NOTE: These lines are specialized for spinsfast
-for PYBIN in "${PYBINS[@]}"; do
+for CONDA_ENV in "${CONDA_ENVS[@]}"; do
+    source activate "${CONDA_ENV}"
     # Install packages and test ability to import and run simple command
-    "${PYBIN}/pip" install --upgrade spinsfast --no-index -f "${wheelhouse}"
-    (cd "$HOME"; "${PYBIN}/python" -c 'import spinsfast; print(spinsfast.__version__); print("N_lm(8) = {0}".format(spinsfast.N_lm(8)))')
+    pip install --upgrade spinsfast --no-index -f "${wheelhouse}"
+    (cd "$HOME"; python -c 'import numpy as np; import quatrernion; print(quaternion.__version__); print("quaternion.z = {0}".format(quaternion.z))')
+    source deactivate
 done
 
 
 # Upload to pypi
-"${LAST_PYBIN}"/pip install twine
-"${LAST_PYBIN}"/twine upload "${wheelhouse}"/*macosx*.whl
+pip install twine
+twine upload "${wheelhouse}"/*macosx*.whl

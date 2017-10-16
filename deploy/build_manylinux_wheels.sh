@@ -24,10 +24,6 @@ export datetime="${1:-$(date +'%Y.%m.%d.%H.%M.%S')}"
 ### version, which means pypi will display them on the same screen, and pip will treat them equally.
 
 
-### NOTE: These are specialized dependencies for spinsfast
-yum install -y fftw3 fftw3-devel
-
-
 /bin/rm -rf /wheelhouse
 mkdir -p /wheelhouse
 
@@ -45,7 +41,7 @@ done
 # Compile wheels
 for PYBIN in "${PYBINS[@]}"; do
     ### NOTE: The path to the requirements file is specialized for spinsfast
-    "${PYBIN}/pip" install -r /code/python/dev-requirements.txt
+    "${PYBIN}/pip" install -r /code/requirements.txt
     "${PYBIN}/pip" wheel /code/ -w /wheelhouse/
 done
 
@@ -59,7 +55,7 @@ done
 for PYBIN in "${PYBINS[@]}"; do
     # Install packages and test ability to import and run simple command
     "${PYBIN}/pip" install spinsfast --no-index -f /wheelhouse
-    (cd "$HOME"; "${PYBIN}/python" -c 'import spinsfast; print("N_lm(8) = {0}".format(spinsfast.N_lm(8)))')
+    (cd "$HOME"; "${PYBIN}/python" -c 'import numpy as np; import quatrernion; print(quaternion.__version__); print("quaternion.z = {0}".format(quaternion.z))')
 done
 
 
