@@ -5,10 +5,10 @@ if [ -z "$ANACONDA_API_TOKEN" ]; then
     exit 1
 fi
 
-if [[ -z $(git status -uno -s > /dev/null) ]]; then
-    echo "All changes must be git committed"
-    exit 1
-fi
+# if [[ -z $(git status -uno -s > /dev/null) ]]; then
+#     echo "All changes must be git committed"
+#     exit 1
+# fi
 
 version=$(git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S' || date +"%Y.%m.%d.%H.%M.%S")
 echo "__version__ = '${version}'" > _version.py
