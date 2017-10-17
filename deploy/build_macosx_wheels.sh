@@ -1,6 +1,7 @@
 #! /bin/bash
 set -e
-export datetime="${1:-$(date +'%Y.%m.%d.%H.%M.%S')}"
+export package_version="${1:-$(date +'%Y.%m.%d.%H.%M.%S')}"
+echo "Building macosx wheels, version '${package_version}'"
 
 wheelhouse="${HOME}/Research/Temp/wheelhouse"
 
@@ -40,7 +41,7 @@ done
 for CONDA_ENV in "${CONDA_ENVS[@]}"; do
     source activate "${CONDA_ENV}"
     # Install packages and test ability to import and run simple command
-    pip install --upgrade spinsfast --no-index -f "${wheelhouse}"
+    pip install --upgrade numpy-quaternion --no-index -f "${wheelhouse}"
     (cd "$HOME"; python -c 'import numpy as np; import quaternion; print(quaternion.__version__); print("quaternion.z = {0}".format(quaternion.z))')
     source deactivate
 done

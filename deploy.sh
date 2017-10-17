@@ -10,13 +10,14 @@ fi
 #     exit 1
 # fi
 
-version=$(git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S' || date +"%Y.%m.%d.%H.%M.%S")
+export package_version=$(git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S' || date +"%Y.%m.%d.%H.%M.%S")
+echo "Building version '${package_version}'"
 
 # Create a pure source pip package
 python setup.py sdist upload
 
 # Create all the osx binary pip packages
-./deploy/build_macosx_wheels.sh "${datetime}"
+./deploy/build_macosx_wheels.sh "${package_version}"
 
 # Create all the osx conda packages
 conda build .
@@ -33,7 +34,7 @@ docker run -i -t \
     -v ${HOME}/.pypirc:/root/.pypirc:ro \
     -v `pwd`:/code \
     -v `pwd`/deploy/build_manylinux_wheels.sh:/build_manylinux_wheels.sh \
-    quay.io/pypa/manylinux1_x86_64 /build_manylinux_wheels.sh "${datetime}"
+    quay.io/pypa/manylinux1_x86_64 /build_manylinux_wheels.sh "${package_version}"
 
 # Create all the linux binary conda packages on centos 6
 docker run -i -t \
@@ -42,4 +43,3 @@ docker run -i -t \
     -v ${HOME}/.condarc:/root/.condarc:ro \
     -v `pwd`:/code \
     moble/miniconda-centos bash -c 'conda build /code'
-

@@ -1,6 +1,7 @@
 #! /bin/bash
 set -e -x
-export datetime="${1:-$(date +'%Y.%m.%d.%H.%M.%S')}"
+export package_version="${1:-$(date +'%Y.%m.%d.%H.%M.%S')}"
+echo "Building manylinux1 wheels, version '${package_version}'"
 
 
 ### NOTE: This script is designed to be written in the standard pypa/manylinux1 docker container.
@@ -50,11 +51,9 @@ for whl in /wheelhouse/*.whl; do
     auditwheel repair "$whl" -w /wheelhouse/
 done
 
-
-### NOTE: These lines are specialized for spinsfast
 for PYBIN in "${PYBINS[@]}"; do
     # Install packages and test ability to import and run simple command
-    "${PYBIN}/pip" install spinsfast --no-index -f /wheelhouse
+    "${PYBIN}/pip" install numpy-quaternion --no-index -f /wheelhouse
     (cd "$HOME"; "${PYBIN}/python" -c 'import numpy as np; import quaternion; print(quaternion.__version__); print("quaternion.z = {0}".format(quaternion.z))')
 done
 
