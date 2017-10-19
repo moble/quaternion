@@ -37,6 +37,8 @@ docker run -i -t \
     quay.io/pypa/manylinux1_x86_64 /build_manylinux_wheels.sh "${package_version}"
 
 # Create all the linux binary conda packages on centos 6
+conda_cache_dir=$(conda info --root)/pkgs_centos6
+mkdir -p ${conda_cache_dir}
 docker run -i -t \
     -e package_version \
     -e ANACONDA_API_TOKEN \

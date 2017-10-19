@@ -21,7 +21,6 @@ done
 # Compile wheels
 for CONDA_ENV in "${CONDA_ENVS[@]}"; do
     source activate "${CONDA_ENV}"
-    ### NOTE: The path to the requirements file is specialized for spinsfast
     pip install -r ./requirements.txt
     pip wheel ./ -w "${wheelhouse}/"
     source deactivate
@@ -37,7 +36,7 @@ for whl in $(ls $(echo "${wheelhouse}/*.whl")); do
 done
 
 
-### NOTE: These lines are specialized for spinsfast
+### NOTE: These lines are specialized for quaternion
 for CONDA_ENV in "${CONDA_ENVS[@]}"; do
     source activate "${CONDA_ENV}"
     # Install packages and test ability to import and run simple command

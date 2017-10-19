@@ -1,6 +1,6 @@
 package:
   name: quaternion
-  version: '1.0'
+  version: {{ environ.get('package_version', '1.0') }}
 
 source:
   git_url: https://github.com/moble/quaternion.git

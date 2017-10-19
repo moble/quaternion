@@ -6,7 +6,7 @@
 # Construct the version number, starting with spinsfast's own version (104) and appending the date
 # and time this python version was created.
 from os import environ
-if "datetime" in environ:
+if "package_version" in environ:
     version = environ["package_version"]
     print("Setup.py using environment version='{0}'".format(version))
 else:
