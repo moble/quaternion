@@ -3,8 +3,7 @@
 # Copyright (c) 2017, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
-# Construct the version number, starting with spinsfast's own version (104) and appending the date
-# and time this python version was created.
+# Construct the version number from the date and time this python version was created.
 from os import environ
 if "package_version" in environ:
     version = environ["package_version"]
