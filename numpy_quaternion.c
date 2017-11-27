@@ -102,7 +102,8 @@ pyquaternion_init(PyObject *self, PyObject *args, PyObject *kwds)
   }
 
   if (((size == 3) && (!PyArg_ParseTuple(args, "ddd", &q->x, &q->y, &q->z)))
-      || ((size == 4) && (!PyArg_ParseTuple(args, "dddd", &q->w, &q->x, &q->y, &q->z)))) {
+      || ((size == 4) && (!PyArg_ParseTuple(args, "dddd", &q->w, &q->x, &q->y, &q->z)))
+      || ((size<3) || (size>4))) {
     PyErr_SetString(PyExc_TypeError,
                     "quaternion constructor takes three or four float arguments");
     return -1;
