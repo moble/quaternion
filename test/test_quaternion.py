@@ -1065,11 +1065,6 @@ def test_arrfuncs():
     assert False
 
 
-@pytest.mark.xfail
-def test_integration_of_angular_velocity():
-    assert False
-
-
 def test_setitem_quat(Qs):
     Ps = Qs[:]
     # setitem from quaternion
@@ -1203,7 +1198,7 @@ def test_numpy_array_conversion(Qs):
     for j in range(48):
         assert q[j] == Q[j // 4].components[j % 4]
     assert np.array_equal(quaternion.as_quat_array(q), Q)  # Check that we can go backwards
-    # Finally, reshape into 2-d array, and re-check
+    # Now, reshape into 2-d array, and re-check
     P = Q.reshape(3, 4)  # Reshape into 3x4 array of quaternions
     p = quaternion.as_float_array(P)  # View as array of floats
     assert p.shape == (3, 4, 4)  # This is the expected shape
@@ -1212,6 +1207,10 @@ def test_numpy_array_conversion(Qs):
             for l in range(4):  # Check each component individually
                 assert p[j][k][l] == Q[4 * j + k].components[l]
     assert np.array_equal(quaternion.as_quat_array(p), P)  # Check that we can go backwards
+    # Finally, check that it works on non-contiguous arrays, by adding random padding and then slicing
+    q = quaternion.as_float_array(Q)
+    q = np.concatenate((np.random.rand(q.shape[0], 3), q, np.random.rand(q.shape[0], 3)), axis=1)
+    assert np.array_equal(quaternion.as_quat_array(q[:, 3:7]), Q)
 
 
 @pytest.mark.skipif(os.environ.get('CONDA') == 'false', reason="Pip doesn't install scipy well")
@@ -1269,6 +1268,7 @@ def test_integrate_angular_velocity():
     R_exact = R(t)
     phi_Delta = np.array([quaternion.rotation_intrinsic_distance(e, a) for e, a in zip(R_exact, R_approx)])
     assert np.max(phi_Delta) < 1e-4, np.max(phi_Delta)
+
 
 if __name__ == '__main__':
     print("The tests should be run automatically via py.test (pip install pytest)")

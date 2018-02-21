@@ -82,7 +82,9 @@ def as_quat_array(a):
         return quaternion(a[0], a[1], a[2], a[3])
 
     # view only works if the last axis is contiguous
-    if a.strides[-1] != a.itemsize:
+    # if a.strides[-1] != a.itemsize:
+    #     a = a.copy(order='C')
+    if not a.flags['C_CONTIGUOUS'] or a.strides[-1] != a.itemsize:
         a = a.copy(order='C')
     av = a.view(np.quaternion)
 

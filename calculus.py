@@ -318,10 +318,7 @@ def indefinite_integral(f, t):
 #@njit('void(f8[:,:], f8[:], f8[:])')
 @jit
 def definite_integral(f, t):
-    Sfdt = np.empty_like(f)
-    for i in xrange(len(Sfdt)):
-        Sfdt[i] = 0.0
+    Sfdt = np.zeros_like(f)
     for i in xrange(1, f.shape[0]):
-        for j in xrange(f.shape[1]):
-            Sfdt[j] += (f[i, j] + f[i - 1, j]) * ((t[i] - t[i - 1]) / 2.0)
+        Sfdt[i, ...] += (f[i, ...] + f[i - 1, ...]) * ((t[i] - t[i - 1]) / 2.0)
     return Sfdt
