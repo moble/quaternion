@@ -73,9 +73,9 @@ def squad(R_in, t_in, t_out):
     # This list contains an index for each `t_out` such that
     # t_in[i-1] <= t_out < t_in[i]
     # Note that `side='right'` is much faster in my tests
-    i_in_for_out = t_in.searchsorted(t_out, side='left')
-    np.clip(i_in_for_out, 0, len(t_in) - 1, out=i_in_for_out)
-    i_in = np.unique(i_in_for_out)
+    # i_in_for_out = t_in.searchsorted(t_out, side='left')
+    # np.clip(i_in_for_out, 0, len(t_in) - 1, out=i_in_for_out)
+    i_in_for_out = t_in.searchsorted(t_out, side='right')-1
 
     # Now, for each index `i` in `i_in`, we need to compute the
     # interpolation "coefficients" (`A_i`, `B_ip1`).
@@ -94,20 +94,61 @@ def squad(R_in, t_in, t_out):
                                     * ((np.roll(t_in, -1) - t_in) / (np.roll(t_in, -2) - np.roll(t_in, -1)))
                                     - np.log((~R_in) * np.roll(R_in, -1))) * -0.25)
 
-    # Correct the first and last A time steps, and last two B time steps
-    A[0] = R_in[0] * np.exp((np.log((~R_in[0])*R_in[1])
-                             + np.log((~(R_in[0]*(~R_in[1])*R_in[0]))*R_in[0])
-                             - 2 * np.log((~R_in[0]) * R_in[1])
-                             ) * 0.25)
+    # Correct the first and last A time steps, and last two B time steps.  We extend R_in with the following wrap-around
+    # values:
+    # R_in[0-1] = R_in[0]*(~R_in[1])*R_in[0]
+    # R_in[n+0] = R_in[-1] * (~R_in[-2]) * R_in[-1]
+    # R_in[n+1] = R_in[0] * (~R_in[-1]) * R_in[0]
+    #           = R_in[-1] * (~R_in[-2]) * R_in[-1] * (~R_in[-1]) * R_in[-1] * (~R_in[-2]) * R_in[-1]
+    #           = R_in[-1] * (~R_in[-2]) * R_in[-1] * (~R_in[-2]) * R_in[-1]
+    # A[i] = R_in[i] * np.exp((- np.log((~R_in[i]) * R_in[i+1])
+    #                          + np.log((~R_in[i-1]) * R_in[i]) * ((t_in[i+1] - t_in[i]) / (t_in[i] - t_in[i-1]))
+    #                          ) * 0.25)
+    # A[0] = R_in[0] * np.exp((- np.log((~R_in[0]) * R_in[1]) + np.log((~R_in[0])*R_in[1]*(~R_in[0])) * R_in[0]) * 0.25)
+    #      = R_in[0]
+    A[0] = R_in[0]
+    # A[-1] = R_in[-1] * np.exp((- np.log((~R_in[-1]) * R_in[n+0])
+    #                          + np.log((~R_in[-2]) * R_in[-1]) * ((t_in[n+0] - t_in[-1]) / (t_in[-1] - t_in[-2]))
+    #                          ) * 0.25)
+    #       = R_in[-1] * np.exp((- np.log((~R_in[-1]) * R_in[n+0]) + np.log((~R_in[-2]) * R_in[-1])) * 0.25)
+    #       = R_in[-1] * np.exp((- np.log((~R_in[-1]) * R_in[-1] * (~R_in[-2]) * R_in[-1])
+    #                           + np.log((~R_in[-2]) * R_in[-1])) * 0.25)
+    #       = R_in[-1] * np.exp((- np.log((~R_in[-2]) * R_in[-1]) + np.log((~R_in[-2]) * R_in[-1])) * 0.25)
+    #       = R_in[-1]
     A[-1] = R_in[-1]
+    # B[i] = R_in[i+1] * np.exp((np.log((~R_in[i+1]) * R_in[i+2]) * ((t_in[i+1] - t_in[i]) / (t_in[i+2] - t_in[i+1]))
+    #                            - np.log((~R_in[i]) * R_in[i+1])) * -0.25)
+    # B[-2] = R_in[-1] * np.exp((np.log((~R_in[-1]) * R_in[0]) * ((t_in[-1] - t_in[-2]) / (t_in[0] - t_in[-1]))
+    #                            - np.log((~R_in[-2]) * R_in[-1])) * -0.25)
+    #       = R_in[-1] * np.exp((np.log((~R_in[-1]) * R_in[0]) - np.log((~R_in[-2]) * R_in[-1])) * -0.25)
+    #       = R_in[-1] * np.exp((np.log((~R_in[-1]) * R_in[-1] * (~R_in[-2]) * R_in[-1])
+    #                            - np.log((~R_in[-2]) * R_in[-1])) * -0.25)
+    #       = R_in[-1] * np.exp((np.log((~R_in[-2]) * R_in[-1]) - np.log((~R_in[-2]) * R_in[-1])) * -0.25)
+    #       = R_in[-1]
     B[-2] = R_in[-1]
-    #B[-1] = quaternion.one
+    # B[-1] = R_in[0]
+    # B[-1] = R_in[0] * np.exp((np.log((~R_in[0]) * R_in[1]) - np.log((~R_in[-1]) * R_in[0])) * -0.25)
+    #       = R_in[-1] * (~R_in[-2]) * R_in[-1]
+    #         * np.exp((np.log((~(R_in[-1] * (~R_in[-2]) * R_in[-1])) * R_in[-1] * (~R_in[-2]) * R_in[-1] * (~R_in[-2]) * R_in[-1])
+    #                  - np.log((~R_in[-1]) * R_in[-1] * (~R_in[-2]) * R_in[-1])) * -0.25)
+    #       = R_in[-1] * (~R_in[-2]) * R_in[-1]
+    #         * np.exp((np.log(((~R_in[-1]) * R_in[-2] * (~R_in[-1])) * R_in[-1] * (~R_in[-2]) * R_in[-1] * (~R_in[-2]) * R_in[-1])
+    #                  - np.log((~R_in[-1]) * R_in[-1] * (~R_in[-2]) * R_in[-1])) * -0.25)
+    #         * np.exp((np.log((~R_in[-2]) * R_in[-1])
+    #                  - np.log((~R_in[-2]) * R_in[-1])) * -0.25)
+    B[-1] = R_in[-1] * (~R_in[-2]) * R_in[-1]
 
     # Use the coefficients at the corresponding t_out indices to
     # compute the squad interpolant
-    R_ip1 = np.array(np.roll(R_in, -1)[i_in_for_out])
-    R_ip1[-1] = R_ip1[-2]*(~R_ip1[-3])*R_ip1[-2]
-    tau = (t_out - t_in[i_in_for_out]) / ((np.roll(t_in, -1) - t_in)[i_in_for_out])
+    # R_ip1 = np.array(np.roll(R_in, -1)[i_in_for_out])
+    # R_ip1[-1] = R_in[-1]*(~R_in[-2])*R_in[-1]
+    R_ip1 = np.roll(R_in, -1)
+    R_ip1[-1] = R_in[-1]*(~R_in[-2])*R_in[-1]
+    R_ip1 = np.array(R_ip1[i_in_for_out])
+    t_inp1 = np.roll(t_in, -1)
+    t_inp1[-1] = t_in[-1] + (t_in[-1] - t_in[-2])
+    tau = (t_out - t_in[i_in_for_out]) / ((t_inp1 - t_in)[i_in_for_out])
+    # tau = (t_out - t_in[i_in_for_out]) / ((np.roll(t_in, -1) - t_in)[i_in_for_out])
     R_out = np.squad_vectorized(tau, R_in[i_in_for_out], A[i_in_for_out], B[i_in_for_out], R_ip1)
 
     return R_out
