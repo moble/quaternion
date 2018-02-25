@@ -266,10 +266,13 @@ def integrate_angular_velocity(Omega, t0, t1, R0=None, tolerance=1e-12):
     R.append(solver.y)
 
     warnings.filterwarnings("ignore", category=UserWarning)
+    t_last = solver.t
     while solver.t < t1:
         solver.integrate(t1, step=True)
-        t.append(solver.t)
-        R.append(solver.y)
+        if solver.t > t_last:
+            t.append(solver.t)
+            R.append(solver.y)
+            t_last = solver.t
     warnings.resetwarnings()
 
     t = t.a
