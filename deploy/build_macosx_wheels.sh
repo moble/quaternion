@@ -47,5 +47,8 @@ done
 
 
 # Upload to pypi
-pip install twine
-twine upload "${wheelhouse}"/*macosx*.whl
+echo "Uploading to pypi"
+# pip install twine
+# twine upload "${wheelhouse}"/*macosx*.whl
+"${LAST_PYBIN}"/pip install twine
+"${LAST_PYBIN}"/twine upload /wheelhouse/*macosx*.whl
