@@ -177,6 +177,9 @@ def frame_from_angular_velocity_integrand(rfrak, Omega):
 
 class appending_array(object):
     def __init__(self, shape, dtype=np.float, initial_array=None):
+        shape = list(shape)
+        if shape[0] < 4:
+            shape[0] = 4
         self._a = np.empty(shape, dtype=dtype)
         self.n = 0
         if initial_array is not None:
