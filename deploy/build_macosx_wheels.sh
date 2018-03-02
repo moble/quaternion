@@ -46,6 +46,9 @@ for CONDA_ENV in "${CONDA_ENVS[@]}"; do
 done
 
 
+# Just in case we failed to deactivate somehow:
+source deactivate
+
 # Upload to pypi
 echo "Uploading to pypi"
 pip install twine
