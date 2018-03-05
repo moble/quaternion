@@ -546,9 +546,13 @@ def test_quaternion_conjugate(Qs):
 
 
 def test_quaternion_sqrt(Qs):
-    sqrt_precision = 4.e-15
+    sqrt_precision = 2.e-15
     for q in Qs[Qs_finitenonzero]:
-        assert ( (q.sqrt()) * (q.sqrt()) - q ).abs() < sqrt_precision
+        assert allclose(q.sqrt() * q.sqrt(), q, rtol=sqrt_precision)
+        for s in [1, -1, 2, -2, 3.4, -3.4]:
+            for r in [1, quaternion.x, quaternion.y, quaternion.z]:
+                srq = s*r*q
+                assert allclose(srq.sqrt() * srq.sqrt(), srq, rtol=sqrt_precision), (s,r,q,srq,srq.sqrt(),srq.sqrt()*srq.sqrt())
 
 
 def test_quaternion_log_exp(Qs):
