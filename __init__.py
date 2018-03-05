@@ -6,7 +6,7 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 
 from .numpy_quaternion import (quaternion, _eps,
-                               from_spherical_coords, from_cartesian_coords, from_euler_angles,
+                               from_spherical_coords, from_euler_angles,
                                rotor_intrinsic_distance, rotor_chordal_distance,
                                rotation_intrinsic_distance, rotation_chordal_distance,
                                slerp_evaluate, squad_evaluate,
@@ -25,7 +25,7 @@ __all__ = ['quaternion',
            'as_rotation_matrix', 'from_rotation_matrix',
            'as_rotation_vector', 'from_rotation_vector',
            'as_euler_angles', 'from_euler_angles',
-           'as_spherical_coords', 'from_spherical_coords', 'from_cartesian_coords',
+           'as_spherical_coords', 'from_spherical_coords',
            'rotate_vectors', 'allclose',
            'rotor_intrinsic_distance', 'rotor_chordal_distance',
            'rotation_intrinsic_distance', 'rotation_chordal_distance',

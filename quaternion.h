@@ -37,7 +37,6 @@ extern "C" {
 
   // Constructor-ish
   quaternion quaternion_create_from_spherical_coords(double vartheta, double varphi);
-  quaternion quaternion_create_from_cartesian_coords(double x, double y, double z);
   quaternion quaternion_create_from_euler_angles(double alpha, double beta, double gamma);
 
   // Unary bool returners
