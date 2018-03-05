@@ -362,6 +362,15 @@ def test_as_spherical_coords(Rs):
         assert (R*quaternion.z*R.inverse() - R2*quaternion.z*R2.inverse()).abs() < 4e-15, (R, R2, (vartheta, varphi))
 
 
+def test_from_cartesian_coords():
+    np.random.seed(1843)
+    random_coords = np.random.rand(5000, 3)
+    random_coords /= np.linalg.norm(random_coords, axis=1, keepdims=True)
+    for x, y, z in random_coords:
+        r = quaternion.from_cartesian_coords(x, y, z)
+        assert allclose(quaternion.rotate_vectors(r, quaternion.z), (x, y, z))
+
+
 def test_from_euler_angles():
     np.random.seed(1843)
     random_angles = [[np.random.uniform(-np.pi, np.pi),

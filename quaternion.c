@@ -12,6 +12,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include <float.h>
 
 #include "quaternion.h"
 
@@ -23,6 +24,22 @@ quaternion_create_from_spherical_coords(double vartheta, double varphi) {
   double sp = sin(varphi/2.);
   quaternion r = {cp*ct, -sp*st, st*cp, sp*ct};
   return r;
+}
+
+quaternion
+quaternion_create_from_cartesian_coords(double x, double y, double z) {
+  double vnorm = sqrt(x*x + y*y + z*z);
+  if(vnorm<DBL_MIN) {
+    quaternion r = {1.0, 0.0, 0.0, 0.0};
+    return r;
+  } else if(fabs(vnorm+z)<_QUATERNION_EPS*vnorm) {
+    quaternion r = {0.0, 1.0, 0.0, 0.0};
+    return r;
+  } else {
+    double c = sqrt(0.5/(vnorm*(vnorm+z)));
+    quaternion r = {(vnorm+z)*c, -y*c, x*c, 0.0};
+    return r;
+  }
 }
 
 quaternion

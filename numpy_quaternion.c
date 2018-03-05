@@ -1169,6 +1169,20 @@ quaternion_from_spherical_coords(PyObject *self, PyObject *args )
   return (PyObject*)Q;
 }
 
+// Used to create unit rotor from Cartesian coordinates, this can be
+// imported directly from quaternion.numpy_quaternion
+static PyObject*
+quaternion_from_cartesian_coords(PyObject *self, PyObject *args )
+{
+  double x, y, z;
+  PyQuaternion* Q = (PyQuaternion*)PyQuaternion_Type.tp_alloc(&PyQuaternion_Type,0);
+  if (!PyArg_ParseTuple(args, "ddd", &x, &y, &z)) {
+    return NULL;
+  }
+  Q->obval = quaternion_create_from_cartesian_coords(x, y, z);
+  return (PyObject*)Q;
+}
+
 // Used to create unit rotor from Euler angles, this can be imported
 // directly from quaternion.numpy_quaternion
 static PyObject*
@@ -1383,6 +1397,8 @@ rotate_vector_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* dat
 static PyMethodDef QuaternionMethods[] = {
   {"from_spherical_coords", quaternion_from_spherical_coords, METH_VARARGS,
    "Generate unit quaternion from spherical coordinates"},
+  {"from_cartesian_coords", quaternion_from_cartesian_coords, METH_VARARGS,
+   "Generate unit quaternion from cartesian coordinates"},
   {"from_euler_angles", quaternion_from_euler_angles, METH_VARARGS,
    "Generate unit quaternion from Euler angles as `exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)`"},
   {"rotor_intrinsic_distance", pyquaternion_rotor_intrinsic_distance, METH_VARARGS,
