@@ -19,10 +19,10 @@ extern "C" {
 quaternion
 quaternion_create_from_spherical_coords(double vartheta, double varphi) {
   double ct = cos(vartheta/2.);
-  double cp = cos(varphi/2.);
+  double cp = cos(varphi);
   double st = sin(vartheta/2.);
-  double sp = sin(varphi/2.);
-  quaternion r = {cp*ct, -sp*st, st*cp, sp*ct};
+  double sp = sin(varphi);
+  quaternion r = {ct, -st*sp, st*cp, 0.0};
   return r;
 }
 
