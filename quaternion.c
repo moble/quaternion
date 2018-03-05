@@ -58,12 +58,12 @@ quaternion
 quaternion_sqrt(quaternion q)
 {
   double absolute = quaternion_absolute(q);
-  if(fabs(1+q.w/absolute)<_QUATERNION_EPS*absolute) {
+  if(fabs(absolute+q.w)<_QUATERNION_EPS*absolute) {
     quaternion r = {0.0, 1.0, 0.0, 0.0};
     return r;
   } else {
-    double c = sqrt(absolute/(2+2*q.w/absolute));
-    quaternion r = {(1.0+q.w/absolute)*c, q.x*c/absolute, q.y*c/absolute, q.z*c/absolute};
+    double c = sqrt(0.5/(absolute*(absolute+q.w)));
+    quaternion r = {(absolute+q.w)*c, q.x*c, q.y*c, q.z*c};
     return r;
   }
 }
