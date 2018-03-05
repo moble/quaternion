@@ -4,6 +4,7 @@ from __future__ import print_function, division, absolute_import
 import os
 import operator
 
+import math
 import numpy as np
 import quaternion
 from numpy import *
@@ -550,10 +551,17 @@ def test_quaternion_sqrt(Qs):
     sqrt_precision = 2.e-15
     for q in Qs[Qs_finitenonzero]:
         assert allclose(q.sqrt() * q.sqrt(), q, rtol=sqrt_precision)
+        # Ensure that non-unit quaternions are handled correctly
         for s in [1, -1, 2, -2, 3.4, -3.4]:
             for r in [1, quaternion.x, quaternion.y, quaternion.z]:
                 srq = s*r*q
-                assert allclose(srq.sqrt() * srq.sqrt(), srq, rtol=sqrt_precision), (s,r,q,srq,srq.sqrt(),srq.sqrt()*srq.sqrt())
+                assert allclose(srq.sqrt() * srq.sqrt(), srq, rtol=sqrt_precision)
+    # Ensure that inputs close to zero are handled gracefully
+    sqrt_dbl_min = math.sqrt(np.finfo(float).tiny)
+    assert quaternion.quaternion(0, 0, 0, 2e-8*sqrt_dbl_min).sqrt() == quaternion.quaternion(0, 0, 0, 0)
+    assert quaternion.quaternion(0, 0, 0, 0.9999*sqrt_dbl_min).sqrt() == quaternion.quaternion(0, 0, 0, 0)
+    assert quaternion.quaternion(0, 0, 0, 1e-16*sqrt_dbl_min).sqrt() == quaternion.quaternion(0, 0, 0, 0)
+    assert quaternion.quaternion(0, 0, 0, 1.1*sqrt_dbl_min).sqrt() != quaternion.quaternion(0, 0, 0, 0)
 
 
 def test_quaternion_log_exp(Qs):

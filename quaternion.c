@@ -12,6 +12,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include <float.h>
 
 #include "quaternion.h"
 
@@ -40,7 +41,12 @@ quaternion_create_from_euler_angles(double alpha, double beta, double gamma) {
 quaternion
 quaternion_sqrt(quaternion q)
 {
-  double absolute = quaternion_absolute(q);
+  double absolute = quaternion_norm(q);  // pre-square-root
+  if(absolute<=DBL_MIN) {
+      quaternion r = {0.0, 0.0, 0.0, 0.0};
+      return r;
+  }
+  absolute = sqrt(absolute);
   if(fabs(absolute+q.w)<_QUATERNION_EPS*absolute) {
     quaternion r = {0.0, sqrt(absolute), 0.0, 0.0};
     return r;
