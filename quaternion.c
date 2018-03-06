@@ -45,7 +45,7 @@ quaternion_sqrt(quaternion q)
     quaternion r = {0.0, sqrt(absolute), 0.0, 0.0};
     return r;
   } else {
-    double c = sqrt(0.5/(absolute*(absolute+q.w)));
+    double c = sqrt(0.5/(absolute+q.w));
     quaternion r = {(absolute+q.w)*c, q.x*c, q.y*c, q.z*c};
     return r;
   }
