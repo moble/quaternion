@@ -421,9 +421,9 @@ PyMethodDef pyquaternion_methods[] = {
   {"absolute", pyquaternion_absolute, METH_NOARGS,
    "Absolute value of quaternion"},
   {"abs", pyquaternion_absolute, METH_NOARGS,
-   "Absolute value of quaternion"},
+   "Absolute value (Euclidean norm) of quaternion"},
   {"norm", pyquaternion_norm, METH_NOARGS,
-   "Norm (square of the absolute value) of quaternion"},
+   "Cayley norm (square of the absolute value) of quaternion"},
   {"angle", pyquaternion_angle, METH_NOARGS,
    "Angle through which rotor rotates"},
 
@@ -1574,7 +1574,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   arg_types[0] = quaternion_descr->type_num;
   arg_types[1] = NPY_DOUBLE;
   REGISTER_NEW_UFUNC(norm, 1, 1,
-                     "Return norm of each quaternion.\n");
+                     "Return Cayley norm (square of the absolute value) of each quaternion.\n");
   REGISTER_UFUNC(absolute);
   REGISTER_NEW_UFUNC_GENERAL(angle_of_rotor, angle, 1, 1,
                              "Return angle of rotation, assuming input is a unit rotor\n");

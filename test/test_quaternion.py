@@ -163,6 +163,7 @@ def test_as_float_quat(Qs):
         floats = quaternion.as_float_array(quats)
         assert floats.shape == quats.shape+(4,)
         assert allclose(quaternion.as_quat_array(floats), quats)
+        assert allclose(quaternion.from_float_array(floats), quats)
         # Test that we can handle a list just like an array
         assert np.array_equal(quaternion.as_quat_array(floats), quaternion.as_quat_array(floats.tolist()))
     a = np.arange(12).reshape(3, 4)
@@ -546,9 +547,13 @@ def test_quaternion_conjugate(Qs):
 
 
 def test_quaternion_sqrt(Qs):
-    sqrt_precision = 4.e-15
+    sqrt_precision = 2.e-15
     for q in Qs[Qs_finitenonzero]:
-        assert ( (q.sqrt()) * (q.sqrt()) - q ).abs() < sqrt_precision
+        assert allclose(q.sqrt() * q.sqrt(), q, rtol=sqrt_precision)
+        for s in [1, -1, 2, -2, 3.4, -3.4]:
+            for r in [1, quaternion.x, quaternion.y, quaternion.z]:
+                srq = s*r*q
+                assert allclose(srq.sqrt() * srq.sqrt(), srq, rtol=sqrt_precision), (s,r,q,srq,srq.sqrt(),srq.sqrt()*srq.sqrt())
 
 
 def test_quaternion_log_exp(Qs):

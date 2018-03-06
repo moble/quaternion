@@ -21,7 +21,8 @@ __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 
 __all__ = ['quaternion',
-           'as_float_array', 'as_quat_array', 'as_spinor_array',
+           'as_quat_array', 'as_spinor_array',
+           'as_float_array', 'from_float_array',
            'as_rotation_matrix', 'from_rotation_matrix',
            'as_rotation_vector', 'from_rotation_vector',
            'as_euler_angles', 'from_euler_angles',
@@ -93,6 +94,10 @@ def as_quat_array(a):
     if av.shape[-1] == 1:
         av = av.reshape(a.shape[:-1])
     return av
+
+
+def from_float_array(a):
+    return as_quat_array(a)
 
 
 def as_spinor_array(a):
