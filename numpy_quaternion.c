@@ -1264,7 +1264,7 @@ pyquaternion_squad_evaluate(PyObject *self, PyObject *args)
 // This will be used to create the ufunc needed for `slerp`, which
 // evaluates the interpolant at a point.  The method for doing this
 // was pieced together from examples given on the page
-// <http://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
+// <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
 static void
 slerp_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
 {
@@ -1300,7 +1300,7 @@ slerp_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
 // This will be used to create the ufunc needed for `squad`, which
 // evaluates the interpolant at a point.  The method for doing this
 // was pieced together from examples given on the page
-// <http://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
+// <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
 static void
 squad_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
 {
@@ -1344,7 +1344,7 @@ squad_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
 // This will be used to create the ufunc needed for `rotate_vector`,
 // which is more efficient than naively conjugating by the rotor.
 // The method for doing this was pieced together from examples given on
-// <http://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
+// <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
 static void
 rotate_vector_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
 {
@@ -1371,6 +1371,56 @@ rotate_vector_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* dat
     vprime_i = (double*)op;
 
     quaternion_rotate_vector(*q_i, v_i, vprime_i);
+
+
+    fprintf (stderr, "q_i=(%f, %f, %f, %f)\tv_i=(%f, %f, %f)\tv'_i=(%f, %f, %f)",
+             q_i->w, q_i->x, q_i->y, q_i->z, v_i[0], v_i[1], v_i[2], vprime_i[0], vprime_i[1], vprime_i[2]);
+
+    i1 += is1;
+    i2 += is2;
+    op += os;
+  }
+}
+
+// This will be used to create the ufunc needed for `from_spherical_coords`.
+// The method for doing this was pieced together from examples given on
+// <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
+static void
+from_spherical_coords_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
+{
+  fprintf (stderr, "file %s, line %d., from_spherical_coords_loop\n", __FILE__, __LINE__);
+
+  npy_intp i;
+  double *theta_i;
+  double *phi_i;
+  quaternion *q_i;
+  quaternion q;
+
+  fprintf (stderr, "file %s, line %d., from_spherical_coords_loop\n", __FILE__, __LINE__);
+
+  npy_intp is1 = steps[0];
+  npy_intp is2 = steps[1];
+  npy_intp os = steps[2];
+  npy_intp n = dimensions[0];
+
+  char *i1 = args[0];
+  char *i2 = args[1];
+  char *op = args[2];
+
+  fprintf (stderr, "file %s, line %d., from_spherical_coords_loop\n", __FILE__, __LINE__);
+  fprintf (stderr, "\tn=%ld; n2=%ld; n3=%ld; is1=%ld; is2=%ld; os=%ld\n", n, dimensions[1], dimensions[2], is1, is2, os);
+
+  for (i = 0; i < n; i++) {
+    theta_i = (double*)i1;
+    phi_i = (double*)i2;
+    q_i = (quaternion*)op;
+
+    q = quaternion_create_from_spherical_coords(*theta_i, *phi_i);
+
+    q_i->w = q.w;
+    q_i->x = q.x;
+    q_i->y = q.y;
+    q_i->z = q.z;
 
     i1 += is1;
     i2 += is2;
@@ -1441,6 +1491,8 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   PyObject *slerp_evaluate_ufunc;
   PyObject *squad_evaluate_ufunc;
   PyObject *rotate_vector_ufunc;
+  PyObject *from_spherical_coords_ufunc;
+  PyObject *from_euler_angles_ufunc;
   int quaternionNum;
   int arg_types[3];
   PyArray_Descr* arg_dtypes[6];
@@ -1669,7 +1721,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 
   // Create a custom ufunc and register it for loops.  The method for
   // doing this was pieced together from examples given on the page
-  // <http://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
+  // <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
   arg_dtypes[0] = PyArray_DescrFromType(NPY_DOUBLE);
   arg_dtypes[1] = quaternion_descr;
   arg_dtypes[2] = quaternion_descr;
@@ -1691,7 +1743,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 
   // Create a custom ufunc and register it for loops.  The method for
   // doing this was pieced together from examples given on the page
-  // <http://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
+  // <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
   arg_dtypes[0] = quaternion_descr;
   arg_dtypes[1] = quaternion_descr;
   arg_dtypes[2] = PyArray_DescrFromType(NPY_DOUBLE);
@@ -1708,22 +1760,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   PyDict_SetItemString(numpy_dict, "slerp_vectorized", slerp_evaluate_ufunc);
   Py_DECREF(slerp_evaluate_ufunc);
 
-  // Create a custom ufunc and register it for loops.  The method for
-  // doing this was pieced together from examples given on the page
-  // <http://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
-  arg_dtypes[0] = quaternion_descr;
-  arg_dtypes[1] = PyArray_DescrFromType(NPY_DOUBLE);
-  rotate_vector_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, 2, 1,
-                                                PyUFunc_None, "rotate_vector",
-                                                "Use quaternion q to rotate vector v; arguments as (q, v)\n\n",
-                                                0);
-  PyUFunc_RegisterLoopForDescr((PyUFuncObject*)rotate_vector_ufunc,
-                               quaternion_descr,
-                               &rotate_vector_loop,
-                               arg_dtypes,
-                               NULL);
-  PyDict_SetItemString(numpy_dict, "rotate_vectors", rotate_vector_ufunc);
-  Py_DECREF(rotate_vector_ufunc);
 
   // Add the constant `_QUATERNION_EPS` to the module as `quaternion._eps`
   PyModule_AddObject(module, "_eps", PyFloat_FromDouble(_QUATERNION_EPS));
