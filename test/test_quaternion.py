@@ -346,6 +346,9 @@ def test_from_spherical_coords():
     for vartheta, varphi in random_angles:
         assert abs((np.quaternion(0, 0, 0, varphi / 2.).exp() * np.quaternion(0, 0, vartheta / 2., 0).exp())
                    - quaternion.from_spherical_coords(vartheta, varphi)) < 1.e-15
+    assert np.max(np.abs(quaternion.from_spherical_coords(random_angles)
+                         - np.array([quaternion.from_spherical_coords(vartheta, varphi)
+                                     for vartheta, varphi in random_angles]))) < 1.e-15
 
 
 def test_as_spherical_coords(Rs):
@@ -376,6 +379,9 @@ def test_from_euler_angles():
                     * np.quaternion(0, 0, 0, gamma / 2.).exp()
                    )
                    - quaternion.from_euler_angles(alpha, beta, gamma)) < 1.e-15
+    assert np.max(np.abs(quaternion.from_euler_angles(random_angles)
+                         - np.array([quaternion.from_euler_angles(alpha, beta, gamma)
+                                     for alpha, beta, gamma in random_angles]))) < 1.e-15
 
 
 def test_as_euler_angles():

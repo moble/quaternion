@@ -364,6 +364,11 @@ def as_euler_angles(q):
     you're moving in the right direction.  But to go the other way?!  It's
     just not right.
 
+    Assumes the Euler angles correspond to the quaternion R via
+
+        R = exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)
+
+
     Parameters
     ----------
     q: quaternion or array of quaternions
@@ -392,6 +397,53 @@ def as_euler_angles(q):
     return alpha_beta_gamma
 
 
+def from_euler_angles(alpha_beta_gamma, beta=None, gamma=None):
+    """Improve your life drastically
+
+    Assumes the Euler angles correspond to the quaternion R via
+
+        R = exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)
+
+    Parameters
+    ----------
+    alpha_beta_gamma: float or array of floats
+        This argument may either contain an array with last dimension of
+        size 3, where those three elements describe the (alpha, beta, gamma)
+        values for each rotation; or it may contain just the alpha values,
+        in which case the next two arguments must also be given.
+    beta: None, float, or array of floats
+        If this array is given, it must be able to broadcast against the
+        first and third arguments.
+    gamma: None, float, or array of floats
+        If this array is given, it must be able to broadcast against the
+        first and second arguments.
+
+    Returns
+    -------
+    R: quaternion array
+        The shape of this array will be the same as the input, except that
+        the last dimension will be removed.
+
+    """
+    if gamma is None:
+        alpha_beta_gamma = np.asarray(alpha_beta_gamma, dtype=np.double)
+        alpha = alpha_beta_gamma[..., 0]
+        beta  = alpha_beta_gamma[..., 1]
+        gamma = alpha_beta_gamma[..., 2]
+    else:
+        alpha = np.asarray(alpha_beta_gamma, dtype=np.double)
+        beta  = np.asarray(beta, dtype=np.double)
+        gamma = np.asarray(gamma, dtype=np.double)
+    R = np.empty(np.broadcast(alpha, beta, gamma).shape + (4,), dtype=np.double)
+
+    R[..., 0] = np.cos(alpha/2)*np.cos(beta/2)*np.cos(gamma/2) - np.sin(alpha/2)*np.cos(beta/2)*np.sin(gamma/2)
+    R[..., 1] = np.cos(alpha/2)*np.sin(beta/2)*np.sin(gamma/2) - np.sin(alpha/2)*np.sin(beta/2)*np.cos(gamma/2)
+    R[..., 2] = np.cos(alpha/2)*np.sin(beta/2)*np.cos(gamma/2) + np.sin(alpha/2)*np.sin(beta/2)*np.sin(gamma/2)
+    R[..., 3] = np.sin(alpha/2)*np.cos(beta/2)*np.cos(gamma/2) + np.cos(alpha/2)*np.cos(beta/2)*np.sin(gamma/2)
+
+    return as_quat_array(R)
+
+
 def as_spherical_coords(q):
     """Return the spherical coordinates corresponding to this quaternion
 
@@ -416,6 +468,55 @@ def as_spherical_coords(q):
 
     """
     return as_euler_angles(q)[..., 1::-1]
+
+
+def from_spherical_coords(theta_phi, phi=None):
+    """Return the quaternion corresponding to these spherical coordinates
+
+    Assumes the spherical coordinates correspond to the quaternion R via
+
+        R = exp(phi*z/2) * exp(theta*y/2)
+
+    Note that this quaternion rotates `z` onto the point with the given
+    spherical coordinates, but also rotates `x` and `y` onto the usual
+    basis vectors (theta and phi, respectively) at that point.
+
+    Parameters
+    ----------
+    theta_phi: float or array of floats
+        This argument may either contain an array with last dimension of
+        size 2, where those two elements describe the (theta, phi) values
+        for each point; or it may contain just the theta values, in which
+        case the next argument must also be given.
+    phi: None, float, or array of floats
+        If this array is given, it must be able to broadcast against the
+        first argument.
+
+    Returns
+    -------
+    R: quaternion array
+        If the second argument is not given to this function, the shape
+        will be the same as the input shape except for the last dimension,
+        which will be removed.  If the second argument is given, this
+        output array will have the shape resulting from broadcasting the
+        two input arrays against each other.
+
+    """
+    if phi is None:
+        theta_phi = np.asarray(theta_phi, dtype=np.double)
+        theta = theta_phi[..., 0]
+        phi  = theta_phi[..., 1]
+    else:
+        theta = np.asarray(theta_phi, dtype=np.double)
+        phi = np.asarray(phi, dtype=np.double)
+    R = np.empty(np.broadcast(theta, phi).shape + (4,), dtype=np.double)
+
+    R[..., 0] =  np.cos(phi/2)*np.cos(theta/2)
+    R[..., 1] = -np.sin(phi/2)*np.sin(theta/2)
+    R[..., 2] =  np.cos(phi/2)*np.sin(theta/2)
+    R[..., 3] =  np.sin(phi/2)*np.cos(theta/2)
+
+    return as_quat_array(R)
 
 
 def rotate_vectors(R, v, axis=-1):
