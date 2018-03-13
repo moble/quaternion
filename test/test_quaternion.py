@@ -344,8 +344,20 @@ def test_from_spherical_coords():
     random_angles = [[np.random.uniform(-np.pi, np.pi), np.random.uniform(-np.pi, np.pi)]
                      for i in range(5000)]
     for vartheta, varphi in random_angles:
+        q = quaternion.from_spherical_coords(vartheta, varphi)
         assert abs((np.quaternion(0, 0, 0, varphi / 2.).exp() * np.quaternion(0, 0, vartheta / 2., 0).exp())
-                   - quaternion.from_spherical_coords(vartheta, varphi)) < 1.e-15
+                   - q) < 1.e-15
+        xprime = q * quaternion.x * q.inverse()
+        yprime = q * quaternion.y * q.inverse()
+        zprime = q * quaternion.z * q.inverse()
+        nhat = np.quaternion(0.0, math.sin(vartheta)*math.cos(varphi), math.sin(vartheta)*math.sin(varphi),
+                             math.cos(vartheta))
+        thetahat = np.quaternion(0.0, math.cos(vartheta)*math.cos(varphi), math.cos(vartheta)*math.sin(varphi),
+                                 -math.sin(vartheta))
+        phihat = np.quaternion(0.0, -math.sin(varphi), math.cos(varphi), 0.0)
+        assert abs(xprime - thetahat) < 1.e-15
+        assert abs(yprime - phihat) < 1.e-15
+        assert abs(zprime - nhat) < 1.e-15
     assert np.max(np.abs(quaternion.from_spherical_coords(random_angles)
                          - np.array([quaternion.from_spherical_coords(vartheta, varphi)
                                      for vartheta, varphi in random_angles]))) < 1.e-15
