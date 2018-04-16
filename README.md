@@ -49,8 +49,9 @@ conda install pip numpy scipy numba
 
 ## Installation
 
-Assuming you use `conda` to manage your python installation (like any sane
-python user), you can install this package simply as
+On Mac and Linux, assuming you use `conda` to manage your python
+installation (like any sane python user), you can install this package
+simply as
 
 ```sh
 conda install -c moble quaternion
