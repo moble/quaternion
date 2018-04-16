@@ -190,7 +190,6 @@ pyquaternion_positive(PyObject* self, PyObject* b) {
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
     quaternion p = {0};                                                 \
     quaternion q = {0};                                                 \
-    if(PyArray_Check(b)) { fprintf (stderr, "\nfile %s, line %d, pyquaternion_%s(PyObject* a, PyObject* b).\n", __FILE__, __LINE__, #name); } /*return pyquaternion_##name##_array_operator(a, b); }*/ \
     PyQuaternion_AsQuaternion(p, a);                                    \
     PyQuaternion_AsQuaternion(q, b);                                    \
     return PyQuaternion_FromQuaternion(quaternion_##name(p,q));         \
@@ -1337,93 +1336,6 @@ squad_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
     i3 += is3;
     i4 += is4;
     i5 += is5;
-    op += os;
-  }
-}
-
-// This will be used to create the ufunc needed for `rotate_vector`,
-// which is more efficient than naively conjugating by the rotor.
-// The method for doing this was pieced together from examples given on
-// <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
-static void
-rotate_vector_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
-{
-  npy_intp i;
-  quaternion *q_i;
-  double *v_i;
-  double *vprime_i;
-
-  npy_intp is1 = steps[0];
-  npy_intp is2 = steps[1];
-  npy_intp os = steps[2];
-  npy_intp n = dimensions[0];
-
-  char *i1 = args[0];
-  char *i2 = args[1];
-  char *op = args[2];
-
-  fprintf (stderr, "file %s, line %d., rotate_vector_loop\n", __FILE__, __LINE__);
-  fprintf (stderr, "\tn=%ld; n2=%ld; n3=%ld; is1=%ld; is2=%ld; os=%ld\n", n, dimensions[1], dimensions[2], is1, is2, os);
-
-  for (i = 0; i < n; i++) {
-    q_i = (quaternion*)i1;
-    v_i = (double*)i2;
-    vprime_i = (double*)op;
-
-    quaternion_rotate_vector(*q_i, v_i, vprime_i);
-
-
-    fprintf (stderr, "q_i=(%f, %f, %f, %f)\tv_i=(%f, %f, %f)\tv'_i=(%f, %f, %f)",
-             q_i->w, q_i->x, q_i->y, q_i->z, v_i[0], v_i[1], v_i[2], vprime_i[0], vprime_i[1], vprime_i[2]);
-
-    i1 += is1;
-    i2 += is2;
-    op += os;
-  }
-}
-
-// This will be used to create the ufunc needed for `from_spherical_coords`.
-// The method for doing this was pieced together from examples given on
-// <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
-static void
-from_spherical_coords_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
-{
-  fprintf (stderr, "file %s, line %d., from_spherical_coords_loop\n", __FILE__, __LINE__);
-
-  npy_intp i;
-  double *theta_i;
-  double *phi_i;
-  quaternion *q_i;
-  quaternion q;
-
-  fprintf (stderr, "file %s, line %d., from_spherical_coords_loop\n", __FILE__, __LINE__);
-
-  npy_intp is1 = steps[0];
-  npy_intp is2 = steps[1];
-  npy_intp os = steps[2];
-  npy_intp n = dimensions[0];
-
-  char *i1 = args[0];
-  char *i2 = args[1];
-  char *op = args[2];
-
-  fprintf (stderr, "file %s, line %d., from_spherical_coords_loop\n", __FILE__, __LINE__);
-  fprintf (stderr, "\tn=%ld; n2=%ld; n3=%ld; is1=%ld; is2=%ld; os=%ld\n", n, dimensions[1], dimensions[2], is1, is2, os);
-
-  for (i = 0; i < n; i++) {
-    theta_i = (double*)i1;
-    phi_i = (double*)i2;
-    q_i = (quaternion*)op;
-
-    q = quaternion_create_from_spherical_coords(*theta_i, *phi_i);
-
-    q_i->w = q.w;
-    q_i->x = q.x;
-    q_i->y = q.y;
-    q_i->z = q.z;
-
-    i1 += is1;
-    i2 += is2;
     op += os;
   }
 }
