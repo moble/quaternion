@@ -10,7 +10,7 @@ fi
 #     exit 1
 # fi
 
-export package_version=$(git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S' || date +"%Y.%m.%d.%H.%M.%S")
+export package_version=$(git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S' || date +"%Y.%-m.%-d.%-H.%-M.%-S")
 echo "Building version '${package_version}'"
 
 # Create a pure source pip package

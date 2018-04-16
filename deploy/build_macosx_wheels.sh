@@ -1,6 +1,6 @@
 #! /bin/bash
 set -e
-export package_version="${1:-$(date +'%Y.%m.%d.%H.%M.%S')}"
+export package_version="${1:-$(date +'%Y.%-m.%-d.%-H.%-M.%-S')}"
 echo "Building macosx wheels, version '${package_version}'"
 
 wheelhouse="${HOME}/Research/Temp/wheelhouse"

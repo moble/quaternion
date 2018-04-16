@@ -1,6 +1,6 @@
 #! /bin/bash
 set -e -x
-export package_version="${1:-$(date +'%Y.%m.%d.%H.%M.%S')}"
+export package_version="${1:-$(date +'%Y.%-m.%-d.%-H.%-M.%-S')}"
 echo "Building manylinux1 wheels, version '${package_version}'"
 
 
