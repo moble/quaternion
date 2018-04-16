@@ -436,10 +436,15 @@ def from_euler_angles(alpha_beta_gamma, beta=None, gamma=None):
         gamma = np.asarray(gamma, dtype=np.double)
     R = np.empty(np.broadcast(alpha, beta, gamma).shape + (4,), dtype=np.double)
 
-    R[..., 0] = np.cos(alpha/2)*np.cos(beta/2)*np.cos(gamma/2) - np.sin(alpha/2)*np.cos(beta/2)*np.sin(gamma/2)
-    R[..., 1] = np.cos(alpha/2)*np.sin(beta/2)*np.sin(gamma/2) - np.sin(alpha/2)*np.sin(beta/2)*np.cos(gamma/2)
-    R[..., 2] = np.cos(alpha/2)*np.sin(beta/2)*np.cos(gamma/2) + np.sin(alpha/2)*np.sin(beta/2)*np.sin(gamma/2)
-    R[..., 3] = np.sin(alpha/2)*np.cos(beta/2)*np.cos(gamma/2) + np.cos(alpha/2)*np.cos(beta/2)*np.sin(gamma/2)
+    # R[..., 0] = np.cos(alpha/2)*np.cos(beta/2)*np.cos(gamma/2) - np.sin(alpha/2)*np.cos(beta/2)*np.sin(gamma/2)
+    # R[..., 1] = np.cos(alpha/2)*np.sin(beta/2)*np.sin(gamma/2) - np.sin(alpha/2)*np.sin(beta/2)*np.cos(gamma/2)
+    # R[..., 2] = np.cos(alpha/2)*np.sin(beta/2)*np.cos(gamma/2) + np.sin(alpha/2)*np.sin(beta/2)*np.sin(gamma/2)
+    # R[..., 3] = np.sin(alpha/2)*np.cos(beta/2)*np.cos(gamma/2) + np.cos(alpha/2)*np.cos(beta/2)*np.sin(gamma/2)
+
+    R[..., 0] =  np.cos(beta/2)*np.cos((alpha+gamma)/2)
+    R[..., 1] = -np.sin(beta/2)*np.sin((alpha-gamma)/2)
+    R[..., 2] =  np.sin(beta/2)*np.cos((alpha-gamma)/2)
+    R[..., 3] =  np.cos(beta/2)*np.sin((alpha+gamma)/2)
 
     return as_quat_array(R)
 
