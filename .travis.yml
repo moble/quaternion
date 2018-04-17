@@ -17,7 +17,7 @@ before_install:
   -  lsb_release -a
 
 install:
-  - pip install packaging
+  - pip install packaging scipy numba
   - git checkout "${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}"
   - git reset --hard "${TRAVIS_COMMIT}"
   - python setup.py install
