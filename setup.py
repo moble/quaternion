@@ -37,6 +37,15 @@ def configuration(parent_package='', top_path=None):
     return config
 
 
+long_description = """\
+This package creates a quaternion type in python, and further enables numpy to create and manipulate arrays of
+quaternions.  The usual algebraic operations (addition and multiplication) are available, along with numerous
+properties like norm and various types of distance measures between two quaternions.  There are also
+additional functions like "squad" and "slerp" interpolation, and conversions to and from axis-angle, matrix,
+and Euler-angle representations of rotations.  The core of the code is written in C for speed.
+"""
+
+
 if __name__ == "__main__":
     from os import getenv
     from numpy.distutils.core import setup
@@ -46,4 +55,6 @@ if __name__ == "__main__":
           url='https://github.com/moble/quaternion',
           author='Michael Boyle',
           author_email='mob22@cornell.edu',
+          description='Add built-in support for quaternions to numpy',
+          long_description=long_description,
     )
