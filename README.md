@@ -1,24 +1,36 @@
-<a href="https://travis-ci.org/moble/quaternion"><img align="right" hspace="3" alt="Status of automatic build and test suite on Travis-CI" src="https://travis-ci.org/moble/quaternion.svg?branch=master"></a> <a href="https://github.com/moble/quaternion/blob/master/LICENSE"><img align="right" hspace="3" alt="Code distributed under the open-source MIT license" src="http://moble.github.io/spherical_functions/images/MITLicenseBadge.svg"></a>
+<a href="https://anaconda.org/conda-forge/quaternion"><img alt="Available from conda on Linux, MacOS, and Windows" src="https://img.shields.io/conda/pn/conda-forge/quaternion.svg"></a> <a href="https://travis-ci.org/moble/quaternion"><img align="right" hspace="3" alt="Status of automatic build and test suite on Travis-CI" src="https://travis-ci.org/moble/quaternion.svg?branch=master"></a> <a href="https://github.com/moble/quaternion/blob/master/LICENSE"><img align="right" hspace="3" alt="Code distributed under the open-source MIT license" src="http://moble.github.io/spherical_functions/images/MITLicenseBadge.svg"></a>
 
 # Quaternions in numpy
 
 This Python module adds a quaternion dtype to NumPy.
 
-The code was originally based on
-[code by Martin Ling](https://github.com/martinling/numpy_quaternion) (which he
-wrote with help from Mark Weibe), but has been rewritten with ideas from
+The code was originally based on [code by Martin
+Ling](https://github.com/martinling/numpy_quaternion) (which he wrote
+with help from Mark Weibe), but has been rewritten with ideas from
 [rational](https://github.com/numpy/numpy-dtypes/tree/master/npytypes/rational)
-to work with both python 2.x and 3.x, and to expand the applications of
-quaternions (and to fix a few bugs).
+to work with both python 2.x and 3.x (and to fix a few bugs), and
+*greatly* expands the applications of quaternions.
+
+## Quickstart
+
+```sh
+conda install -c conda-forge quaternion
+```
+
+or
+
+```sh
+pip install --user numpy numpy-quaternion
+```
 
 
 ## Dependencies
 
-The basic requirements for this code are reasonably current versions of
-`python` and `numpy`.  In particular, `python` versions 2.7 and 3.5 are
-[routinely tested](https://travis-ci.org/moble/quaternion).  Also, any `numpy`
-version greater than 1.7.0 should work, but the tests are run on the most
-recent release at the time of the test.
+The basic requirements for this code are reasonably current versions
+of `python` and `numpy`.  In particular, `python` versions 2.7 and 3.6
+are [routinely tested](https://travis-ci.org/moble/quaternion).  Also,
+any `numpy` version greater than 1.13.0 should work, but the tests are
+run on the most recent release at the time of the test.
 
 However, certain advanced functions in this package (including
 `squad`, `mean_rotor_in_intrinsic_metric`,
@@ -34,59 +46,56 @@ run all the code without `numba`, but these particular functions are
 roughly 4 to 400 times slower without it.
 
 The only drawback of `numba` is that it is nontrivial to install on
-its own.  Fortunately, the best python
-installer, [`anaconda`](http://continuum.io/downloads), makes it
-trivial (except on Windows).  Just install the main `anaconda`
-package, which installs both `numba` and `scipy`.  If you prefer the
-smaller download size
-of [`miniconda`](http://conda.pydata.org/miniconda.html) (which comes
-with no extras beyond python), you'll also have to run this command:
+its own.  Fortunately, the best python installer,
+[`anaconda`](http://continuum.io/downloads), makes it trivial.  Just
+install the main `anaconda` package, which installs both `numba` and
+`scipy`.  If you prefer the smaller download size of
+[`miniconda`](http://conda.pydata.org/miniconda.html) (which comes
+with minimal extras), you'll also have to run this command:
 
 ```sh
-conda install pip numpy scipy numba
+conda install numpy scipy numba
 ```
 
 
 ## Installation
 
-On Mac and Linux, assuming you use `conda` to manage your python
-installation (like any sane python user), you can install this package
-simply as
+Assuming you use `conda` to manage your python installation (like any
+sane python user), you can install this package simply as
 
 ```sh
-conda install -c moble quaternion
+conda install -c conda-forge quaternion
 ```
 
-Unfortunately, Windows is not supported with conda because I do not
-have access to any Windows machine (and
-AppVeyor
-[just doesn't work](https://ci.appveyor.com/project/moble/quaternion/)).
-Instead, you will have to use one of the following options.
-
-If you prefer to use `pip` (whether or not you use `conda`), you can also do
+If you prefer to use `pip` (whether or not you use `conda`), you can
+instead do
 
 ```sh
 pip install numpy numpy-quaternion
 ```
 
-If you refuse to use `conda`, you might want to install inside your home
-directory without root privileges.  (Anaconda does this by default anyway.)
-This is done by adding `--user` to the above command:
+If you refuse to use `conda`, you might want to install inside your
+home directory without root privileges.  (Anaconda does this by
+default anyway.)  This is done by adding `--user` to the above
+command:
 
 ```sh
 pip install --user numpy numpy-quaternion
 ```
 
-Finally, there's also the fully manual option of just downloading the code,
-changing to the code directory, and issuing
+On Windows this requires a `C` compiler, but on Mac and Linux
+pre-built binaries will usually be chosen by `pip`.
+
+Finally, there's also the fully manual option of just downloading the
+code, changing to the code directory, and running
 
 ```sh
 python setup.py install
 ```
 
-This should work regardless of the installation method, as long as you have a
-compiler hanging around.  However, not that you will need to have at
-least `numpy` installed already, as noted above.
+This should work regardless of the installation method, as long as you
+have a compiler hanging around.  However, note that you will need to
+have at least `numpy` installed already, as noted above.
 
 
 ## Usage
@@ -135,8 +144,9 @@ quaternions, with their single imaginary component becoming the first
 imaginary component of the quaternion. Quaternions may not be cast to
 real or complex types.
 
-Several array-conversion functions are also included.  For example, to convert an Nx4 array of floats to an
-N-dimensional array of quaternions, use `as_quat_array`:
+Several array-conversion functions are also included.  For example, to
+convert an Nx4 array of floats to an N-dimensional array of
+quaternions, use `as_quat_array`:
 ```python
 >>> import numpy as np
 >>> import quaternion
@@ -174,13 +184,18 @@ array([[ 0.93138726,  0.46972279,  0.18706385,  0.86605021],
        [ 0.33187593,  0.53391165,  0.8577846 ,  0.18336855]])
 ```
 
-It is also possible to convert a quaternion to or from a 3x3 array of floats representing a rotation matrix, or an
-array of N quaternions to or from an Nx3x3 array of floats representing N rotation matrices, using
-`as_rotation_matrix` and `from_rotation_matrix`.  Similar conversions are possible for rotation vectors using
-`as_rotation_vector` and `from_rotation_vector`, and for spherical coordinates using `as_spherical_coords` and
-`from_spherical_coords`.  Finally, it is possible to derive the Euler angles from a quaternion using
-`as_euler_angles`, or create a quaternion from Euler angles using `from_euler_angles` — though be aware that Euler
-angles are basically the worst things ever.<sup>[1](#1-euler-angles-are-awful)</sup>
+It is also possible to convert a quaternion to or from a 3x3 array of
+floats representing a rotation matrix, or an array of N quaternions to
+or from an Nx3x3 array of floats representing N rotation matrices,
+using `as_rotation_matrix` and `from_rotation_matrix`.  Similar
+conversions are possible for rotation vectors using
+`as_rotation_vector` and `from_rotation_vector`, and for spherical
+coordinates using `as_spherical_coords` and `from_spherical_coords`.
+Finally, it is possible to derive the Euler angles from a quaternion
+using `as_euler_angles`, or create a quaternion from Euler angles
+using `from_euler_angles` — though be aware that Euler angles are
+basically the worst things
+ever.<sup>[1](#1-euler-angles-are-awful)</sup>
 
 
 ## Bug reports and feature requests
