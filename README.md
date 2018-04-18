@@ -1,4 +1,7 @@
-<a href="https://anaconda.org/conda-forge/quaternion"><img alt="Available from conda on Linux, MacOS, and Windows" src="https://img.shields.io/conda/pn/conda-forge/quaternion.svg"></a> <a href="https://travis-ci.org/moble/quaternion"><img align="right" hspace="3" alt="Status of automatic build and test suite on Travis-CI" src="https://travis-ci.org/moble/quaternion.svg?branch=master"></a> <a href="https://github.com/moble/quaternion/blob/master/LICENSE"><img align="right" hspace="3" alt="Code distributed under the open-source MIT license" src="http://moble.github.io/spherical_functions/images/MITLicenseBadge.svg"></a>
+<a href="https://zenodo.org/badge/latestdoi/27896013"><img src="https://zenodo.org/badge/27896013.svg" alt="DOI"></a>
+<a href="https://anaconda.org/conda-forge/quaternion"><img align="right" hspace="3" alt="Available from conda on Linux, MacOS, and Windows" src="https://img.shields.io/conda/pn/conda-forge/quaternion.svg"></a>
+<a href="https://travis-ci.org/moble/quaternion"><img align="right" hspace="3" alt="Status of automatic build and test suite on Travis-CI" src="https://travis-ci.org/moble/quaternion.svg?branch=master"></a>
+ <a href="https://github.com/moble/quaternion/blob/master/LICENSE"><img align="right" hspace="3" alt="Code distributed under the open-source MIT license" src="http://moble.github.io/spherical_functions/images/MITLicenseBadge.svg"></a>
 
 # Quaternions in numpy
 
