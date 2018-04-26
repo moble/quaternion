@@ -20,7 +20,7 @@ to work with both python 2.x and 3.x (and to fix a few bugs), and
 conda install -c conda-forge quaternion
 ```
 
-or
+or (on Mac and Linux)
 
 ```sh
 pip install --user numpy numpy-quaternion
@@ -86,8 +86,9 @@ command:
 pip install --user numpy numpy-quaternion
 ```
 
-On Windows this requires a `C` compiler, but on Mac and Linux
-pre-built binaries will usually be chosen by `pip`.
+On Mac and Linux pre-built binaries will usually be chosen by `pip`.
+On Windows this requires a `C` compiler and is still not guaranteed to
+work; `conda` is the only *supported* method for installing on Windows.
 
 Finally, there's also the fully manual option of just downloading the
 code, changing to the code directory, and running
