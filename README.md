@@ -173,9 +173,10 @@ array([ quaternion(0.931387262880247, 0.469722787598354, 0.187063852060487, 0.86
        quaternion(0.119516238634238, 0.86804077992676, 0.779688263524229, 0.372294043850009),
        quaternion(0.331875925159073, 0.533911652483908, 0.857784598617977, 0.183368547490701)], dtype=quaternion)
 ```
-[Note that quaternions are printed with full precision, unlike floats, which is why you see extra digits above.  But
-the actual data is identical in the two cases.]  To convert an N-dimensional array of quaternions to an Nx4 array of
-floats, use `as_float_array`:
+[Note that quaternions are printed with full precision, unlike floats,
+which is why you see extra digits above.  But the actual data is
+identical in the two cases.]  To convert an N-dimensional array of
+quaternions to an Nx4 array of floats, use `as_float_array`:
 ```python
 >>> b = quaternion.as_float_array(qs)
 >>> b
@@ -199,25 +200,32 @@ Finally, it is possible to derive the Euler angles from a quaternion
 using `as_euler_angles`, or create a quaternion from Euler angles
 using `from_euler_angles` — though be aware that Euler angles are
 basically the worst things
-ever.<sup>[1](#1-euler-angles-are-awful)</sup>
+ever.<sup>[1](#1-euler-angles-are-awful)</sup> Before you complain
+about those functions using something other than your favorite
+conventions, please read [this
+page](https://github.com/moble/quaternion/wiki/Euler-angles-are-horrible).
 
 
 ## Bug reports and feature requests
 
-Bug reports and feature requests are entirely welcome.  The best way to do this
-is to open an
-[issue on this code's github page](https://github.com/moble/quaternion/issues).
-For bug reports, please try to include a minimal working example demonstrating
-the problem.
+Bug reports and feature requests are entirely welcome (with [very few
+exceptions](https://github.com/moble/quaternion/wiki/Euler-angles-are-horrible#opening-issues-and-pull-requests)).
+The best way to do this is to open an [issue on this code's github
+page](https://github.com/moble/quaternion/issues).  For bug reports,
+please try to include a minimal working example demonstrating the
+problem.
 
-[Pull requests](https://help.github.com/articles/using-pull-requests/) are also
-entirely welcome, of course, if you have an idea where the code is going wrong,
-or have an idea for a new feature that you know how to implement.
+[Pull requests](https://help.github.com/articles/using-pull-requests/)
+are also entirely welcome, of course, if you have an idea where the
+code is going wrong, or have an idea for a new feature that you know
+how to implement.
 
-This code is [routinely tested](https://travis-ci.org/moble/quaternion) on
-recent versions of both python (2.x and 3.x) and numpy (>=1.7).  But the test
-coverage is not necessarily as complete as it could be, so bugs may certainly
-be present, especially in the higher-level functions like `mean_rotor_...`.
+This code is [routinely
+tested](https://travis-ci.org/moble/quaternion) on recent versions of
+both python (2.7 and 3.6) and numpy (>=1.7).  But the test coverage is
+not necessarily as complete as it could be, so bugs may certainly be
+present, especially in the higher-level functions like
+`mean_rotor_...`.
 
 
 ## Acknowledgments
@@ -232,8 +240,8 @@ functions for rotation matrices, etc.  Github user Stijn van Drongelen
 (rhymoid) contributed some code that makes compilation work with
 MSVC++.
 
-Every change in this code is
-[automatically tested](https://travis-ci.org/moble/quaternion) on
+Every change in this code is [automatically
+tested](https://travis-ci.org/moble/quaternion) on
 [Travis-CI](https://travis-ci.org/).  This service integrates
 beautifully with github, detecting each commit and automatically
 re-running the tests.  The code is downloaded and installed fresh each
@@ -259,11 +267,11 @@ AST-1333129.
 
 ###### <sup>1</sup> Euler angles are awful
 
-Euler angles are pretty much
-[the worst things ever](http://moble.github.io/spherical_functions/#euler-angles)
-and it makes me feel bad even supporting them.  Quaternions are
-faster, more accurate, basically free of singularities, more
-intuitive, and generally easier to understand.  You can work entirely
-without Euler angles (I certainly do).  You absolutely never need
-them.  But if you're so old fashioned that you really can't give them
-up, they are fully supported.
+Euler angles are pretty much [the worst things
+ever](http://moble.github.io/spherical_functions/#euler-angles) and it
+makes me feel bad even supporting them.  Quaternions are faster, more
+accurate, basically free of singularities, more intuitive, and
+generally easier to understand.  You can work entirely without Euler
+angles (I certainly do).  You absolutely never need them.  But if
+you're so old fashioned that you really can't give them up, they are
+supported.

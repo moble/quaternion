@@ -368,6 +368,10 @@ def as_euler_angles(q):
 
         R = exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)
 
+    NOTE: Before opening an issue reporting something "wrong" with this
+    function, be sure to read all of the following page, *especially* the
+    very last section about opening issues or pull requests.
+    <https://github.com/moble/quaternion/wiki/Euler-angles-are-horrible>
 
     Parameters
     ----------
@@ -403,6 +407,11 @@ def from_euler_angles(alpha_beta_gamma, beta=None, gamma=None):
     Assumes the Euler angles correspond to the quaternion R via
 
         R = exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)
+
+    NOTE: Before opening an issue reporting something "wrong" with this
+    function, be sure to read all of the following page, *especially* the
+    very last section about opening issues or pull requests.
+    <https://github.com/moble/quaternion/wiki/Euler-angles-are-horrible>
 
     Parameters
     ----------
