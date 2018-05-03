@@ -1015,6 +1015,7 @@ QUATERNION_fillwithscalar(quaternion *buffer, npy_intp length, quaternion *value
       op->x = 0;                                                        \
       op->y = 0;                                                        \
       op->z = 0;                                                        \
+      op++;                                                             \
     }                                                                   \
   }
 MAKE_T_TO_QUATERNION(FLOAT, npy_float);
