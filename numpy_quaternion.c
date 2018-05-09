@@ -896,28 +896,27 @@ QUATERNION_copyswapn(quaternion *dst, npy_intp dstride,
   Py_DECREF(descr);
 }
 
-static int QUATERNION_setitem(PyObject* item, void* data, void* ap)
+static int QUATERNION_setitem(PyObject* item, quaternion* qp, void* ap)
 {
   PyObject *element;
-  quaternion q = {0};
   if(PyQuaternion_Check(item)) {
-    memcpy(data,&(((PyQuaternion *)item)->obval),sizeof(quaternion));
+    memcpy(qp,&(((PyQuaternion *)item)->obval),sizeof(quaternion));
   } else if(PySequence_Check(item) && PySequence_Length(item)==4) {
     element = PySequence_GetItem(item, 0);
     if(element == NULL) { return -1; } /* Not a sequence, or other failure */
-    q.w = PyFloat_AsDouble(element);
+    qp->w = PyFloat_AsDouble(element);
     Py_DECREF(element);
     element = PySequence_GetItem(item, 1);
     if(element == NULL) { return -1; } /* Not a sequence, or other failure */
-    q.x = PyFloat_AsDouble(element);
+    qp->x = PyFloat_AsDouble(element);
     Py_DECREF(element);
     element = PySequence_GetItem(item, 2);
     if(element == NULL) { return -1; } /* Not a sequence, or other failure */
-    q.y = PyFloat_AsDouble(element);
+    qp->y = PyFloat_AsDouble(element);
     Py_DECREF(element);
     element = PySequence_GetItem(item, 3);
     if(element == NULL) { return -1; } /* Not a sequence, or other failure */
-    q.z = PyFloat_AsDouble(element);
+    qp->z = PyFloat_AsDouble(element);
     Py_DECREF(element);
   } else {
     PyErr_SetString(PyExc_TypeError,
