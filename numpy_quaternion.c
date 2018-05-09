@@ -1351,7 +1351,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
 #endif
 
   PyObject *module;
-  PyObject *module_dict;
   PyObject *tmp_ufunc;
   PyObject *slerp_evaluate_ufunc;
   PyObject *squad_evaluate_ufunc;
@@ -1371,8 +1370,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   if(module==NULL) {
     INITERROR;
   }
-
-  module_dict = PyModule_GetDict(module);
 
   // Initialize numpy
   import_array();
