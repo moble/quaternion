@@ -1088,7 +1088,7 @@ def test_setitem_quat(Qs):
     # setitem from quaternion
     for j in range(len(Ps)):
         Ps[j] = np.quaternion(1.3, 2.4, 3.5, 4.7)
-        for k in range(j):
+        for k in range(j + 1):
             assert Ps[k] == np.quaternion(1.3, 2.4, 3.5, 4.7)
         for k in range(j + 1, len(Ps)):
             assert Ps[k] == Qs[k]
@@ -1109,7 +1109,7 @@ def test_setitem_quat(Qs):
             Ps[0] = seq_type((1.3, 2.4, 3.5, 4.7, 5.9, np.nan))
         for j in range(len(Ps)):
             Ps[j] = seq_type((1.3, 2.4, 3.5, 4.7))
-            for k in range(j):
+            for k in range(j + 1):
                 assert Ps[k] == np.quaternion(1.3, 2.4, 3.5, 4.7)
             for k in range(j + 1, len(Ps)):
                 assert Ps[k] == Qs[k]
