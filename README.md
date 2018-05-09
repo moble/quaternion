@@ -238,7 +238,9 @@ Github user Hannes Ovrén (hovren) pointed out some errors in a
 previous version of this code and suggested some nice utility
 functions for rotation matrices, etc.  Github user Stijn van Drongelen
 (rhymoid) contributed some code that makes compilation work with
-MSVC++.
+MSVC++.  Github user Jon Long (longjon) has provided some elegant
+contributions to substantially improve several tricky parts of this
+code.
 
 Every change in this code is [automatically
 tested](https://travis-ci.org/moble/quaternion) on
