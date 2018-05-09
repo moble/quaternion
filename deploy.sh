@@ -1,7 +1,13 @@
 #! /bin/bash
 
+set -e
+
 export package_version=$(git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S' || date +"%Y.%-m.%-d.%-H.%-M.%-S")
 echo "Building version '${package_version}'"
+
+# Rebuild and install locally, to ensure there are no warnings
+/bin/rm -rf build __pycache__
+CFLAGS='-Werror -Wall -Wextra' python setup.py install
 
 # Create a pure source pip package
 python setup.py sdist upload
