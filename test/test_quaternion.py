@@ -1111,8 +1111,8 @@ def test_setitem_quat(Qs):
             Ps[j] = seq_type((1.3, 2.4, 3.5, 4.7))
             for k in range(j):
                 assert Ps[k] == np.quaternion(1.3, 2.4, 3.5, 4.7)
-                for k in range(j + 1, len(Ps)):
-                    assert Ps[k] == Qs[k]
+            for k in range(j + 1, len(Ps)):
+                assert Ps[k] == Qs[k]
     with pytest.raises(TypeError):
         Ps[0] = 's'
     with pytest.raises(TypeError):
