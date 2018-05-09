@@ -176,7 +176,7 @@ extern "C" {
     return r;
   }
   static NPY_INLINE quaternion quaternion_parity_antisymmetric_part(quaternion q) {
-    (void) q;
+    (void) q; // This parameter is unused, but here for consistency with similar functions
     quaternion r = {0.0, 0.0, 0.0, 0.0};
     return r;
   }
