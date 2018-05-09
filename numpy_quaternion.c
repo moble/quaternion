@@ -1355,9 +1355,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   PyObject *tmp_ufunc;
   PyObject *slerp_evaluate_ufunc;
   PyObject *squad_evaluate_ufunc;
-  PyObject *rotate_vector_ufunc;
-  PyObject *from_spherical_coords_ufunc;
-  PyObject *from_euler_angles_ufunc;
   int quaternionNum;
   int arg_types[3];
   PyArray_Descr* arg_dtypes[6];
