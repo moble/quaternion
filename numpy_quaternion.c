@@ -79,6 +79,8 @@ PyQuaternion_FromQuaternion(quaternion q) {
 static PyObject *
 pyquaternion_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
+  (void) args;
+  (void) kwds;
   PyQuaternion* self;
   self = (PyQuaternion *)type->tp_alloc(type, 0);
   return (PyObject *)self;
@@ -117,7 +119,8 @@ pyquaternion_init(PyObject *self, PyObject *args, PyObject *kwds)
 #define UNARY_BOOL_RETURNER(name)                                       \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
-    quaternion q = {0};                                                 \
+    (void) b;                                                           \
+    quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
     PyQuaternion_AsQuaternion(q, a);                                    \
     return PyBool_FromLong(quaternion_##name(q));                       \
   }
@@ -129,8 +132,8 @@ UNARY_BOOL_RETURNER(isfinite)
 #define BINARY_BOOL_RETURNER(name)                                      \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
-    quaternion p = {0};                                                 \
-    quaternion q = {0};                                                 \
+    quaternion p = {0.0, 0.0, 0.0, 0.0};                                \
+    quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
     PyQuaternion_AsQuaternion(p, a);                                    \
     PyQuaternion_AsQuaternion(q, b);                                    \
     return PyBool_FromLong(quaternion_##name(p,q));                     \
@@ -145,7 +148,8 @@ BINARY_BOOL_RETURNER(greater_equal)
 #define UNARY_FLOAT_RETURNER(name)                                      \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
-    quaternion q = {0};                                                 \
+    (void) b;                                                           \
+    quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
     PyQuaternion_AsQuaternion(q, a);                                    \
     return PyFloat_FromDouble(quaternion_##name(q));                    \
   }
@@ -156,7 +160,8 @@ UNARY_FLOAT_RETURNER(angle)
 #define UNARY_QUATERNION_RETURNER(name)                                 \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
-    quaternion q = {0};                                                 \
+    (void) b;                                                           \
+    quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
     PyQuaternion_AsQuaternion(q, a);                                    \
     return PyQuaternion_FromQuaternion(quaternion_##name(q));           \
   }
@@ -181,15 +186,16 @@ UNARY_QUATERNION_RETURNER(parity_symmetric_part)
 UNARY_QUATERNION_RETURNER(parity_antisymmetric_part)
 static PyObject*
 pyquaternion_positive(PyObject* self, PyObject* b) {
-    Py_INCREF(self);
-    return self;
+  (void) b;
+  Py_INCREF(self);
+  return self;
 }
 
 #define QQ_BINARY_QUATERNION_RETURNER(name)                             \
   static PyObject*                                                      \
   pyquaternion_##name(PyObject* a, PyObject* b) {                       \
-    quaternion p = {0};                                                 \
-    quaternion q = {0};                                                 \
+    quaternion p = {0.0, 0.0, 0.0, 0.0};                                \
+    quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
     PyQuaternion_AsQuaternion(p, a);                                    \
     PyQuaternion_AsQuaternion(q, b);                                    \
     return PyQuaternion_FromQuaternion(quaternion_##name(p,q));         \
@@ -208,7 +214,7 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
     NpyIter *out_iter;                                                  \
     NpyIter_IterNextFunc *in_iternext;                                  \
     NpyIter_IterNextFunc *out_iternext;                                 \
-    quaternion p = {0};                                                 \
+    quaternion p = {0.0, 0.0, 0.0, 0.0};                                \
     quaternion ** out_dataptr;                                          \
     PyQuaternion_AsQuaternion(p, a);                                    \
     out_array = PyArray_NewLikeArray(in_array, NPY_ANYORDER, quaternion_descr, 0); \
@@ -264,7 +270,7 @@ QQ_BINARY_QUATERNION_RETURNER(copysign)
     /* char* a_char, b_char, a_char2, b_char2;                             \ */ \
     npy_int64 val64;                                                    \
     npy_int32 val32;                                                    \
-    quaternion p = {0};                                                 \
+    quaternion p = {0.0, 0.0, 0.0, 0.0};                                \
     if(PyArray_Check(b)) { return pyquaternion_##fake_name##_array_operator(a, b); } \
     if(PyFloat_Check(a) && PyQuaternion_Check(b)) {                     \
       return PyQuaternion_FromQuaternion(quaternion_scalar_##name(PyFloat_AsDouble(a), ((PyQuaternion*)b)->obval)); \
@@ -493,11 +499,11 @@ PyMethodDef pyquaternion_methods[] = {
   {"__setstate__", (PyCFunction)pyquaternion_setstate, METH_VARARGS,
    "Reconstruct state information from pickle."},
 
-  {NULL}
+  {NULL, NULL, 0, NULL}
 };
 
-static PyObject* pyquaternion_num_power(PyObject* a, PyObject* b, PyObject *c) { return pyquaternion_power(a,b); }
-static PyObject* pyquaternion_num_inplace_power(PyObject* a, PyObject* b, PyObject *c) { return pyquaternion_inplace_power(a,b); }
+static PyObject* pyquaternion_num_power(PyObject* a, PyObject* b, PyObject *c) { (void) c; return pyquaternion_power(a,b); }
+static PyObject* pyquaternion_num_inplace_power(PyObject* a, PyObject* b, PyObject *c) { (void) c; return pyquaternion_inplace_power(a,b); }
 static PyObject* pyquaternion_num_negative(PyObject* a) { return pyquaternion_negative(a,NULL); }
 static PyObject* pyquaternion_num_positive(PyObject* a) { return pyquaternion_positive(a,NULL); }
 static PyObject* pyquaternion_num_absolute(PyObject* a) { return pyquaternion_absolute(a,NULL); }
@@ -583,7 +589,7 @@ PyMemberDef pyquaternion_members[] = {
    "The second imaginary component of the quaternion"},
   {"z", T_DOUBLE, offsetof(PyQuaternion, obval.z), 0,
    "The third imaginary component of the quaternion"},
-  {NULL}
+  {NULL, 0, 0, 0, NULL}
 };
 
 // The quaternion can be conveniently separated into two complex
@@ -593,11 +599,13 @@ PyMemberDef pyquaternion_members[] = {
 static PyObject *
 pyquaternion_get_part_a(PyObject *self, void *closure)
 {
+  (void) closure;
   return (PyObject*) PyComplex_FromDoubles(((PyQuaternion *)self)->obval.w, ((PyQuaternion *)self)->obval.z);
 }
 static PyObject *
 pyquaternion_get_part_b(PyObject *self, void *closure)
 {
+  (void) closure;
   return (PyObject*) PyComplex_FromDoubles(((PyQuaternion *)self)->obval.y, ((PyQuaternion *)self)->obval.x);
 }
 
@@ -607,6 +615,7 @@ pyquaternion_get_part_b(PyObject *self, void *closure)
 static PyObject *
 pyquaternion_get_vec(PyObject *self, void *closure)
 {
+  (void) closure;
   quaternion *q = &((PyQuaternion *)self)->obval;
   int nd = 1;
   npy_intp dims[1] = { 3 };
@@ -623,6 +632,7 @@ pyquaternion_get_vec(PyObject *self, void *closure)
 static int
 pyquaternion_set_vec(PyObject *self, PyObject *value, void *closure)
 {
+  (void) closure;
   PyObject *element;
   quaternion *q = &((PyQuaternion *)self)->obval;
   if (value == NULL) {
@@ -656,6 +666,7 @@ pyquaternion_set_vec(PyObject *self, PyObject *value, void *closure)
 static PyObject *
 pyquaternion_get_components(PyObject *self, void *closure)
 {
+  (void) closure;
   quaternion *q = &((PyQuaternion *)self)->obval;
   int nd = 1;
   npy_intp dims[1] = { 4 };
@@ -672,6 +683,7 @@ pyquaternion_get_components(PyObject *self, void *closure)
 static int
 pyquaternion_set_components(PyObject *self, PyObject *value, void *closure)
 {
+  (void) closure;
   PyObject *element;
   quaternion *q = &((PyQuaternion *)self)->obval;
   if (value == NULL) {
@@ -717,7 +729,7 @@ PyGetSetDef pyquaternion_getset[] = {
    "The vector part (x,y,z) of the quaternion as a numpy array", NULL},
   {"components", pyquaternion_get_components, pyquaternion_set_components,
    "The components (w,x,y,z) of the quaternion as a numpy array", NULL},
-  {NULL}
+  {NULL, NULL, NULL, NULL, NULL}
 };
 
 
@@ -725,8 +737,8 @@ PyGetSetDef pyquaternion_getset[] = {
 static PyObject*
 pyquaternion_richcompare(PyObject* a, PyObject* b, int op)
 {
-  quaternion x = {0};
-  quaternion y = {0};
+  quaternion x = {0.0, 0.0, 0.0, 0.0};
+  quaternion y = {0.0, 0.0, 0.0, 0.0};
   int result = 0;
   PyQuaternion_AsQuaternion(x,a);
   PyQuaternion_AsQuaternion(y,b);
@@ -845,6 +857,9 @@ static PyTypeObject PyQuaternion_Type = {
 #if PY_VERSION_HEX >= 0x02060000
   0,                                          // tp_version_tag
 #endif
+#if PY_VERSION_HEX >= 0x030400a1
+  0,                                          // tp_finalize
+#endif
 };
 
 // Functions implementing internal features. Not all of these function
@@ -898,6 +913,7 @@ QUATERNION_copyswapn(quaternion *dst, npy_intp dstride,
 
 static int QUATERNION_setitem(PyObject* item, quaternion* qp, void* ap)
 {
+  (void) ap;
   PyObject *element;
   if(PyQuaternion_Check(item)) {
     memcpy(qp,&(((PyQuaternion *)item)->obval),sizeof(quaternion));
@@ -932,6 +948,7 @@ static int QUATERNION_setitem(PyObject* item, quaternion* qp, void* ap)
 static PyObject *
 QUATERNION_getitem(void* data, void* arr)
 {
+  (void) arr;
   quaternion q;
   memcpy(&q,data,sizeof(quaternion));
   return PyQuaternion_FromQuaternion(q);
@@ -1069,6 +1086,7 @@ static void register_cast_function(int sourceType, int destType, PyArray_VectorU
   quaternion_##ufunc_name##_ufunc(char** args, npy_intp* dimensions,    \
                                   npy_intp* steps, void* data) {        \
     /* fprintf (stderr, "file %s, line %d, quaternion_%s_ufunc.\n", __FILE__, __LINE__, #ufunc_name); */ \
+    (void) data;                                                        \
     char *ip1 = args[0], *op1 = args[1];                                \
     npy_intp is1 = steps[0], os1 = steps[1];                            \
     npy_intp n = dimensions[0];                                         \
@@ -1114,6 +1132,7 @@ UNARY_UFUNC(parity_antisymmetric_part, quaternion)
   quaternion_##ufunc_name##_ufunc(char** args, npy_intp* dimensions,    \
                                   npy_intp* steps, void* data) {        \
     /* fprintf (stderr, "file %s, line %d, quaternion_%s_ufunc.\n", __FILE__, __LINE__, #ufunc_name); */ \
+    (void) data;                                                        \
     char *ip1 = args[0], *ip2 = args[1], *op1 = args[2];                \
     npy_intp is1 = steps[0], is2 = steps[1], os1 = steps[2];            \
     npy_intp n = dimensions[0];                                         \
@@ -1158,38 +1177,11 @@ BINARY_UFUNC(rotation_intrinsic_distance, npy_double)
 BINARY_UFUNC(rotation_chordal_distance, npy_double)
 
 
-// Used to create unit rotor from spherical coordinates, this can be
-// imported directly from quaternion.numpy_quaternion
-static PyObject*
-quaternion_from_spherical_coords(PyObject *self, PyObject *args )
-{
-  double vartheta, varphi;
-  PyQuaternion* Q = (PyQuaternion*)PyQuaternion_Type.tp_alloc(&PyQuaternion_Type,0);
-  if (!PyArg_ParseTuple(args, "dd", &vartheta, &varphi)) {
-    return NULL;
-  }
-  Q->obval = quaternion_create_from_spherical_coords(vartheta, varphi);
-  return (PyObject*)Q;
-}
-
-// Used to create unit rotor from Euler angles, this can be imported
-// directly from quaternion.numpy_quaternion
-static PyObject*
-quaternion_from_euler_angles(PyObject *self, PyObject *args )
-{
-  double alpha, beta, gamma;
-  PyQuaternion* Q = (PyQuaternion*)PyQuaternion_Type.tp_alloc(&PyQuaternion_Type,0);
-  if (!PyArg_ParseTuple(args, "ddd", &alpha, &beta, &gamma)) {
-    return NULL;
-  }
-  Q->obval = quaternion_create_from_euler_angles(alpha, beta, gamma);
-  return (PyObject*)Q;
-}
-
 // Interface to the module-level slerp function
 static PyObject*
 pyquaternion_slerp_evaluate(PyObject *self, PyObject *args)
 {
+  (void) self;
   double tau;
   PyObject* Q1 = {0};
   PyObject* Q2 = {0};
@@ -1205,6 +1197,7 @@ pyquaternion_slerp_evaluate(PyObject *self, PyObject *args)
 static PyObject*
 pyquaternion_squad_evaluate(PyObject *self, PyObject *args)
 {
+  (void) self;
   double tau_i;
   PyObject* q_i = {0};
   PyObject* a_i = {0};
@@ -1227,6 +1220,7 @@ pyquaternion_squad_evaluate(PyObject *self, PyObject *args)
 static void
 slerp_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
 {
+  (void) data;
   npy_intp i;
   double tau_i;
   quaternion *q_1, *q_2;
@@ -1263,6 +1257,7 @@ slerp_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
 static void
 squad_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
 {
+  (void) data;
   npy_intp i;
   double tau_i;
   quaternion *q_i, *a_i, *b_ip1, *q_ip1;
@@ -1303,10 +1298,6 @@ squad_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
 
 // This contains assorted other top-level methods for the module
 static PyMethodDef QuaternionMethods[] = {
-  {"from_spherical_coords", quaternion_from_spherical_coords, METH_VARARGS,
-   "Generate unit quaternion from spherical coordinates"},
-  {"from_euler_angles", quaternion_from_euler_angles, METH_VARARGS,
-   "Generate unit quaternion from Euler angles as `exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)`"},
   {"slerp_evaluate", pyquaternion_slerp_evaluate, METH_VARARGS,
    "Interpolate linearly along the geodesic between two rotors \n\n"
    "See also `numpy.slerp_vectorized` for a vectorized version of this function, and\n"
