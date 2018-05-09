@@ -42,6 +42,7 @@ done
 # Compile wheels
 for PYBIN in "${PYBINS[@]}"; do
     ### NOTE: The path to the requirements file is specialized for spinsfast
+    "${PYBIN}/pip" install --upgrade pip
     "${PYBIN}/pip" install -r /code/requirements.txt
     "${PYBIN}/pip" wheel /code/ -w /wheelhouse/
 done
