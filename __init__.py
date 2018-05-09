@@ -6,7 +6,6 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 
 from .numpy_quaternion import (quaternion, _eps,
-                               from_spherical_coords, from_euler_angles,
                                slerp_evaluate, squad_evaluate,
                                # slerp_vectorized, squad_vectorized,
                                # slerp, squad,
