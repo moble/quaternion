@@ -923,7 +923,6 @@ def test_quaternion_getset(Qs):
                 s.vec = seq_type((-5.5, 6.6, -7.7, 8.8))
 
 
-@pytest.mark.skipif(os.environ.get('FAST'), reason="Takes ~1 second")
 def test_metrics(Rs):
     metric_precision = 4.e-15
     intrinsic_funcs = (quaternion.rotor_intrinsic_distance, quaternion.rotation_intrinsic_distance)
@@ -1290,7 +1289,7 @@ def test_integrate_angular_velocity():
 
 
 if __name__ == '__main__':
-    print("The tests should be run automatically via py.test (pip install pytest)")
+    print("The tests should be run automatically via pytest (pip install pytest)")
 
 
 
