@@ -11,7 +11,6 @@
 
 #include "quaternion.h"
 
-
 // The following definitions, along with `#define NPY_PY3K 1`, can
 // also be found in the header <numpy/npy_3kcompat.h>.
 #if PY_MAJOR_VERSION >= 3
@@ -77,10 +76,8 @@ PyQuaternion_FromQuaternion(quaternion q) {
   }
 
 static PyObject *
-pyquaternion_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+pyquaternion_new(PyTypeObject *type, PyObject *NPY_UNUSED(args), PyObject *NPY_UNUSED(kwds))
 {
-  (void) args;
-  (void) kwds;
   PyQuaternion* self;
   self = (PyQuaternion *)type->tp_alloc(type, 0);
   return (PyObject *)self;
@@ -118,8 +115,7 @@ pyquaternion_init(PyObject *self, PyObject *args, PyObject *kwds)
 
 #define UNARY_BOOL_RETURNER(name)                                       \
   static PyObject*                                                      \
-  pyquaternion_##name(PyObject* a, PyObject* b) {                       \
-    (void) b;                                                           \
+  pyquaternion_##name(PyObject* a, PyObject* NPY_UNUSED(b)) {           \
     quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
     PyQuaternion_AsQuaternion(q, a);                                    \
     return PyBool_FromLong(quaternion_##name(q));                       \
@@ -147,8 +143,7 @@ BINARY_BOOL_RETURNER(greater_equal)
 
 #define UNARY_FLOAT_RETURNER(name)                                      \
   static PyObject*                                                      \
-  pyquaternion_##name(PyObject* a, PyObject* b) {                       \
-    (void) b;                                                           \
+  pyquaternion_##name(PyObject* a, PyObject* NPY_UNUSED(b)) {           \
     quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
     PyQuaternion_AsQuaternion(q, a);                                    \
     return PyFloat_FromDouble(quaternion_##name(q));                    \
@@ -159,8 +154,7 @@ UNARY_FLOAT_RETURNER(angle)
 
 #define UNARY_QUATERNION_RETURNER(name)                                 \
   static PyObject*                                                      \
-  pyquaternion_##name(PyObject* a, PyObject* b) {                       \
-    (void) b;                                                           \
+  pyquaternion_##name(PyObject* a, PyObject* NPY_UNUSED(b)) {           \
     quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
     PyQuaternion_AsQuaternion(q, a);                                    \
     return PyQuaternion_FromQuaternion(quaternion_##name(q));           \
@@ -185,8 +179,7 @@ UNARY_QUATERNION_RETURNER(parity_conjugate)
 UNARY_QUATERNION_RETURNER(parity_symmetric_part)
 UNARY_QUATERNION_RETURNER(parity_antisymmetric_part)
 static PyObject*
-pyquaternion_positive(PyObject* self, PyObject* b) {
-  (void) b;
+pyquaternion_positive(PyObject* self, PyObject* NPY_UNUSED(b)) {
   Py_INCREF(self);
   return self;
 }
@@ -597,15 +590,13 @@ PyMemberDef pyquaternion_members[] = {
 // writing Wigner's D matrices directly in terms of quaternions.  This
 // is essentially the column-vector presentation of spinors.
 static PyObject *
-pyquaternion_get_part_a(PyObject *self, void *closure)
+pyquaternion_get_part_a(PyObject *self, void *NPY_UNUSED(closure))
 {
-  (void) closure;
   return (PyObject*) PyComplex_FromDoubles(((PyQuaternion *)self)->obval.w, ((PyQuaternion *)self)->obval.z);
 }
 static PyObject *
-pyquaternion_get_part_b(PyObject *self, void *closure)
+pyquaternion_get_part_b(PyObject *self, void *NPY_UNUSED(closure))
 {
-  (void) closure;
   return (PyObject*) PyComplex_FromDoubles(((PyQuaternion *)self)->obval.y, ((PyQuaternion *)self)->obval.x);
 }
 
@@ -613,9 +604,8 @@ pyquaternion_get_part_b(PyObject *self, void *closure)
 // objects, so that calling "vec" will return a numpy array
 // with the last three components of the quaternion.
 static PyObject *
-pyquaternion_get_vec(PyObject *self, void *closure)
+pyquaternion_get_vec(PyObject *self, void *NPY_UNUSED(closure))
 {
-  (void) closure;
   quaternion *q = &((PyQuaternion *)self)->obval;
   int nd = 1;
   npy_intp dims[1] = { 3 };
@@ -630,9 +620,8 @@ pyquaternion_get_vec(PyObject *self, void *closure)
 // objects, so that calling `q.vec = [1,2,3]`, for example,
 // will set the vector components appropriately.
 static int
-pyquaternion_set_vec(PyObject *self, PyObject *value, void *closure)
+pyquaternion_set_vec(PyObject *self, PyObject *value, void *NPY_UNUSED(closure))
 {
-  (void) closure;
   PyObject *element;
   quaternion *q = &((PyQuaternion *)self)->obval;
   if (value == NULL) {
@@ -664,9 +653,8 @@ pyquaternion_set_vec(PyObject *self, PyObject *value, void *closure)
 // objects, so that calling "components" will return a numpy array
 // with the components of the quaternion.
 static PyObject *
-pyquaternion_get_components(PyObject *self, void *closure)
+pyquaternion_get_components(PyObject *self, void *NPY_UNUSED(closure))
 {
-  (void) closure;
   quaternion *q = &((PyQuaternion *)self)->obval;
   int nd = 1;
   npy_intp dims[1] = { 4 };
@@ -681,9 +669,7 @@ pyquaternion_get_components(PyObject *self, void *closure)
 // objects, so that calling `q.components = [1,2,3,4]`, for example,
 // will set the components appropriately.
 static int
-pyquaternion_set_components(PyObject *self, PyObject *value, void *closure)
-{
-  (void) closure;
+pyquaternion_set_components(PyObject *self, PyObject *value, void *NPY_UNUSED(closure)){
   PyObject *element;
   quaternion *q = &((PyQuaternion *)self)->obval;
   if (value == NULL) {
@@ -911,9 +897,8 @@ QUATERNION_copyswapn(quaternion *dst, npy_intp dstride,
   Py_DECREF(descr);
 }
 
-static int QUATERNION_setitem(PyObject* item, quaternion* qp, void* ap)
+static int QUATERNION_setitem(PyObject* item, quaternion* qp, void* NPY_UNUSED(ap))
 {
-  (void) ap;
   PyObject *element;
   if(PyQuaternion_Check(item)) {
     memcpy(qp,&(((PyQuaternion *)item)->obval),sizeof(quaternion));
@@ -946,9 +931,8 @@ static int QUATERNION_setitem(PyObject* item, quaternion* qp, void* ap)
 // called, returning a new quaternion object with a copy of the
 // data... sometimes...
 static PyObject *
-QUATERNION_getitem(void* data, void* arr)
+QUATERNION_getitem(void* data, void* NPY_UNUSED(arr))
 {
-  (void) arr;
   quaternion q;
   memcpy(&q,data,sizeof(quaternion));
   return PyQuaternion_FromQuaternion(q);
@@ -1084,9 +1068,8 @@ static void register_cast_function(int sourceType, int destType, PyArray_VectorU
 #define UNARY_GEN_UFUNC(ufunc_name, func_name, ret_type)        \
   static void                                                           \
   quaternion_##ufunc_name##_ufunc(char** args, npy_intp* dimensions,    \
-                                  npy_intp* steps, void* data) {        \
+                                  npy_intp* steps, void* NPY_UNUSED(data)) { \
     /* fprintf (stderr, "file %s, line %d, quaternion_%s_ufunc.\n", __FILE__, __LINE__, #ufunc_name); */ \
-    (void) data;                                                        \
     char *ip1 = args[0], *op1 = args[1];                                \
     npy_intp is1 = steps[0], os1 = steps[1];                            \
     npy_intp n = dimensions[0];                                         \
@@ -1130,9 +1113,8 @@ UNARY_UFUNC(parity_antisymmetric_part, quaternion)
 #define BINARY_GEN_UFUNC(ufunc_name, func_name, arg_type1, arg_type2, ret_type) \
   static void                                                           \
   quaternion_##ufunc_name##_ufunc(char** args, npy_intp* dimensions,    \
-                                  npy_intp* steps, void* data) {        \
+                                  npy_intp* steps, void* NPY_UNUSED(data)) { \
     /* fprintf (stderr, "file %s, line %d, quaternion_%s_ufunc.\n", __FILE__, __LINE__, #ufunc_name); */ \
-    (void) data;                                                        \
     char *ip1 = args[0], *ip2 = args[1], *op1 = args[2];                \
     npy_intp is1 = steps[0], is2 = steps[1], os1 = steps[2];            \
     npy_intp n = dimensions[0];                                         \
@@ -1179,9 +1161,8 @@ BINARY_UFUNC(rotation_chordal_distance, npy_double)
 
 // Interface to the module-level slerp function
 static PyObject*
-pyquaternion_slerp_evaluate(PyObject *self, PyObject *args)
+pyquaternion_slerp_evaluate(PyObject *NPY_UNUSED(self), PyObject *args)
 {
-  (void) self;
   double tau;
   PyObject* Q1 = {0};
   PyObject* Q2 = {0};
@@ -1195,9 +1176,8 @@ pyquaternion_slerp_evaluate(PyObject *self, PyObject *args)
 
 // Interface to the evaluate a squad interpolant at a particular time
 static PyObject*
-pyquaternion_squad_evaluate(PyObject *self, PyObject *args)
+pyquaternion_squad_evaluate(PyObject *NPY_UNUSED(self), PyObject *args)
 {
-  (void) self;
   double tau_i;
   PyObject* q_i = {0};
   PyObject* a_i = {0};
@@ -1218,9 +1198,8 @@ pyquaternion_squad_evaluate(PyObject *self, PyObject *args)
 // was pieced together from examples given on the page
 // <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
 static void
-slerp_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
+slerp_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* NPY_UNUSED(data))
 {
-  (void) data;
   npy_intp i;
   double tau_i;
   quaternion *q_1, *q_2;
@@ -1255,9 +1234,8 @@ slerp_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
 // was pieced together from examples given on the page
 // <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
 static void
-squad_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* data)
+squad_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* NPY_UNUSED(data))
 {
-  (void) data;
   npy_intp i;
   double tau_i;
   quaternion *q_i, *a_i, *b_ip1, *q_ip1;
