@@ -7,8 +7,6 @@ import numpy as np
 
 from .numpy_quaternion import (quaternion, _eps,
                                from_spherical_coords, from_euler_angles,
-                               rotor_intrinsic_distance, rotor_chordal_distance,
-                               rotation_intrinsic_distance, rotation_chordal_distance,
                                slerp_evaluate, squad_evaluate,
                                # slerp_vectorized, squad_vectorized,
                                # slerp, squad,
@@ -45,6 +43,11 @@ one = np.quaternion(1, 0, 0, 0)
 x = np.quaternion(0, 1, 0, 0)
 y = np.quaternion(0, 0, 1, 0)
 z = np.quaternion(0, 0, 0, 1)
+
+rotor_intrinsic_distance = np.rotor_intrinsic_distance
+rotor_chordal_distance = np.rotor_chordal_distance
+rotation_intrinsic_distance = np.rotation_intrinsic_distance
+rotation_chordal_distance = np.rotation_chordal_distance
 
 
 def as_float_array(a):

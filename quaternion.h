@@ -442,28 +442,28 @@ extern "C" {
   }
 
   // Associated functions
-  static NPY_INLINE double rotor_intrinsic_distance(quaternion q1, quaternion q2) {
+  static NPY_INLINE double quaternion_rotor_intrinsic_distance(quaternion q1, quaternion q2) {
     return 2*quaternion_absolute(quaternion_log(quaternion_divide(q1,q2)));
   }
-  static NPY_INLINE double rotor_chordal_distance(quaternion q1, quaternion q2) {
+  static NPY_INLINE double quaternion_rotor_chordal_distance(quaternion q1, quaternion q2) {
     return quaternion_absolute(quaternion_subtract(q1,q2));
   }
-  static NPY_INLINE double rotation_intrinsic_distance(quaternion q1, quaternion q2) {
-    if(rotor_chordal_distance(q1,q2)<=1.414213562373096) {
+  static NPY_INLINE double quaternion_rotation_intrinsic_distance(quaternion q1, quaternion q2) {
+    if(quaternion_rotor_chordal_distance(q1,q2)<=1.414213562373096) {
       return 2*quaternion_absolute(quaternion_log(quaternion_divide(q1,q2)));
     } else {
       return 2*quaternion_absolute(quaternion_log(quaternion_divide(q1,quaternion_negative(q2))));
     }
   }
-  static NPY_INLINE double rotation_chordal_distance(quaternion q1, quaternion q2) {
-    if(rotor_chordal_distance(q1,q2)<=1.414213562373096) {
+  static NPY_INLINE double quaternion_rotation_chordal_distance(quaternion q1, quaternion q2) {
+    if(quaternion_rotor_chordal_distance(q1,q2)<=1.414213562373096) {
       return quaternion_absolute(quaternion_subtract(q1,q2));
     } else {
       return quaternion_absolute(quaternion_add(q1,q2));
     }
   }
   static NPY_INLINE quaternion slerp(quaternion q1, quaternion q2, double tau) {
-    if(rotor_chordal_distance(q1,q2)<=1.414213562373096) {
+    if(quaternion_rotor_chordal_distance(q1,q2)<=1.414213562373096) {
       return quaternion_multiply( quaternion_power_scalar(quaternion_divide(q2,q1), tau), q1);
     } else {
       return quaternion_multiply( quaternion_power_scalar(quaternion_divide(quaternion_negative(q2),q1), tau), q1);

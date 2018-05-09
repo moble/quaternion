@@ -1153,6 +1153,10 @@ BINARY_GEN_UFUNC(floor_divide_scalar, divide_scalar, quaternion, npy_double, qua
 BINARY_GEN_UFUNC(scalar_true_divide, scalar_divide, npy_double, quaternion, quaternion)
 BINARY_GEN_UFUNC(scalar_floor_divide, scalar_divide, npy_double, quaternion, quaternion)
 BINARY_SCALAR_UFUNC(power, quaternion)
+BINARY_UFUNC(rotor_intrinsic_distance, npy_double)
+BINARY_UFUNC(rotor_chordal_distance, npy_double)
+BINARY_UFUNC(rotation_intrinsic_distance, npy_double)
+BINARY_UFUNC(rotation_chordal_distance, npy_double)
 
 
 // Used to create unit rotor from spherical coordinates, this can be
@@ -1181,50 +1185,6 @@ quaternion_from_euler_angles(PyObject *self, PyObject *args )
   }
   Q->obval = quaternion_create_from_euler_angles(alpha, beta, gamma);
   return (PyObject*)Q;
-}
-
-static PyObject*
-pyquaternion_rotor_intrinsic_distance(PyObject *self, PyObject *args)
-{
-  PyObject* Q1 = {0};
-  PyObject* Q2 = {0};
-  if (!PyArg_ParseTuple(args, "OO", &Q1, &Q2)) {
-    return NULL;
-  }
-  return PyFloat_FromDouble(rotor_intrinsic_distance(((PyQuaternion*)Q1)->obval, ((PyQuaternion*)Q2)->obval));
-}
-
-static PyObject*
-pyquaternion_rotor_chordal_distance(PyObject *self, PyObject *args)
-{
-  PyObject* Q1 = {0};
-  PyObject* Q2 = {0};
-  if (!PyArg_ParseTuple(args, "OO", &Q1, &Q2)) {
-    return NULL;
-  }
-  return PyFloat_FromDouble(rotor_chordal_distance(((PyQuaternion*)Q1)->obval, ((PyQuaternion*)Q2)->obval));
-}
-
-static PyObject*
-pyquaternion_rotation_intrinsic_distance(PyObject *self, PyObject *args)
-{
-  PyObject* Q1 = {0};
-  PyObject* Q2 = {0};
-  if (!PyArg_ParseTuple(args, "OO", &Q1, &Q2)) {
-    return NULL;
-  }
-  return PyFloat_FromDouble(rotation_intrinsic_distance(((PyQuaternion*)Q1)->obval, ((PyQuaternion*)Q2)->obval));
-}
-
-static PyObject*
-pyquaternion_rotation_chordal_distance(PyObject *self, PyObject *args)
-{
-  PyObject* Q1 = {0};
-  PyObject* Q2 = {0};
-  if (!PyArg_ParseTuple(args, "OO", &Q1, &Q2)) {
-    return NULL;
-  }
-  return PyFloat_FromDouble(rotation_chordal_distance(((PyQuaternion*)Q1)->obval, ((PyQuaternion*)Q2)->obval));
 }
 
 // Interface to the module-level slerp function
@@ -1348,14 +1308,6 @@ static PyMethodDef QuaternionMethods[] = {
    "Generate unit quaternion from spherical coordinates"},
   {"from_euler_angles", quaternion_from_euler_angles, METH_VARARGS,
    "Generate unit quaternion from Euler angles as `exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)`"},
-  {"rotor_intrinsic_distance", pyquaternion_rotor_intrinsic_distance, METH_VARARGS,
-   "Distance measure intrinsic to rotor manifold"},
-  {"rotor_chordal_distance", pyquaternion_rotor_chordal_distance, METH_VARARGS,
-   "Distance measure from embedding of rotor manifold"},
-  {"rotation_intrinsic_distance", pyquaternion_rotation_intrinsic_distance, METH_VARARGS,
-   "Distance measure intrinsic to rotation manifold"},
-  {"rotation_chordal_distance", pyquaternion_rotation_chordal_distance, METH_VARARGS,
-   "Distance measure from embedding of rotation manifold"},
   {"slerp_evaluate", pyquaternion_slerp_evaluate, METH_VARARGS,
    "Interpolate linearly along the geodesic between two rotors \n\n"
    "See also `numpy.slerp_vectorized` for a vectorized version of this function, and\n"
@@ -1626,6 +1578,20 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   REGISTER_UFUNC_SCALAR(true_divide);
   REGISTER_UFUNC_SCALAR(floor_divide);
   REGISTER_UFUNC_SCALAR(power);
+
+  // quat, quat -> double
+  arg_types[0] = quaternion_descr->type_num;
+  arg_types[1] = quaternion_descr->type_num;
+  arg_types[2] = NPY_DOUBLE;
+  REGISTER_NEW_UFUNC(rotor_intrinsic_distance, 2, 1,
+                     "Distance measure intrinsic to rotor manifold");
+  REGISTER_NEW_UFUNC(rotor_chordal_distance, 2, 1,
+                     "Distance measure from embedding of rotor manifold");
+  REGISTER_NEW_UFUNC(rotation_intrinsic_distance, 2, 1,
+                     "Distance measure intrinsic to rotation manifold");
+  REGISTER_NEW_UFUNC(rotation_chordal_distance, 2, 1,
+                     "Distance measure from embedding of rotation manifold");
+
 
   /* I think before I do the following, I'll have to update numpy_dict
    * somehow, presumably with something related to
