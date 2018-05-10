@@ -37,10 +37,6 @@ install:
 
   # Print some useful information
   # - git log -1 --format=%%%%cd --date=format:'%%%%Y.%%%%m.%%%%d.%%%%H.%%%%M.%%%%S'
-  # - ECHO "Filesystem root:"
-  # - ps: "ls \"C:/\""
-  # - ECHO "Installed SDKs:"
-  # - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
   - "python --version"
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
   - ECHO "%cd%"
@@ -58,9 +54,6 @@ test_script:
 
 after_test:
   - "%CMD_IN_ENV% python setup.py bdist_wheel"
-
-# artifacts:
-#   - path: dist\*.whl
 
 on_success:
   # - "twine upload -u %PYPI_USERNAME% -p %PYPI_PASSWORD% -r pypi dist/*.whl"
