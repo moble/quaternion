@@ -28,8 +28,8 @@ install:
 
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
 
-  - git log -1 --format=%%cd --date=format:'%%Y.%%m.%%d.%%H.%%M.%%S'
-  - git log -1 --format=%%cd --date=format:'%%Y.%%-m.%%-d.%%-H.%%-M.%%-S'
+  - git log -1 --format=\"%cd\" --date=\"format:'%Y.%m.%d.%H.%M.%S'\"
+  - git log -1 --format=\"%cd\" --date=\"format:'%Y.%-m.%-d.%-H.%-M.%-S'\"
 
   # Print some useful information
   # - ECHO "Filesystem root:"
