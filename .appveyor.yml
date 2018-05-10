@@ -36,6 +36,7 @@ install:
   - "python --version"
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
   - ECHO "%cd%"
+  - ps: "ls %cd%"
 
   - "python -m pip install --upgrade pip"
   - "%CMD_IN_ENV% pip install -r requirements.txt"
