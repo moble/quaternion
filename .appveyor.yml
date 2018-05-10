@@ -1,32 +1,97 @@
+# Inspired by https://github.com/ogrisel/python-appveyor-demo/blob/master/appveyor.yml
+
 environment:
+  global:
+    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
+    # /E:ON and /V:ON options are not enabled in the batch script intepreter
+    # See: http://stackoverflow.com/a/13751649/163740
+    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
   matrix:
-    # For Python versions available on Appveyor, see
-    # http://www.appveyor.com/docs/installed-software#python
     - PYTHON: "C:\\Python27-x64"
-      DISTUTILS_USE_SDK: "1"
+      PYTHON_VERSION: "2.7.x"
+      PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Python34-x64"
+      PYTHON_VERSION: "3.4.x"
+      PYTHON_ARCH: "64"
     - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.x"
+      PYTHON_ARCH: "64"
     - PYTHON: "C:\\Python36-x64"
+      PYTHON_VERSION: "3.6.x"
+      PYTHON_ARCH: "64"
 
 install:
-  - "%PYTHON%\\python.exe -m pip install --upgrade pip"
-  - "%PYTHON%\\python.exe -m pip install -r ./requirements.txt"
-  - "%PYTHON%\\python.exe -m pip install pytest"
-  - "%PYTHON%\\python.exe setup.py install"
+  - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
+        https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
+        Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
+          throw "There are newer queued builds for this pull request, failing early." }
 
-build: off
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+
+  # Print some useful information
+  - ECHO "Filesystem root:"
+  - ps: "ls \"C:/\""
+  - ECHO "Installed SDKs:"
+  - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
+  - "python --version"
+  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+
+  - "python -m pip install --upgrade pip"
+  - "%CMD_IN_ENV% pip install -r dev-requirements.txt"
+  - "%CMD_IN_ENV% pip install pytest"
+  - "%CMD_IN_ENV% python setup.py install"
+
+# build_script:
+#   # Build the compiled extension
+#   - "%CMD_IN_ENV% python setup.py build"
 
 test_script:
-  - "%PYTHON%\\python.exe -m pytest"
+  # Run the project tests
+  - "%CMD_IN_ENV% python -m pytest"
 
 after_test:
-  - "%PYTHON%\\python.exe -m pip install wheel"
-  - "%PYTHON%\\python.exe setup.py bdist_wheel"
+  # If tests are successful, create binary packages for the project.
+  - "%CMD_IN_ENV% pip install wheel"
+  - "%CMD_IN_ENV% python setup.py bdist_wheel"
+  - ps: "ls dist"
 
 artifacts:
-  # bdist_wheel puts your built wheel in the dist directory
+  # Archive the generated packages in the ci.appveyor.com build report.
   - path: dist\*
 
-#on_success:
-#  You can use this step to upload your artifacts to a public website.
-#  See Appveyor's documentation for more details. Or you can simply
-#  access your wheels from the Appveyor "artifacts" tab for your build.
+
+
+
+
+# environment:
+#   matrix:
+#     # For Python versions available on Appveyor, see
+#     # http://www.appveyor.com/docs/installed-software#python
+#     - PYTHON: "C:\\Python27-x64"
+#       DISTUTILS_USE_SDK: "1"
+#     - PYTHON: "C:\\Python35-x64"
+#     - PYTHON: "C:\\Python36-x64"
+
+# install:
+#   - "%PYTHON%\\python.exe -m pip install --upgrade pip"
+#   - "%PYTHON%\\python.exe -m pip install -r ./requirements.txt"
+#   - "%PYTHON%\\python.exe -m pip install pytest"
+#   - "%PYTHON%\\python.exe setup.py install"
+
+# build: off
+
+# test_script:
+#   - "%PYTHON%\\python.exe -m pytest"
+
+# after_test:
+#   - "%PYTHON%\\python.exe -m pip install wheel"
+#   - "%PYTHON%\\python.exe setup.py bdist_wheel"
+
+# artifacts:
+#   # bdist_wheel puts your built wheel in the dist directory
+#   - path: dist\*
+
+# #on_success:
+# #  You can use this step to upload your artifacts to a public website.
+# #  See Appveyor's documentation for more details. Or you can simply
+# #  access your wheels from the Appveyor "artifacts" tab for your build.
