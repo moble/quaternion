@@ -1,38 +1,16 @@
 environment:
   matrix:
-    - CONFIG: win_python2.7
-      CONDA_INSTALL_LOCN: C:\Miniconda36-x64
-    - CONFIG: win_python3.6
-      CONDA_INSTALL_LOCN: C:\Miniconda36-x64
-    # - PYTHON_VERSION: "2.7"
-    #   MINICONDA: "C:\\Miniconda"
-    # - PYTHON_VERSION: "3.6"
-    #   MINICONDA: "C:\\Miniconda3-x64"
+    - CONDA_INSTALL_LOCN: C:\Miniconda2-x64
+    - CONDA_INSTALL_LOCN: C:\Miniconda3-x64
 
 platform:
     - x64
 
-# matrix:
-#   fast_finish: true  # set this flag to immediately finish build once one of the jobs fails.
-
 install:
-
-  # Add path, activate `conda` and update conda.
   - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
   - cmd: conda.exe update --yes --quiet conda
-
   - cmd: set PYTHONUNBUFFERED=1
-
   - cmd: pip install --upgrade packaging scipy numba pytest
-
-
-
-  # - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
-  # - conda config --set always_yes yes --set changeps1 no
-  # - conda update -q conda
-  # - conda create -q --name python%PYTHON_VERSION% python=%PYTHON_VERSION% pip
-  # - activate python%PYTHON_VERSION%
-  # - pip install packaging scipy numba pytest
   - cmd: python.exe setup.py install
 
 build: off
