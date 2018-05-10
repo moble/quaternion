@@ -29,7 +29,7 @@ install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
 
   - git --version
-  - git log -1 --format=%cI
+  - git log -1 --format=%%cI
   - git log -1 --format=\"%cd\" --date=\"format:'%Y.%m.%d.%H.%M.%S'\"
   - git log -1 --format=\"%cd\" --date=\"format:'%Y.%-m.%-d.%-H.%-M.%-S'\"
 
