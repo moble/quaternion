@@ -1,6 +1,7 @@
 <a href="https://zenodo.org/badge/latestdoi/27896013"><img src="https://zenodo.org/badge/27896013.svg" alt="DOI"></a>
 <a href="https://anaconda.org/conda-forge/quaternion"><img align="right" style="margin: 0px 2px" alt="Available from conda on Linux, MacOS, and Windows" src="https://img.shields.io/conda/pn/conda-forge/quaternion.svg"></a>
 <a href="https://travis-ci.org/moble/quaternion"><img align="right" style="margin: 0px 2px" alt="Status of automatic build and test suite on Travis-CI" src="https://travis-ci.org/moble/quaternion.svg?branch=master"></a>
+<a href="https://ci.appveyor.com/project/moble/quaternion"><img align="right" style="margin: 0px 2px" alt="Status of automatic build and test suite on Appveyor" src="https://ci.appveyor.com/api/projects/status/gp53k0vn7c9nmk29?svg=true"></a>
  <a href="https://github.com/moble/quaternion/blob/master/LICENSE"><img align="right" style="margin: 0px 2px" alt="Code distributed under the open-source MIT license" src="http://moble.github.io/spherical_functions/images/MITLicenseBadge.svg"></a>
 
 # Quaternions in numpy
