@@ -86,9 +86,9 @@ command:
 pip install --user numpy numpy-quaternion
 ```
 
-On Mac and Linux pre-built binaries will usually be chosen by `pip`.
-On Windows this requires a `C` compiler and is still not guaranteed to
-work; `conda` is the only *supported* method for installing on Windows.
+Pre-built binaries will usually be chosen by `pip`.  If none are
+available for your configuration, pip will attempt to compile the code
+— which requires a working `C` compiler.
 
 Finally, there's also the fully manual option of just downloading the
 code, changing to the code directory, and running
