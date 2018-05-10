@@ -10,15 +10,15 @@ environment:
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.x"
       PYTHON_ARCH: "64"
-    # - PYTHON: "C:\\Python34-x64"
-    #   PYTHON_VERSION: "3.4.x"
-    #   PYTHON_ARCH: "64"
-    # - PYTHON: "C:\\Python35-x64"
-    #   PYTHON_VERSION: "3.5.x"
-    #   PYTHON_ARCH: "64"
-    # - PYTHON: "C:\\Python36-x64"
-    #   PYTHON_VERSION: "3.6.x"
-    #   PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Python34-x64"
+      PYTHON_VERSION: "3.4.x"
+      PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.x"
+      PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Python36-x64"
+      PYTHON_VERSION: "3.6.x"
+      PYTHON_ARCH: "64"
 
 install:
   - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
@@ -28,10 +28,9 @@ install:
 
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
 
-  - git log -1 --format=%%%%cI
-  - git log -1 --format=%%%%cd --date=format:'%%%%Y.%%%%m.%%%%d.%%%%H.%%%%M.%%%%S'
 
   # Print some useful information
+  # - git log -1 --format=%%%%cd --date=format:'%%%%Y.%%%%m.%%%%d.%%%%H.%%%%M.%%%%S'
   # - ECHO "Filesystem root:"
   # - ps: "ls \"C:/\""
   # - ECHO "Installed SDKs:"

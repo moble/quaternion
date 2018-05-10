@@ -16,10 +16,8 @@ else:
         from subprocess import check_output
         on_windows = ('win' in platform.lower() and not 'darwin' in platform.lower())
         if on_windows:
-            print('Trying git log on windows...')
             version = check_output("""git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S'""", shell=False)
             version = version.decode('ascii').rstrip().replace('.0', '.')
-            print('Got git log on windows...')
         else:
             version = check_output("""git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S'""", shell=True).decode('ascii').rstrip()
         print("Setup.py using git log version='{0}'".format(version))
