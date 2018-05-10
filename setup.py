@@ -35,21 +35,6 @@ with open('_version.py', 'w') as f:
     f.write('__version__ = "{0}"'.format(version))
 
 
-def configuration(parent_package='', top_path=None):
-    import numpy
-    from distutils.errors import DistutilsError
-    if numpy.__dict__.get('quaternion') is not None:
-        raise DistutilsError('The target NumPy already has a quaternion type')
-    from numpy.distutils.misc_util import Configuration
-    compile_args = ['-O3']
-    config = Configuration('quaternion', parent_package, top_path)
-    config.add_extension('numpy_quaternion',
-                         ['quaternion.c', 'numpy_quaternion.c'],
-                         depends=['quaternion.c', 'quaternion.h', 'numpy_quaternion.c'],
-                         extra_compile_args=compile_args, )
-    return config
-
-
 long_description = """\
 This package creates a quaternion type in python, and further enables numpy to create and manipulate arrays of
 quaternions.  The usual algebraic operations (addition and multiplication) are available, along with numerous
@@ -60,11 +45,22 @@ and Euler-angle representations of rotations.  The core of the code is written i
 
 
 if __name__ == "__main__":
-    from os import getenv
-    from setuptools import setup
-    # from numpy.distutils.core import setup
-    setup(name='numpy-',
-          configuration=configuration,
+    import numpy
+    from distutils.core import setup, Extension
+    from distutils.errors import DistutilsError
+    if numpy.__dict__.get('quaternion') is not None:
+        raise DistutilsError('The target NumPy already has a quaternion type')
+    extension = Extension(
+        name='quaternion.numpy_quaternion',
+        sources=['quaternion.c', 'numpy_quaternion.c'],
+        extra_compile_args=['-O3'],
+        depends=['quaternion.c', 'quaternion.h', 'numpy_quaternion.c'],
+        include_dirs=[numpy.get_include()]
+    )
+    setup(name='quaternion',
+          packages=['quaternion'],
+          package_dir={'quaternion': ''},
+          ext_modules=[extension],
           version=version,
           url='https://github.com/moble/quaternion',
           author='Michael Boyle',
