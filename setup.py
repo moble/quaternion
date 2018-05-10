@@ -46,7 +46,8 @@ and Euler-angle representations of rotations.  The core of the code is written i
 
 if __name__ == "__main__":
     import numpy
-    from distutils.core import setup, Extension
+    from setuptools import setup, Extension
+    # from distutils.core import setup, Extension
     from distutils.errors import DistutilsError
     if numpy.__dict__.get('quaternion') is not None:
         raise DistutilsError('The target NumPy already has a quaternion type')
