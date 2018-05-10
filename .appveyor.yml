@@ -1,24 +1,23 @@
 environment:
   matrix:
     - PYTHON_VERSION: "2.7"
+      MINICONDA: "C:\\Miniconda"
     - PYTHON_VERSION: "3.6"
-
-platform:
-  - x64
+      MINICONDA: "C:\\Miniconda3"
 
 matrix:
   fast_finish: true  # set this flag to immediately finish build once one of the jobs fails.
 
 install:
-  - set PATH=C:\Miniconda-x64\Scripts
+  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda create -q --name python%PYTHON_VERSION% python=%PYTHON_VERSION% pip
   - activate python%PYTHON_VERSION%
   - pip install packaging scipy numba pytest
-  - python.exe setup.py install
+  - python setup.py install
 
 build: off
 
 test_script:
-  - "%PYTHON%/Scripts/py.test quaternion/test"
+  - pytest
