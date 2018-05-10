@@ -17,7 +17,7 @@ else:
         on_windows = ('win' in platform.lower() and not 'darwin' in platform.lower())
         if on_windows:
             version = check_output("""git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S'""", shell=False)
-            version = version.decode('ascii').rstrip().replace('.0', '.')
+            version = version.decode('ascii').strip().replace('.0', '.').replace("'", "")
         else:
             version = check_output("""git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S'""", shell=True).decode('ascii').rstrip()
         print("Setup.py using git log version='{0}'".format(version))
