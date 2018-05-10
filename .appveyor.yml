@@ -30,9 +30,6 @@ install:
 
   - git log -1 --format=%%%%cI
   - git log -1 --format=%%%%cd --date=format:'%%%%Y.%%%%m.%%%%d.%%%%H.%%%%M.%%%%S'
-  - git log -1 --format=%%%%cd --date=format:'%%%%Y.%%%%-m.%%%%-d.%%%%-H.%%%%-M.%%%%-S'
-  - git log -1 --format=\"%cd\" --date=\"format:'%Y.%m.%d.%H.%M.%S'\"
-  - git log -1 --format=\"%cd\" --date=\"format:'%Y.%-m.%-d.%-H.%-M.%-S'\"
 
   # Print some useful information
   # - ECHO "Filesystem root:"
