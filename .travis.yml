@@ -9,10 +9,9 @@ matrix:
     - os: linux
       python: '3.6'
 
-# branches:
-#   only:
-#     - master
-#     - appveyor
+branches:
+  except:
+    - appveyor
 
 before_install:
   -  lsb_release -a
