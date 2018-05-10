@@ -34,7 +34,6 @@ install:
 
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
 
-
   # Print some useful information
   # - git log -1 --format=%%%%cd --date=format:'%%%%Y.%%%%m.%%%%d.%%%%H.%%%%M.%%%%S'
   - "python --version"
@@ -56,6 +55,5 @@ after_test:
   - "%CMD_IN_ENV% python setup.py bdist_wheel"
 
 on_success:
-  # - "twine upload -u %PYPI_USERNAME% -p %PYPI_PASSWORD% -r pypi dist/*.whl"
-  - "twine upload -u %PYPI_USERNAME% -p %PYPI_PASSWORD% --repository-url https://test.pypi.org/legacy/ dist/*.whl"
+  - "twine upload -u %PYPI_USERNAME% -p %PYPI_PASSWORD% -r pypi dist/*.whl"
  
