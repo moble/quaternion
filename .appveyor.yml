@@ -35,9 +35,10 @@ install:
   - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
   - "python --version"
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+  - ECHO "%cd%"
 
   - "python -m pip install --upgrade pip"
-  - "%CMD_IN_ENV% pip install -r dev-requirements.txt"
+  - "%CMD_IN_ENV% pip install -r requirements.txt"
   - "%CMD_IN_ENV% pip install pytest"
   - "%CMD_IN_ENV% python setup.py install"
 
