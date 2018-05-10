@@ -26,7 +26,7 @@ else:
             try:
                 version = strftime("%Y.%-m.%-d.%-H.%-M.%-S", gmtime())
             except ValueError:  # because Windows
-                version = strftime("%Y.%m.%d.%H.%M.%S", gmtime())
+                version = strftime("%Y.%m.%d.%H.%M.%S", gmtime()).replace('.0', '.')
             print("Setup.py using strftime version='{0}'".format(version))
         except:
             version = '0.0.0'
