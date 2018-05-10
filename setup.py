@@ -15,8 +15,11 @@ else:
         from sys import platform
         from subprocess import check_output
         on_windows = ('win' in platform.lower() and not 'darwin' in platform.lower())
-        use_shell = not on_windows
-        version = check_output("""git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S'""", shell=use_shell).decode('ascii').rstrip()
+        if on_windows:
+            version = check_output("""git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S'""", shell=False)
+            version = version.decode('ascii').strip().replace('.0', '.').replace("'", "")
+        else:
+            version = check_output("""git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S'""", shell=True).decode('ascii').rstrip()
         print("Setup.py using git log version='{0}'".format(version))
     except:
         # For cases where this isn't being installed from git.  This gives the wrong version number,
@@ -26,28 +29,13 @@ else:
             try:
                 version = strftime("%Y.%-m.%-d.%-H.%-M.%-S", gmtime())
             except ValueError:  # because Windows
-                version = strftime("%Y.%m.%d.%H.%M.%S", gmtime())
+                version = strftime("%Y.%m.%d.%H.%M.%S", gmtime()).replace('.0', '.')
             print("Setup.py using strftime version='{0}'".format(version))
         except:
             version = '0.0.0'
             print("Setup.py failed to determine the version; using '{0}'".format(version))
 with open('_version.py', 'w') as f:
     f.write('__version__ = "{0}"'.format(version))
-
-
-def configuration(parent_package='', top_path=None):
-    import numpy
-    from distutils.errors import DistutilsError
-    if numpy.__dict__.get('quaternion') is not None:
-        raise DistutilsError('The target NumPy already has a quaternion type')
-    from numpy.distutils.misc_util import Configuration
-    compile_args = ['-O3']
-    config = Configuration('quaternion', parent_package, top_path)
-    config.add_extension('numpy_quaternion',
-                         ['quaternion.c', 'numpy_quaternion.c'],
-                         depends=['quaternion.c', 'quaternion.h', 'numpy_quaternion.c'],
-                         extra_compile_args=compile_args, )
-    return config
 
 
 long_description = """\
@@ -60,10 +48,23 @@ and Euler-angle representations of rotations.  The core of the code is written i
 
 
 if __name__ == "__main__":
-    from os import getenv
-    from numpy.distutils.core import setup
-    setup(name='numpy-',
-          configuration=configuration,
+    import numpy
+    from setuptools import setup, Extension
+    # from distutils.core import setup, Extension
+    from distutils.errors import DistutilsError
+    if numpy.__dict__.get('quaternion') is not None:
+        raise DistutilsError('The target NumPy already has a quaternion type')
+    extension = Extension(
+        name='quaternion.numpy_quaternion',  # This is the name of the object file that will be compiled
+        sources=['quaternion.c', 'numpy_quaternion.c'],
+        extra_compile_args=['-O3'],
+        depends=['quaternion.c', 'quaternion.h', 'numpy_quaternion.c'],
+        include_dirs=[numpy.get_include()]
+    )
+    setup(name='numpy-quaternion',  # Uploaded to pypi under this name
+          packages=['quaternion'],  # This is the actual package name
+          package_dir={'quaternion': ''},
+          ext_modules=[extension],
           version=version,
           url='https://github.com/moble/quaternion',
           author='Michael Boyle',

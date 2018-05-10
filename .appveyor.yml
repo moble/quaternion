@@ -1,0 +1,59 @@
+# Inspired by https://github.com/ogrisel/python-appveyor-demo/blob/master/appveyor.yml
+
+environment:
+  PYPI_USERNAME: moboyle79
+  PYPI_PASSWORD:
+    secure: Vc+3ztSsC7+3misIum2YKKNMst4c10UkG6Kkq0xr3bg=
+  global:
+    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
+    # /E:ON and /V:ON options are not enabled in the batch script intepreter
+    # See: http://stackoverflow.com/a/13751649/163740
+    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\.appveyor.cmd"
+  matrix:
+    - PYTHON: "C:\\Python27-x64"
+      PYTHON_VERSION: "2.7.x"
+      PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Python34-x64"
+      PYTHON_VERSION: "3.4.x"
+      PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.x"
+      PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Python36-x64"
+      PYTHON_VERSION: "3.6.x"
+      PYTHON_ARCH: "64"
+
+cache:
+  - '%LOCALAPPDATA%\pip\Cache'
+
+install:
+  - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
+        https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
+        Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
+          throw "There are newer queued builds for this pull request, failing early." }
+
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+
+  # Print some useful information
+  # - git log -1 --format=%%%%cd --date=format:'%%%%Y.%%%%m.%%%%d.%%%%H.%%%%M.%%%%S'
+  - "python --version"
+  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+  - ECHO "%cd%"
+
+  - "python -m pip install --upgrade pip"
+  - "%CMD_IN_ENV% pip install -r requirements.txt"
+  - "%CMD_IN_ENV% pip install --upgrade pytest wheel twine"
+
+build_script:
+  - "%CMD_IN_ENV% python setup.py install"
+
+test_script:
+  # Run the project tests
+  - "%CMD_IN_ENV% python -m pytest"
+
+after_test:
+  - "%CMD_IN_ENV% python setup.py bdist_wheel"
+
+on_success:
+  - "twine upload -u %PYPI_USERNAME% -p %PYPI_PASSWORD% -r pypi dist/*.whl"
+ 

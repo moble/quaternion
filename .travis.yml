@@ -10,14 +10,15 @@ matrix:
       python: '3.6'
 
 branches:
-  only:
-    - master
+  except:
+    - appveyor
 
 before_install:
   -  lsb_release -a
 
 install:
-  - pip install packaging scipy numba
+  - pip install --upgrade pip
+  - pip install --upgrade packaging scipy numba setuptools
   - git checkout "${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}"
   - git reset --hard "${TRAVIS_COMMIT}"
   - python setup.py install
