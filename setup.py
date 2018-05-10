@@ -55,14 +55,14 @@ if __name__ == "__main__":
     if numpy.__dict__.get('quaternion') is not None:
         raise DistutilsError('The target NumPy already has a quaternion type')
     extension = Extension(
-        name='quaternion.numpy_quaternion',
+        name='quaternion.numpy_quaternion',  # This is the name of the object file that will be compiled
         sources=['quaternion.c', 'numpy_quaternion.c'],
         extra_compile_args=['-O3'],
         depends=['quaternion.c', 'quaternion.h', 'numpy_quaternion.c'],
         include_dirs=[numpy.get_include()]
     )
-    setup(name='numpy-quaternion',
-          packages=['quaternion'],
+    setup(name='numpy-quaternion',  # Uploaded to pypi under this name
+          packages=['quaternion'],  # This is the actual package name
           package_dir={'quaternion': ''},
           ext_modules=[extension],
           version=version,
