@@ -61,7 +61,7 @@ if __name__ == "__main__":
         depends=['quaternion.c', 'quaternion.h', 'numpy_quaternion.c'],
         include_dirs=[numpy.get_include()]
     )
-    setup(name='numpy-',
+    setup(name='numpy-quaternion',
           packages=['quaternion'],
           package_dir={'quaternion': ''},
           ext_modules=[extension],
