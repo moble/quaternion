@@ -61,7 +61,8 @@ and Euler-angle representations of rotations.  The core of the code is written i
 
 if __name__ == "__main__":
     from os import getenv
-    from numpy.distutils.core import setup
+    from setuptools import setup
+    # from numpy.distutils.core import setup
     setup(name='numpy-',
           configuration=configuration,
           version=version,
