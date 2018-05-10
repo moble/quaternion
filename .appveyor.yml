@@ -1,6 +1,6 @@
 environment:
   matrix:
-    - CONDA_INSTALL_LOCN: C:\Miniconda2-x64
+    - CONDA_INSTALL_LOCN: C:\Miniconda-x64
     - CONDA_INSTALL_LOCN: C:\Miniconda3-x64
 
 platform:
