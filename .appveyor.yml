@@ -39,7 +39,7 @@ install:
 
   - "python -m pip install --upgrade pip"
   - "%CMD_IN_ENV% pip install -r requirements.txt"
-  - "%CMD_IN_ENV% pip install pytest"
+  - "%CMD_IN_ENV% pip install pytest wheel"
   # - "%CMD_IN_ENV% python setup.py install"
 
 # build_script:
@@ -50,53 +50,18 @@ build_script:
   # Build the compiled extension
   - "%CMD_IN_ENV% python setup.py install"
 
+# build: off
+
 test_script:
   # Run the project tests
   - "%CMD_IN_ENV% python -m pytest"
 
 after_test:
   # If tests are successful, create binary packages for the project.
-  - "%CMD_IN_ENV% pip install wheel"
+  - "WHERE wheel.exe"
   - "%CMD_IN_ENV% python setup.py bdist_wheel"
   - ps: "ls dist"
 
 artifacts:
   # Archive the generated packages in the ci.appveyor.com build report.
   - path: dist\*
-
-
-
-
-
-# environment:
-#   matrix:
-#     # For Python versions available on Appveyor, see
-#     # http://www.appveyor.com/docs/installed-software#python
-#     - PYTHON: "C:\\Python27-x64"
-#       DISTUTILS_USE_SDK: "1"
-#     - PYTHON: "C:\\Python35-x64"
-#     - PYTHON: "C:\\Python36-x64"
-
-# install:
-#   - "%PYTHON%\\python.exe -m pip install --upgrade pip"
-#   - "%PYTHON%\\python.exe -m pip install -r ./requirements.txt"
-#   - "%PYTHON%\\python.exe -m pip install pytest"
-#   - "%PYTHON%\\python.exe setup.py install"
-
-# build: off
-
-# test_script:
-#   - "%PYTHON%\\python.exe -m pytest"
-
-# after_test:
-#   - "%PYTHON%\\python.exe -m pip install wheel"
-#   - "%PYTHON%\\python.exe setup.py bdist_wheel"
-
-# artifacts:
-#   # bdist_wheel puts your built wheel in the dist directory
-#   - path: dist\*
-
-# #on_success:
-# #  You can use this step to upload your artifacts to a public website.
-# #  See Appveyor's documentation for more details. Or you can simply
-# #  access your wheels from the Appveyor "artifacts" tab for your build.
