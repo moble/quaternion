@@ -176,7 +176,9 @@ extern "C" {
     return r;
   }
   static NPY_INLINE quaternion quaternion_parity_antisymmetric_part(quaternion q) {
+  #if !defined(_MSC_VER) || (_MSC_VER >= 1600)
     (void) q; // This parameter is unused, but here for consistency with similar functions
+  #endif
     quaternion r = {0.0, 0.0, 0.0, 0.0};
     return r;
   }
