@@ -21,7 +21,7 @@ to work with both python 2.x and 3.x (and to fix a few bugs), and
 conda install -c conda-forge quaternion
 ```
 
-or (on Mac and Linux)
+or
 
 ```sh
 pip install --user numpy numpy-quaternion
