@@ -326,7 +326,8 @@ def as_rotation_vector(q):
     -------
     rot: float array
         Output shape is q.shape+(3,).  Each vector represents the axis of
-        the rotation, with norm proportional to the angle of the rotation.
+        the rotation, with norm proportional to the angle of the rotation in
+        radians.
 
     """
     return as_float_array(2*np.log(np.normalized(q)))[..., 1:]
@@ -339,7 +340,7 @@ def from_rotation_vector(rot):
     ----------
     rot: (Nx3) float array
         Each vector represents the axis of the rotation, with norm
-        proportional to the angle of the rotation.
+        proportional to the angle of the rotation in radians.
 
     Returns
     -------
@@ -358,17 +359,19 @@ def from_rotation_vector(rot):
 def as_euler_angles(q):
     """Open Pandora's Box
 
-    If somebody is trying to make you use Euler angles, tell them no,
-    and walk away, and go and tell your mum.
+    If somebody is trying to make you use Euler angles, tell them no, and
+    walk away, and go and tell your mum.
 
-    You don't want to use Euler angles.  They are awful.  Stay away.
-    It's one thing to convert from Euler angles to quaternions; at least
-    you're moving in the right direction.  But to go the other way?!  It's
-    just not right.
+    You don't want to use Euler angles.  They are awful.  Stay away.  It's
+    one thing to convert from Euler angles to quaternions; at least you're
+    moving in the right direction.  But to go the other way?!  It's just not
+    right.
 
     Assumes the Euler angles correspond to the quaternion R via
 
         R = exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)
+
+    The angles are naturally in radians.
 
     NOTE: Before opening an issue reporting something "wrong" with this
     function, be sure to read all of the following page, *especially* the
@@ -383,15 +386,15 @@ def as_euler_angles(q):
     Returns
     -------
     alpha_beta_gamma: float array
-        Output shape is q.shape+(3,).  These represent the angles
-        (alpha, beta, gamma), where the normalized input quaternion
+        Output shape is q.shape+(3,).  These represent the angles (alpha,
+        beta, gamma) in radians, where the normalized input quaternion
         represents `exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)`.
 
     Raises
     ------
     AllHell
-        If you try to actually use Euler angles, when you could have been
-        using quaternions like a sensible person.
+        ...if you try to actually use Euler angles, when you could have
+        been using quaternions like a sensible person.
 
     """
     alpha_beta_gamma = np.empty(q.shape + (3,), dtype=np.float)
@@ -410,6 +413,8 @@ def from_euler_angles(alpha_beta_gamma, beta=None, gamma=None):
 
         R = exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)
 
+    The angles naturally must be in radians for this to make any sense.
+
     NOTE: Before opening an issue reporting something "wrong" with this
     function, be sure to read all of the following page, *especially* the
     very last section about opening issues or pull requests.
@@ -420,8 +425,8 @@ def from_euler_angles(alpha_beta_gamma, beta=None, gamma=None):
     alpha_beta_gamma: float or array of floats
         This argument may either contain an array with last dimension of
         size 3, where those three elements describe the (alpha, beta, gamma)
-        values for each rotation; or it may contain just the alpha values,
-        in which case the next two arguments must also be given.
+        radian values for each rotation; or it may contain just the alpha
+        values, in which case the next two arguments must also be given.
     beta: None, float, or array of floats
         If this array is given, it must be able to broadcast against the
         first and third arguments.
@@ -436,6 +441,7 @@ def from_euler_angles(alpha_beta_gamma, beta=None, gamma=None):
         the last dimension will be removed.
 
     """
+    # Figure out the input angles from either type of input
     if gamma is None:
         alpha_beta_gamma = np.asarray(alpha_beta_gamma, dtype=np.double)
         alpha = alpha_beta_gamma[..., 0]
@@ -445,17 +451,15 @@ def from_euler_angles(alpha_beta_gamma, beta=None, gamma=None):
         alpha = np.asarray(alpha_beta_gamma, dtype=np.double)
         beta  = np.asarray(beta, dtype=np.double)
         gamma = np.asarray(gamma, dtype=np.double)
+
+    # Set up the output array
     R = np.empty(np.broadcast(alpha, beta, gamma).shape + (4,), dtype=np.double)
 
-    # R[..., 0] = np.cos(alpha/2)*np.cos(beta/2)*np.cos(gamma/2) - np.sin(alpha/2)*np.cos(beta/2)*np.sin(gamma/2)
-    # R[..., 1] = np.cos(alpha/2)*np.sin(beta/2)*np.sin(gamma/2) - np.sin(alpha/2)*np.sin(beta/2)*np.cos(gamma/2)
-    # R[..., 2] = np.cos(alpha/2)*np.sin(beta/2)*np.cos(gamma/2) + np.sin(alpha/2)*np.sin(beta/2)*np.sin(gamma/2)
-    # R[..., 3] = np.sin(alpha/2)*np.cos(beta/2)*np.cos(gamma/2) + np.cos(alpha/2)*np.cos(beta/2)*np.sin(gamma/2)
-
-    R[..., 0] =  np.cos(beta/2)*np.cos((alpha+gamma)/2)
-    R[..., 1] = -np.sin(beta/2)*np.sin((alpha-gamma)/2)
-    R[..., 2] =  np.sin(beta/2)*np.cos((alpha-gamma)/2)
-    R[..., 3] =  np.cos(beta/2)*np.sin((alpha+gamma)/2)
+    # Compute the actual values of the quaternion components
+    R[..., 0] =  np.cos(beta/2)*np.cos((alpha+gamma)/2)  # scalar quaternion components
+    R[..., 1] = -np.sin(beta/2)*np.sin((alpha-gamma)/2)  # x quaternion components
+    R[..., 2] =  np.sin(beta/2)*np.cos((alpha-gamma)/2)  # y quaternion components
+    R[..., 3] =  np.cos(beta/2)*np.sin((alpha+gamma)/2)  # z quaternion components
 
     return as_quat_array(R)
 
@@ -463,11 +467,10 @@ def from_euler_angles(alpha_beta_gamma, beta=None, gamma=None):
 def as_spherical_coords(q):
     """Return the spherical coordinates corresponding to this quaternion
 
-    Obviously, spherical coordinates do not contain as much
-    information as a quaternion, so this function does lose some
-    information.  However, the returned spherical coordinates will
-    represent the point(s) on the sphere to which the input
-    quaternion(s) rotate the z axis.
+    Obviously, spherical coordinates do not contain as much information as a
+    quaternion, so this function does lose some information.  However, the
+    returned spherical coordinates will represent the point(s) on the sphere
+    to which the input quaternion(s) rotate the z axis.
 
     Parameters
     ----------
@@ -477,10 +480,10 @@ def as_spherical_coords(q):
     Returns
     -------
     vartheta_varphi: float array
-        Output shape is q.shape+(2,).  These represent the angles
-        (vartheta, varphi), where the normalized input quaternion
-        represents `exp(varphi*z/2) * exp(vartheta*y/2)`, up to an
-        arbitrary inital rotation about `z`.
+        Output shape is q.shape+(2,).  These represent the angles (vartheta,
+        varphi) in radians, where the normalized input quaternion represents
+        `exp(varphi*z/2) * exp(vartheta*y/2)`, up to an arbitrary inital
+        rotation about `z`.
 
     """
     return as_euler_angles(q)[..., 1::-1]
@@ -493,17 +496,19 @@ def from_spherical_coords(theta_phi, phi=None):
 
         R = exp(phi*z/2) * exp(theta*y/2)
 
+    The angles naturally must be in radians for this to make any sense.
+
     Note that this quaternion rotates `z` onto the point with the given
-    spherical coordinates, but also rotates `x` and `y` onto the usual
-    basis vectors (theta and phi, respectively) at that point.
+    spherical coordinates, but also rotates `x` and `y` onto the usual basis
+    vectors (theta and phi, respectively) at that point.
 
     Parameters
     ----------
     theta_phi: float or array of floats
         This argument may either contain an array with last dimension of
-        size 2, where those two elements describe the (theta, phi) values
-        for each point; or it may contain just the theta values, in which
-        case the next argument must also be given.
+        size 2, where those two elements describe the (theta, phi) values in
+        radians for each point; or it may contain just the theta values in
+        radians, in which case the next argument must also be given.
     phi: None, float, or array of floats
         If this array is given, it must be able to broadcast against the
         first argument.
@@ -518,6 +523,7 @@ def from_spherical_coords(theta_phi, phi=None):
         two input arrays against each other.
 
     """
+    # Figure out the input angles from either type of input
     if phi is None:
         theta_phi = np.asarray(theta_phi, dtype=np.double)
         theta = theta_phi[..., 0]
@@ -525,12 +531,15 @@ def from_spherical_coords(theta_phi, phi=None):
     else:
         theta = np.asarray(theta_phi, dtype=np.double)
         phi = np.asarray(phi, dtype=np.double)
+
+    # Set up the output array
     R = np.empty(np.broadcast(theta, phi).shape + (4,), dtype=np.double)
 
-    R[..., 0] =  np.cos(phi/2)*np.cos(theta/2)
-    R[..., 1] = -np.sin(phi/2)*np.sin(theta/2)
-    R[..., 2] =  np.cos(phi/2)*np.sin(theta/2)
-    R[..., 3] =  np.sin(phi/2)*np.cos(theta/2)
+    # Compute the actual values of the quaternion components
+    R[..., 0] =  np.cos(phi/2)*np.cos(theta/2)  # scalar quaternion components
+    R[..., 1] = -np.sin(phi/2)*np.sin(theta/2)  # x quaternion components
+    R[..., 2] =  np.cos(phi/2)*np.sin(theta/2)  # y quaternion components
+    R[..., 3] =  np.sin(phi/2)*np.cos(theta/2)  # z quaternion components
 
     return as_quat_array(R)
 
