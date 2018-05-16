@@ -5,6 +5,8 @@
 
 # Construct the version number from the date and time this python version was created.
 from os import environ
+from sys import platform
+on_windows = ('win' in platform.lower() and not 'darwin' in platform.lower())
 if "package_version" in environ:
     version = environ["package_version"]
     print("Setup.py using environment version='{0}'".format(version))
@@ -12,9 +14,7 @@ else:
     print("The variable 'package_version' was not present in the environment")
     try:
         # For cases where this is being installed from git.  This gives the true version number.
-        from sys import platform
         from subprocess import check_output
-        on_windows = ('win' in platform.lower() and not 'darwin' in platform.lower())
         if on_windows:
             version = check_output("""git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S'""", shell=False)
             version = version.decode('ascii').strip().replace('.0', '.').replace("'", "")
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     extension = Extension(
         name='quaternion.numpy_quaternion',  # This is the name of the object file that will be compiled
         sources=['quaternion.c', 'numpy_quaternion.c'],
-        extra_compile_args=['-O3'],
+        extra_compile_args=['/O2' if on_windows else '-O3'],
         depends=['quaternion.c', 'quaternion.h', 'numpy_quaternion.c'],
         include_dirs=[numpy.get_include()]
     )
