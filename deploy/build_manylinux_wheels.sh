@@ -42,9 +42,9 @@ done
 # Compile wheels
 for PYBIN in "${PYBINS[@]}"; do
     ### NOTE: The path to the requirements file is specialized for spinsfast
-    "${PYBIN}/pip" install --upgrade pip
+    "${PYBIN}/pip" install --upgrade pip wheel
     "${PYBIN}/pip" install -r /code/requirements-build.txt
-    "${PYBIN}/pip" wheel /code/ -w /wheelhouse/
+    "${PYBIN}/pip" wheel /code/ -r /code/requirements-build.txt  -w /wheelhouse/
 done
 
 # Bundle external shared libraries into the wheels
@@ -61,4 +61,4 @@ done
 
 # Upload to pypi
 "${LAST_PYBIN}"/pip install twine
-"${LAST_PYBIN}"/twine upload /wheelhouse/*manylinux*.whl
+"${LAST_PYBIN}"/twine upload /wheelhouse/numpy_quaternion*manylinux*.whl

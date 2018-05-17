@@ -1,33 +1,39 @@
 #! /bin/bash
 set -e
+
+. ~/.continuum/anaconda3/etc/profile.d/conda.sh
+conda activate base
+
 export package_version="${1:-$(date +'%Y.%-m.%-d.%-H.%-M.%-S')}"
 echo "Building macosx wheels, version '${package_version}'"
 
-wheelhouse="${HOME}/Research/Temp/wheelhouse"
+temp_dir="${HOME}/Research/Temp"
+wheelhouse="${temp_dir}/wheelhouse"
+code_dir="${PWD}"
+
+PYTHON_VERSIONS=( 2.7 3.4 3.5 3.6 )
 
 /bin/rm -rf "${wheelhouse}"
 mkdir -p "${wheelhouse}"
 
-CONDA_ENVS=( py27 py34 py35 py36 )
+pip install --quiet --upgrade wheel
+pip install --quiet --upgrade pipenv
 
-# Update conda envs
-for CONDA_ENV in "${CONDA_ENVS[@]}"; do
-    source activate "${CONDA_ENV}"
-    conda update -y --all
-    pip install --upgrade pip
-    source deactivate
-done
-
-# Compile wheels
-for CONDA_ENV in "${CONDA_ENVS[@]}"; do
-    source activate "${CONDA_ENV}"
-    pip install -r ./requirements-build.txt
-    pip wheel ./ -w "${wheelhouse}/"
-    source deactivate
+# Loop through python versions, building wheels
+for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"; do
+    conda activate "py${PYTHON_VERSION}"
+    /bin/rm -rf "${temp_dir}/quaternion-pipenv"
+    mkdir -p "${temp_dir}/quaternion-pipenv"
+    pushd "${temp_dir}/quaternion-pipenv"
+    pipenv --python "${PYTHON_VERSION}"
+    pipenv --python "${PYTHON_VERSION}" run pip install -r "${code_dir}/requirements-build.txt"
+    pipenv --python "${PYTHON_VERSION}" run pip wheel "${code_dir}/" -r "${code_dir}/requirements-build.txt" -w "${wheelhouse}/"
+    popd
+    conda deactivate
 done
 
 # Bundle external shared libraries into the wheels
-for whl in $(ls $(echo "${wheelhouse}/*.whl")); do
+for whl in $(ls $(echo "${wheelhouse}/numpy_quaternion*.whl")); do
     echo
     delocate-listdeps --depending "$whl"
     delocate-wheel -v "$whl"
@@ -36,20 +42,19 @@ for whl in $(ls $(echo "${wheelhouse}/*.whl")); do
 done
 
 
-### NOTE: These lines are specialized for quaternion
-for CONDA_ENV in "${CONDA_ENVS[@]}"; do
-    source activate "${CONDA_ENV}"
-    # Install packages and test ability to import and run simple command
-    pip install --upgrade numpy-quaternion --no-index -f "${wheelhouse}"
-    (cd "$HOME"; python -c 'import numpy as np; import quaternion; print(quaternion.__version__); print("quaternion.z = {0}".format(quaternion.z))')
-    source deactivate
-done
-
+# ### NOTE: These lines are specialized for quaternion
+# for CONDA_ENV in "${CONDA_ENVS[@]}"; do
+#     source activate "${CONDA_ENV}"
+#     # Install packages and test ability to import and run simple command
+#     pip install --upgrade numpy-quaternion --no-index -f "${wheelhouse}"
+#     (cd "$HOME"; python -c 'import numpy as np; import quaternion; print(quaternion.__version__); print("quaternion.z = {0}".format(quaternion.z))')
+#     source deactivate
+# done
 
 # Just in case we failed to deactivate somehow:
 source deactivate
 
 # Upload to pypi
 echo "Uploading to pypi"
-pip install twine
-twine upload "${wheelhouse}"/*macosx*.whl
+pip install --quiet --upgrade twine
+twine upload "${wheelhouse}"/numpy_quaternion*macosx*.whl
