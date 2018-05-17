@@ -10,6 +10,12 @@ import quaternion
 from numpy import *
 import pytest
 
+try:
+    import scipy
+    has_scipy = True
+except:
+    has_scipy = False
+
 
 from sys import platform
 on_windows = ('win' in platform.lower() and not 'darwin' in platform.lower())
@@ -1231,7 +1237,7 @@ def test_numpy_array_conversion(Qs):
     assert np.array_equal(quaternion.as_quat_array(q[:, 3:7]), Q)
 
 
-@pytest.mark.skipif(os.environ.get('CONDA') == 'false', reason="Pip doesn't install scipy well")
+@pytest.mark.skipif(not has_scipy, reason="Scipy is not installed")
 def test_integrate_angular_velocity():
     import math
     import numpy as np
