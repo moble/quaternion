@@ -66,6 +66,9 @@ if __name__ == "__main__":
           package_dir={'quaternion': ''},
           ext_modules=[extension],
           version=version,
+          install_requires=[
+              'numpy>=1.13',
+          ],
           url='https://github.com/moble/quaternion',
           author='Michael Boyle',
           author_email='mob22@cornell.edu',

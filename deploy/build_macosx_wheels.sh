@@ -21,7 +21,7 @@ done
 # Compile wheels
 for CONDA_ENV in "${CONDA_ENVS[@]}"; do
     source activate "${CONDA_ENV}"
-    pip install -r ./requirements.txt
+    pip install -r ./requirements-build.txt
     pip wheel ./ -w "${wheelhouse}/"
     source deactivate
 done

@@ -41,7 +41,7 @@ install:
   - ECHO "%cd%"
 
   - "python -m pip install --upgrade pip"
-  - "%CMD_IN_ENV% pip install -r requirements.txt"
+  - "%CMD_IN_ENV% pip install -r requirements-build.txt"
   - "%CMD_IN_ENV% pip install --upgrade pytest wheel twine"
 
 build_script:
