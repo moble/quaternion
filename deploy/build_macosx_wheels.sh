@@ -1,5 +1,6 @@
 #! /bin/bash
 set -e
+set -x
 
 . ~/.continuum/anaconda3/etc/profile.d/conda.sh
 conda activate base
@@ -16,8 +17,10 @@ PYTHON_VERSIONS=( 2.7 3.4 3.5 3.6 )
 /bin/rm -rf "${wheelhouse}"
 mkdir -p "${wheelhouse}"
 
-pip install --quiet --upgrade wheel
-pip install --quiet --upgrade pipenv
+pip install --upgrade wheel
+pip install --upgrade pipenv
+pip uninstall -y virtualenv
+conda install -y virtualenv
 
 # Loop through python versions, building wheels
 for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"; do
@@ -26,8 +29,8 @@ for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"; do
     mkdir -p "${temp_dir}/quaternion-pipenv"
     pushd "${temp_dir}/quaternion-pipenv"
     pipenv --python "${PYTHON_VERSION}"
-    pipenv --python "${PYTHON_VERSION}" run pip install -r "${code_dir}/requirements-build.txt"
-    pipenv --python "${PYTHON_VERSION}" run pip wheel "${code_dir}/" -r "${code_dir}/requirements-build.txt" -w "${wheelhouse}/"
+    pipenv run pip install -r "${code_dir}/requirements-build.txt"
+    pipenv run pip wheel "${code_dir}/" -r "${code_dir}/requirements-build.txt" -w "${wheelhouse}/"
     popd
     conda deactivate
 done

@@ -1,6 +1,7 @@
 #! /bin/bash
 
 set -e
+set -x
 
 export package_version=$(git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S' || date +"%Y.%-m.%-d.%-H.%-M.%-S")
 echo "Building version '${package_version}'"
@@ -10,8 +11,8 @@ echo "Building version '${package_version}'"
 CFLAGS='-Werror -Wall -Wextra' python setup.py install
 python -c 'import numpy as np; import quaternion; tmp = quaternion.quaternion(1,2,3,4)'
 
-# Create a pure source pip package
-python setup.py sdist upload
+# # Create a pure source pip package
+# python setup.py sdist upload
 
 # Create all the osx binary pip packages
 ./deploy/build_macosx_wheels.sh "${package_version}"
