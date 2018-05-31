@@ -1231,6 +1231,17 @@ def test_numpy_array_conversion(Qs):
             for l in range(4):  # Check each component individually
                 assert p[j][k][l] == Q[4 * j + k].components[l]
     assert np.array_equal(quaternion.as_quat_array(p), P)  # Check that we can go backwards
+    # Check that we get an exception if the final dimension is not divisible by 4
+    with pytest.raises(ValueError):
+        quaternion.as_quat_array(np.random.rand(4, 1))
+    with pytest.raises(ValueError):
+        quaternion.as_quat_array(np.random.rand(4, 2))
+    with pytest.raises(ValueError):
+        quaternion.as_quat_array(np.random.rand(4, 3))
+    with pytest.raises(ValueError):
+        quaternion.as_quat_array(np.random.rand(4, 5))
+    with pytest.raises(ValueError):
+        quaternion.as_quat_array(np.random.rand(4, 5, 3, 2, 1))
     # Finally, check that it works on non-contiguous arrays, by adding random padding and then slicing
     q = quaternion.as_float_array(Q)
     q = np.concatenate((np.random.rand(q.shape[0], 3), q, np.random.rand(q.shape[0], 3)), axis=1)
