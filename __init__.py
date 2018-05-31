@@ -65,17 +65,25 @@ def as_float_array(a):
 def as_quat_array(a):
     """View a float array as an array of quaternions
 
-    This function is fast (of order 1 microsecond) because no data is
-    copied; the returned quantity is just a "view" of the original.
-
     The input array must have a final dimension whose size is
-    divisible by four (or better yet *is* 4).
+    divisible by four (or better yet *is* 4), because successive
+    indices in that last dimension will be considered successive
+    components of the output quaternion.
 
-    We will not convert back from a spinor array because there is no
-    unique convention for the spinors, so I don't want to mess with
-    that.  Also, we want to discourage users from the slow,
-    memory-copying process of swapping columns required for useful
-    definitions of the spinors.
+    This function is usually fast (of order 1 microsecond) because no
+    data is copied; the returned quantity is just a "view" of the
+    original.  However, if the input array is not C-contiguous
+    (basically, as you increment the index into the last dimension of
+    the array, you just move to the neighboring float in memory), the
+    data will need to be copied which may be quite slow.  Therefore,
+    you should try to ensure that the input array is in that order.
+    Slices and transpositions will frequently break that rule.
+
+    We will not convert back from a two-spinor array because there is
+    no unique convention for them, so I don't want to mess with that.
+    Also, we want to discourage users from the slow, memory-copying
+    process of swapping columns required for useful definitions of
+    the two-spinors.
 
     """
     a = np.asarray(a, dtype=np.double)
@@ -84,17 +92,23 @@ def as_quat_array(a):
     if a.shape == (4,):
         return quaternion(a[0], a[1], a[2], a[3])
 
-    # view only works if the last axis is contiguous
-    # if a.strides[-1] != a.itemsize:
-    #     a = a.copy(order='C')
+    # view only works if the last axis is C-contiguous
     if not a.flags['C_CONTIGUOUS'] or a.strides[-1] != a.itemsize:
         a = a.copy(order='C')
-    av = a.view(np.quaternion)
+    try:
+        av = a.view(np.quaternion)
+    except ValueError as e:
+        message = (str(e) + '\n            '
+                   + 'Failed to view input data as a series of quaternions.  '
+                   + 'Please ensure that the last dimension has size divisible by 4.\n            '
+                   + 'Input data has shape {0} and dtype {1}.'.format(a.shape, a.dtype))
+        raise ValueError(message)
 
-    # special case - don't create an axis for a single quaternion, to match
-    # the output of as_float_array
+    # special case: don't create an axis for a single quaternion, to
+    # match the output of `as_float_array`
     if av.shape[-1] == 1:
         av = av.reshape(a.shape[:-1])
+
     return av
 
 
