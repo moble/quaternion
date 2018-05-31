@@ -12,15 +12,14 @@ temp_dir="${HOME}/Research/Temp"
 wheelhouse="${temp_dir}/wheelhouse"
 code_dir="${PWD}"
 
-PYTHON_VERSIONS=( 2.7 3.4 3.5 3.6 )
+PYTHON_VERSIONS=( 2.7 3.5 3.6 )
+# PYTHON_VERSIONS=( 2.7 3.4 3.5 3.6 )
 
 /bin/rm -rf "${wheelhouse}"
 mkdir -p "${wheelhouse}"
 
 pip install --upgrade wheel
 pip install --upgrade pipenv
-pip uninstall -y virtualenv
-conda install -y virtualenv
 
 # Loop through python versions, building wheels
 for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"; do
