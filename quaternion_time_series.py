@@ -261,18 +261,16 @@ def integrate_angular_velocity(Omega, t0, t1, R0=None, tolerance=1e-12):
 
     y0 = R0.components
 
-    solver = ode(RHS)
-    solver.set_initial_value(y0, t0)
-
     if input_is_tabulated:
-        solver.set_integrator('dop853', atol=tolerance, rtol=0.0)
+        from scipy.integrate import solve_ivp
         t = t_Omega
-        R = np.empty((len(t), 4))
-        R[0] = R0.components
-        for i, t_i in enumerate(t[1:], 1):
-            R[i] = solver.integrate(t_i)
-        R = quaternion.as_quat_array(R)
+        t_span = [t_Omega[0], t_Omega[-1]]
+        y0 = quaternion.one.components
+        solution = solve_ivp(RHS, t_span, y0, t_eval=t_Omega, atol=tolerance, rtol=100*np.finfo(float).eps)
+        R = quaternion.from_float_array(solution.y.T)
     else:
+        solver = ode(RHS)
+        solver.set_initial_value(y0, t0)
         solver.set_integrator('dop853', nsteps=1, atol=tolerance, rtol=0.0)
         solver._integrator.iwork[2] = -1  # suppress Fortran-printed warning
         t = appending_array((int(t1-t0),))
