@@ -233,6 +233,8 @@ def integrate_angular_velocity(Omega, t0, t1, R0=None, tolerance=1e-12):
     if R0 is None:
         R0 = quaternion.one
 
+    input_is_tabulated = False
+
     try:
         t_Omega, v = Omega
         from scipy.interpolate import InterpolatedUnivariateSpline
@@ -242,6 +244,7 @@ def integrate_angular_velocity(Omega, t0, t1, R0=None, tolerance=1e-12):
         def Omega_func(t, R):
             return [Omega_x(t), Omega_y(t), Omega_z(t)]
         Omega_func(t0, R0)
+        input_is_tabulated = True
     except (TypeError, ValueError):
         def Omega_func(t, R):
             return Omega(t, R)
@@ -259,26 +262,33 @@ def integrate_angular_velocity(Omega, t0, t1, R0=None, tolerance=1e-12):
     y0 = R0.components
 
     solver = ode(RHS)
-    solver.set_integrator('dop853', nsteps=1, atol=tolerance, rtol=0.0)
     solver.set_initial_value(y0, t0)
-    solver._integrator.iwork[2] = -1  # suppress Fortran-printed warning
 
-    t = appending_array((int(t1-t0),))
-    t.append(solver.t)
-    R = appending_array((int(t1-t0), 4))
-    R.append(solver.y)
-
-    warnings.filterwarnings("ignore", category=UserWarning)
-    t_last = solver.t
-    while solver.t < t1:
-        solver.integrate(t1, step=True)
-        if solver.t > t_last:
-            t.append(solver.t)
-            R.append(solver.y)
-            t_last = solver.t
-    warnings.resetwarnings()
-
-    t = t.a
-    R = quaternion.as_quat_array(R.a)
+    if input_is_tabulated:
+        solver.set_integrator('dop853', atol=tolerance, rtol=0.0)
+        t = t_Omega
+        R = np.empty((len(t), 4))
+        R[0] = R0.components
+        for i, t_i in enumerate(t[1:], 1):
+            R[i] = solver.integrate(t_i)
+        R = quaternion.as_quat_array(R)
+    else:
+        solver.set_integrator('dop853', nsteps=1, atol=tolerance, rtol=0.0)
+        solver._integrator.iwork[2] = -1  # suppress Fortran-printed warning
+        t = appending_array((int(t1-t0),))
+        t.append(solver.t)
+        R = appending_array((int(t1-t0), 4))
+        R.append(solver.y)
+        warnings.filterwarnings("ignore", category=UserWarning)
+        t_last = solver.t
+        while solver.t < t1:
+            solver.integrate(t1, step=True)
+            if solver.t > t_last:
+                t.append(solver.t)
+                R.append(solver.y)
+                t_last = solver.t
+        warnings.resetwarnings()
+        t = t.a
+        R = quaternion.as_quat_array(R.a)
 
     return t, R
