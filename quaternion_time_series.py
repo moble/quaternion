@@ -265,7 +265,6 @@ def integrate_angular_velocity(Omega, t0, t1, R0=None, tolerance=1e-12):
         from scipy.integrate import solve_ivp
         t = t_Omega
         t_span = [t_Omega[0], t_Omega[-1]]
-        y0 = quaternion.one.components
         solution = solve_ivp(RHS, t_span, y0, t_eval=t_Omega, atol=tolerance, rtol=100*np.finfo(float).eps)
         R = quaternion.from_float_array(solution.y.T)
     else:
