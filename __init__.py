@@ -10,7 +10,7 @@ from .numpy_quaternion import (quaternion, _eps,
                                # slerp_vectorized, squad_vectorized,
                                # slerp, squad,
                                )
-from .quaternion_time_series import slerp, squad, integrate_angular_velocity
+from .quaternion_time_series import slerp, squad, integrate_angular_velocity, minimal_rotation
 from .calculus import derivative, definite_integral, indefinite_integral
 from ._version import __version__
 

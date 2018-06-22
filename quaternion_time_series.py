@@ -289,3 +289,43 @@ def integrate_angular_velocity(Omega, t0, t1, R0=None, tolerance=1e-12):
         R = quaternion.as_quat_array(R.a)
 
     return t, R
+
+
+def minimal_rotation(R, t, iterations=2):
+    """Adjust frame so that there is no rotation about z' axis
+
+    The output of this function is a frame that rotates the z axis onto the same z' axis as the
+    input frame, but with minimal rotation about that axis.  This is done by pre-composing the input
+    rotation with a rotation about the z axis through an angle γ, where
+
+        dγ/dt = 2*(dR/dt * z * R.conjugate()).w
+
+    This ensures that the angular velocity has no component along the z' axis.
+
+    Note that this condition becomes easier to impose the closer the input rotation is to a
+    minimally rotating frame, which means that repeated application of this function improves its
+    accuracy.  By default, this function is iterated twice, though a few more iterations may be
+    called for.
+
+    Parameters
+    ==========
+    R: quaternion array
+        Time series describing rotation
+    t: float array
+        Corresponding times at which R is measured
+    iterations: int [defaults to 2]
+        Repeat the minimization to refine the result
+
+    """
+    from scipy.interpolate import InterpolatedUnivariateSpline as spline
+    if iterations == 0:
+        return R
+    R = quaternion.as_float_array(R)
+    Rdot = np.empty_like(R)
+    for i in range(4):
+        Rdot[:, i] = spline(t, R[:, i]).derivative()(t)
+    Rdot = quaternion.from_float_array(Rdot)
+    halfγdot = quaternion.as_float_array(Rdot * quaternion.z * R.conjugate())[:, 0]
+    halfγ = spline(t, halfγdot).antiderivative()(t)
+    Rγ = np.exp(quaternion.z * halfγ)
+    return minimal_rotation(R * Rγ, t, iterations=iterations-1)
