@@ -324,6 +324,7 @@ def minimal_rotation(R, t, iterations=2):
     Rdot = np.empty_like(R)
     for i in range(4):
         Rdot[:, i] = spline(t, R[:, i]).derivative()(t)
+    R = quaternion.from_float_array(R)
     Rdot = quaternion.from_float_array(Rdot)
     halfγdot = quaternion.as_float_array(Rdot * quaternion.z * R.conjugate())[:, 0]
     halfγ = spline(t, halfγdot).antiderivative()(t)
