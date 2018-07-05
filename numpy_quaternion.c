@@ -1382,8 +1382,8 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   // The quaternion array descr
   quaternion_descr = PyObject_New(PyArray_Descr, &PyArrayDescr_Type);
   quaternion_descr->typeobj = &PyQuaternion_Type;
-  quaternion_descr->kind = 'q';
-  quaternion_descr->type = 'j';
+  quaternion_descr->kind = 'V';
+  quaternion_descr->type = 'q';
   quaternion_descr->byteorder = '=';
   quaternion_descr->flags = 0;
   quaternion_descr->type_num = 0; // assigned at registration
