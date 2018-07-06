@@ -38,13 +38,13 @@ def slerp(R1, R2, t1, t2, t_out):
 def squad(R_in, t_in, t_out):
     """Spherical "quadrangular" interpolation of rotors with a cubic spline
 
-    This is the smoothest simple way to interpolate a time series of
-    rotations.  It uses the analog of a cubic spline, except that the
-    interpolant is confined to the rotor manifold in a natural way.
-    Alternative methods involving interpolation of other coordinates on
-    the rotation group or normalization of interpolated values give bad
-    results.  The results from this method are as natural as any, and
-    are continuous in first and second derivatives.
+    This is the best way to interpolate rotations.  It uses the analog
+    of a cubic spline, except that the interpolant is confined to the
+    rotor manifold in a natural way.  Alternative methods involving
+    interpolation of other coordinates on the rotation group or
+    normalization of interpolated values give bad results.  The
+    results from this method are as natural as any, and are continuous
+    in first and second derivatives.
 
     The input `R_in` rotors are assumed to be reasonably continuous
     (no sign flips), and the input `t` arrays are assumed to be
@@ -296,9 +296,9 @@ def minimal_rotation(R, t, iterations=2):
 
     The output of this function is a frame that rotates the z axis onto the same z' axis as the
     input frame, but with minimal rotation about that axis.  This is done by pre-composing the input
-    rotation with a rotation about the z axis through an angle γ, where
+    rotation with a rotation about the z axis through an angle gamma, where
 
-        dγ/dt = 2*(dR/dt * z * R.conjugate()).w
+        dgamma/dt = 2*(dR/dt * z * R.conjugate()).w
 
     This ensures that the angular velocity has no component along the z' axis.
 
@@ -326,7 +326,7 @@ def minimal_rotation(R, t, iterations=2):
         Rdot[:, i] = spline(t, R[:, i]).derivative()(t)
     R = quaternion.from_float_array(R)
     Rdot = quaternion.from_float_array(Rdot)
-    halfγdot = quaternion.as_float_array(Rdot * quaternion.z * R.conjugate())[:, 0]
-    halfγ = spline(t, halfγdot).antiderivative()(t)
-    Rγ = np.exp(quaternion.z * halfγ)
-    return minimal_rotation(R * Rγ, t, iterations=iterations-1)
+    halfgammadot = quaternion.as_float_array(Rdot * quaternion.z * R.conjugate())[:, 0]
+    halfgamma = spline(t, halfgammadot).antiderivative()(t)
+    Rgamma = np.exp(quaternion.z * halfgamma)
+    return minimal_rotation(R * Rgamma, t, iterations=iterations-1)
