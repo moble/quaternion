@@ -14,6 +14,8 @@ extern "C" {
     #include <math.h>
   #endif
 
+  #include <Python.h>
+
   #define _DUAL_QUATERNION_EPS 1e-14
 
   #if defined(_MSC_VER)
@@ -33,6 +35,10 @@ extern "C" {
     double x;
     double y;
     double z;
+    double er;
+    double ei;
+    double ej;
+    double ek;
   } dual_quaternion;
 
   // Constructor-ish
@@ -41,17 +47,22 @@ extern "C" {
 
   // Unary bool returners
   static NPY_INLINE int dual_quaternion_isnan(dual_quaternion q) {
-    return isnan(q.w) || isnan(q.x) || isnan(q.y) || isnan(q.z);
+    return (isnan(q.w) || isnan(q.x) || isnan(q.y) || isnan(q.z)
+            || isnan(q.er) || isnan(q.ei) || isnan(q.ej) || isnan(q.ek));
+
   }
   static NPY_INLINE int dual_quaternion_nonzero(dual_quaternion q) {
     if(dual_quaternion_isnan(q)) { return 1; }
-    return ! (q.w == 0 && q.x == 0 && q.y == 0 && q.z == 0);
+    return ! (q.w == 0 && q.x == 0 && q.y == 0 && q.z == 0
+              && q.er == 0 && q.ei ==0 && q.ej ==0 && q.ek == 0);
   }
   static NPY_INLINE int dual_quaternion_isinf(dual_quaternion q) {
-    return isinf(q.w) || isinf(q.x) || isinf(q.y) || isinf(q.z);
+    return (isinf(q.w) || isinf(q.x) || isinf(q.y) || isinf(q.z)
+            || isinf(q.er) || isinf(q.ei) || isinf(q.ej) || isinf(q.ek));
   }
   static NPY_INLINE int dual_quaternion_isfinite(dual_quaternion q) {
-    return isfinite(q.w) && isfinite(q.x) && isfinite(q.y) && isfinite(q.z);
+    return (isfinite(q.w) && isfinite(q.x) && isfinite(q.y) && isfinite(q.z) &&
+            isfinite(q.er) && isfinite(q.ei) && isfinite(q.ej) && isfinite(q.ek));
   }
 
   // Binary bool returners
@@ -62,7 +73,11 @@ extern "C" {
       q1.w == q2.w &&
       q1.x == q2.x &&
       q1.y == q2.y &&
-      q1.z == q2.z;
+      q1.z == q2.z &&
+      q1.er == q2.er &&
+      q1.ei == q2.ei &&
+      q1.ej == q2.ej &&
+      q1.ek == q3.ek;
   }
   static NPY_INLINE int dual_quaternion_not_equal(dual_quaternion q1, dual_quaternion q2) {
     return !dual_quaternion_equal(q1, q2);
@@ -74,7 +89,11 @@ extern "C" {
       (q1.w != q2.w ? q1.w < q2.w :
        q1.x != q2.x ? q1.x < q2.x :
        q1.y != q2.y ? q1.y < q2.y :
-       q1.z != q2.z ? q1.z < q2.z : 0);
+       q1.z != q2.z ? q1.z < q2.z :
+       q1.er != q2.er ? q1.er < q2.er :
+       q1.ei != q2.ei ? q1.ei < q2.ei :
+       q1.ej != q2.ej ? q1.ej < q2.ej :
+       q1.ek != q2.ek ? q1.ek < q2.ek : 0);
   }
   static NPY_INLINE int dual_quaternion_greater(dual_quaternion q1, dual_quaternion q2) {
     return
@@ -83,7 +102,11 @@ extern "C" {
       (q1.w != q2.w ? q1.w > q2.w :
        q1.x != q2.x ? q1.x > q2.x :
        q1.y != q2.y ? q1.y > q2.y :
-       q1.z != q2.z ? q1.z > q2.z : 0);
+       q1.z != q2.z ? q1.z > q2.z :
+       q1.er != q2.er ? q1.er > q2.er :
+       q1.ei != q2.ei ? q1.ei > q2.ei :
+       q1.ej != q2.ej ? q1.ej > q2.ej :
+       q1.ek != q2.ek ? q1.ek > q2.ek : 0);
   }
   static NPY_INLINE int dual_quaternion_less_equal(dual_quaternion q1, dual_quaternion q2) {
     return
@@ -92,7 +115,11 @@ extern "C" {
       (q1.w != q2.w ? q1.w < q2.w :
        q1.x != q2.x ? q1.x < q2.x :
        q1.y != q2.y ? q1.y < q2.y :
-       q1.z != q2.z ? q1.z < q2.z : 1);
+       q1.z != q2.z ? q1.z < q2.z :
+       q1.er != q2.er ? q1.er < q2.er :
+       q1.ei != q2.ei ? q1.ei < q2.ei :
+       q1.ej != q2.ej ? q1.ej < q2.ej :
+       q1.ek != q2.ek ? q1.ek < q2.ek : 1);
     // Note that the final possibility is 1, whereas in
     // `dual_quaternion_less` it was 0.  This distinction correctly
     // accounts for equality.
@@ -104,7 +131,11 @@ extern "C" {
       (q1.w != q2.w ? q1.w > q2.w :
        q1.x != q2.x ? q1.x > q2.x :
        q1.y != q2.y ? q1.y > q2.y :
-       q1.z != q2.z ? q1.z > q2.z : 1);
+       q1.z != q2.z ? q1.z > q2.z :
+       q1.er != q2.er ? q1.er > q2.er :
+       q1.ei != q2.ei ? q1.ei > q2.ei :
+       q1.ej != q2.ej ? q1.ej > q2.ej :
+       q1.ek != q2.ek ? q1.ek > q2.ek : 1);
     // Note that the final possibility is 1, whereas in
     // `dual_quaternion_greater` it was 0.  This distinction correctly
     // accounts for equality.
@@ -113,13 +144,16 @@ extern "C" {
   // Unary float returners
   dual_quaternion dual_quaternion_log(dual_quaternion q); // Pre-declare; declared again below, in its rightful place
   static NPY_INLINE double dual_quaternion_norm(dual_quaternion q) {
-    return q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z;
+    PyErr_SetNone(PyExc_NotImplementedError);
+    return 0
   }
   static NPY_INLINE double dual_quaternion_absolute(dual_quaternion q) {
-    return sqrt(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
+    PyErr_SetNone(PyExc_NotImplementedError);
+    return 0
   }
   static NPY_INLINE double dual_quaternion_angle(dual_quaternion q) {
-    return 2 * dual_quaternion_absolute( dual_quaternion_log( q ) );
+    PyErr_SetNone(PyExc_NotImplementedError);
+    return 0
   }
 
   // Unary dual_quaternion returners
@@ -259,6 +293,10 @@ extern "C" {
       q1.x+q2.x,
       q1.y+q2.y,
       q1.z+q2.z,
+      q1.er+q2.er,
+      q1.ei+q2.ei,
+      q1.ej+q2.ej,
+      q1.ek+q2.ek,
     };
     return r;
   }
@@ -267,6 +305,10 @@ extern "C" {
     q1->x += q2.x;
     q1->y += q2.y;
     q1->z += q2.z;
+    q1->er += q2.er;
+    q1->ei += q2.ei;
+    q1->ej += q2.ej;
+    q1->ek += q2.ek;
     return;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_scalar_add(double s, dual_quaternion q) {
@@ -291,6 +333,10 @@ extern "C" {
       q1.x-q2.x,
       q1.y-q2.y,
       q1.z-q2.z,
+      q1.er-q2.er,
+      q1.ei-q2.ei,
+      q1.ej-q2.ej,
+      q1.ek-q2.ek,
     };
     return r;
   }
@@ -299,6 +345,10 @@ extern "C" {
     q1->x -= q2.x;
     q1->y -= q2.y;
     q1->z -= q2.z;
+    q1->er -= q2.er;
+    q1->ei -= q2.ei;
+    q1->ej -= q2.ej;
+    q1->ek -= q2.ek
     return;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_scalar_subtract(double s, dual_quaternion q) {
