@@ -369,6 +369,10 @@ extern "C" {
       q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y,
       q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x,
       q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w,
+      (q1.w*q2.er - q1.x*q2.ei - q1.y*q2.ej - q1.z*q2.ek)+(q1.er*q2.w - q1.ei*q2.x - q1.ej*q2.y - q1.ek*q2.z),
+      (q1.w*q2.ei + q1.x*q2.er + q1.y*q2.ek - q1.z*q2.ej)+(q1.er*q2.x + q1.ei*q2.w + q1.ej*q2.z - q1.ek*q2.y),
+      (q1.w*q2.ej - q1.x*q2.ek + q1.y*q2.er + q1.z*q2.ei)+(q1.er*q2.y - q1.ei*q2.z + q1.ej*q2.w + q1.ek*q2.x),
+      (q1.w*q2.ek + q1.x*q2.ej - q1.y*q2.ei + q1.z*q2.er)+(q1.er*q2.z + q1.ei*q2.y - q1.ej*q2.x + q1.ek*q2.w),
     };
     return r;
   }
@@ -378,10 +382,14 @@ extern "C" {
     q1a->x = q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y;
     q1a->y = q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x;
     q1a->z = q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w;
+    q1a->er = (q1.w*q2.er - q1.x*q2.ei - q1.y*q2.ej - q1.z*q2.ek)+(q1.er*q2.w - q1.ei*q2.x - q1.ej*q2.y - q1.ek*q2.z);
+    q1a->ei = (q1.w*q2.ei + q1.x*q2.er + q1.y*q2.ek - q1.z*q2.ej)+(q1.er*q2.x + q1.ei*q2.w + q1.ej*q2.z - q1.ek*q2.y);
+    q1a->ej = (q1.w*q2.ej - q1.x*q2.ek + q1.y*q2.er + q1.z*q2.ei)+(q1.er*q2.y - q1.ei*q2.z + q1.ej*q2.w + q1.ek*q2.x);
+    q1a->ek = (q1.w*q2.ek + q1.x*q2.ej - q1.y*q2.ei + q1.z*q2.er)+(q1.er*q2.z + q1.ei*q2.y - q1.ej*q2.x + q1.ek*q2.w);
     return;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_scalar_multiply(double s, dual_quaternion q) {
-    dual_quaternion r = {s*q.w, s*q.x, s*q.y, s*q.z};
+    dual_quaternion r = {s*q.w, s*q.x, s*q.y, s*q.z, s*q.er, s*q.ei, s*q.ej, s*q.ek};
     return r;
   }
   static NPY_INLINE void dual_quaternion_inplace_scalar_multiply(double s, dual_quaternion* q) {
@@ -389,10 +397,14 @@ extern "C" {
     q->x *= s;
     q->y *= s;
     q->z *= s;
+    q->er *= s;
+    q->ei *= s;
+    q->ej *= s;
+    q->ek *= s;
     return;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_multiply_scalar(dual_quaternion q, double s) {
-    dual_quaternion r = {s*q.w, s*q.x, s*q.y, s*q.z};
+    dual_quaternion r = {s*q.w, s*q.x, s*q.y, s*q.z, s*q.er, s*q.ei, s*q.ej, s*q.ek};
     return r;
   }
   static NPY_INLINE void dual_quaternion_inplace_multiply_scalar(dual_quaternion* q, double s) {
@@ -400,6 +412,10 @@ extern "C" {
     q->x *= s;
     q->y *= s;
     q->z *= s;
+    q->er *= s;
+    q->ei *= s;
+    q->ej *= s;
+    q->ek *= s;
     return;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_divide(dual_quaternion q1, dual_quaternion q2) {
