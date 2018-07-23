@@ -77,7 +77,7 @@ extern "C" {
       q1.er == q2.er &&
       q1.ei == q2.ei &&
       q1.ej == q2.ej &&
-      q1.ek == q3.ek;
+      q1.ek == q2.ek;
   }
   static NPY_INLINE int dual_quaternion_not_equal(dual_quaternion q1, dual_quaternion q2) {
     return !dual_quaternion_equal(q1, q2);
@@ -145,15 +145,15 @@ extern "C" {
   dual_quaternion dual_quaternion_log(dual_quaternion q); // Pre-declare; declared again below, in its rightful place
   static NPY_INLINE double dual_quaternion_norm(dual_quaternion q) {
     PyErr_SetNone(PyExc_NotImplementedError);
-    return 0
+    return 0;
   }
   static NPY_INLINE double dual_quaternion_absolute(dual_quaternion q) {
     PyErr_SetNone(PyExc_NotImplementedError);
-    return 0
+    return 0;
   }
   static NPY_INLINE double dual_quaternion_angle(dual_quaternion q) {
     PyErr_SetNone(PyExc_NotImplementedError);
-    return 0
+    return 0;
   }
 
   // Unary dual_quaternion returners
@@ -348,7 +348,7 @@ extern "C" {
     q1->er -= q2.er;
     q1->ei -= q2.ei;
     q1->ej -= q2.ej;
-    q1->ek -= q2.ek
+    q1->ek -= q2.ek;
     return;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_scalar_subtract(double s, dual_quaternion q) {

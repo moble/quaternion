@@ -47,7 +47,7 @@ dual_quaternion_sqrt(dual_quaternion q)
       return r;
   }
   absolute = sqrt(absolute);
-  if(fabs(absolute+q.w)<_dual_quaternion_EPS*absolute) {
+  if(fabs(absolute+q.w)<_DUAL_QUATERNION_EPS*absolute) {
     dual_quaternion r = {0.0, sqrt(absolute), 0.0, 0.0};
     return r;
   } else {
@@ -61,10 +61,10 @@ dual_quaternion
 dual_quaternion_log(dual_quaternion q)
 {
   double b = sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
-  if(fabs(b) <= _dual_quaternion_EPS*fabs(q.w)) {
+  if(fabs(b) <= _DUAL_QUATERNION_EPS*fabs(q.w)) {
     if(q.w<0.0) {
       // fprintf(stderr, "Input dual_quaternion(%.15g, %.15g, %.15g, %.15g) has no unique logarithm; returning one arbitrarily.", q.w, q.x, q.y, q.z);
-      if(fabs(q.w+1)>_dual_quaternion_EPS) {
+      if(fabs(q.w+1)>_DUAL_QUATERNION_EPS) {
         dual_quaternion r = {log(-q.w), M_PI, 0., 0.};
         return r;
       } else {
@@ -110,7 +110,7 @@ dual_quaternion
 dual_quaternion_exp(dual_quaternion q)
 {
   double vnorm = sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
-  if (vnorm > _dual_quaternion_EPS) {
+  if (vnorm > _DUAL_QUATERNION_EPS) {
     double s = sin(vnorm) / vnorm;
     double e = exp(q.w);
     dual_quaternion r = {e*cos(vnorm), e*s*q.x, e*s*q.y, e*s*q.z};

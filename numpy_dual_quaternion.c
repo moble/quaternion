@@ -99,15 +99,14 @@ pydual_quaternion_init(PyObject *self, PyObject *args, PyObject *kwds)
                     "dual_quaternion constructor takes no keyword arguments");
     return -1;
   }
-
-  if (((size == 3) && (!PyArg_ParseTuple(args, "ddd", &q->x, &q->y, &q->z)))
-      || ((size == 4) && (!PyArg_ParseTuple(args, "dddd", &q->w, &q->x, &q->y, &q->z)))
-      || ((size<3) || (size>4))) {
+  /*TODO: Can we leave out some arguments in the dual_quaternion constructor
+    as quaternion can have 3 arguments and sets w to 0? */
+  if (((size == 8) && (!PyArg_ParseTuple(args, "dddddddd",
+           &q->w, &q->x, &q->y, &q->z, &q->er, &q->ei, &q->ej, &q->ek)))
+      || ((size<8) || (size>8))) {
     PyErr_SetString(PyExc_TypeError,
-                    "dual_quaternion constructor takes three or four float arguments");
+                    "dual_quaternion constructor takes eight float arguments");
     return -1;
-  } else if(size == 3) {
-    q->w = 0.0;
   }
 
   return 0;
@@ -116,7 +115,7 @@ pydual_quaternion_init(PyObject *self, PyObject *args, PyObject *kwds)
 #define UNARY_BOOL_RETURNER(name)                                       \
   static PyObject*                                                      \
   pydual_quaternion_##name(PyObject* a, PyObject* NPY_UNUSED(b)) {           \
-    dual_quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
+    dual_quaternion q = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};       \
     PyDualQuaternion_AsDualQuaternion(q, a);                                    \
     return PyBool_FromLong(dual_quaternion_##name(q));                       \
   }
@@ -128,8 +127,8 @@ UNARY_BOOL_RETURNER(isfinite)
 #define BINARY_BOOL_RETURNER(name)                                      \
   static PyObject*                                                      \
   pydual_quaternion_##name(PyObject* a, PyObject* b) {                       \
-    dual_quaternion p = {0.0, 0.0, 0.0, 0.0};                                \
-    dual_quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
+    dual_quaternion p = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};            \
+    dual_quaternion q = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};            \
     PyDualQuaternion_AsDualQuaternion(p, a);                                    \
     PyDualQuaternion_AsDualQuaternion(q, b);                                    \
     return PyBool_FromLong(dual_quaternion_##name(p,q));                     \
@@ -144,7 +143,7 @@ BINARY_BOOL_RETURNER(greater_equal)
 #define UNARY_FLOAT_RETURNER(name)                                      \
   static PyObject*                                                      \
   pydual_quaternion_##name(PyObject* a, PyObject* NPY_UNUSED(b)) {           \
-    dual_quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
+    dual_quaternion q = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};            \
     PyDualQuaternion_AsDualQuaternion(q, a);                                    \
     return PyFloat_FromDouble(dual_quaternion_##name(q));                    \
   }
@@ -155,7 +154,7 @@ UNARY_FLOAT_RETURNER(angle)
 #define UNARY_DUAL_QUATERNION_RETURNER(name)                                 \
   static PyObject*                                                      \
   pydual_quaternion_##name(PyObject* a, PyObject* NPY_UNUSED(b)) {           \
-    dual_quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
+    dual_quaternion q = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};            \
     PyDualQuaternion_AsDualQuaternion(q, a);                                    \
     return PyDualQuaternion_FromDualQuaternion(dual_quaternion_##name(q));           \
   }
@@ -187,8 +186,8 @@ pydual_quaternion_positive(PyObject* self, PyObject* NPY_UNUSED(b)) {
 #define QQ_BINARY_DUAL_QUATERNION_RETURNER(name)                             \
   static PyObject*                                                      \
   pydual_quaternion_##name(PyObject* a, PyObject* b) {                       \
-    dual_quaternion p = {0.0, 0.0, 0.0, 0.0};                                \
-    dual_quaternion q = {0.0, 0.0, 0.0, 0.0};                                \
+    dual_quaternion p = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};            \
+    dual_quaternion q = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};            \
     PyDualQuaternion_AsDualQuaternion(p, a);                                    \
     PyDualQuaternion_AsDualQuaternion(q, b);                                    \
     return PyDualQuaternion_FromDualQuaternion(dual_quaternion_##name(p,q));         \
@@ -207,7 +206,7 @@ QQ_BINARY_DUAL_QUATERNION_RETURNER(copysign)
     NpyIter *out_iter;                                                  \
     NpyIter_IterNextFunc *in_iternext;                                  \
     NpyIter_IterNextFunc *out_iternext;                                 \
-    dual_quaternion p = {0.0, 0.0, 0.0, 0.0};                                \
+    dual_quaternion p = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};       \
     dual_quaternion ** out_dataptr;                                          \
     PyDualQuaternion_AsDualQuaternion(p, a);                                    \
     out_array = PyArray_NewLikeArray(in_array, NPY_ANYORDER, dual_quaternion_descr, 0); \
@@ -263,7 +262,7 @@ QQ_BINARY_DUAL_QUATERNION_RETURNER(copysign)
     /* char* a_char, b_char, a_char2, b_char2;                             \ */ \
     npy_int64 val64;                                                    \
     npy_int32 val32;                                                    \
-    dual_quaternion p = {0.0, 0.0, 0.0, 0.0};                                \
+    dual_quaternion p = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};       \
     if(PyArray_Check(b)) { return pydual_quaternion_##fake_name##_array_operator(a, b); } \
     if(PyFloat_Check(a) && PyDualQuaternion_Check(b)) {                     \
       return PyDualQuaternion_FromDualQuaternion(dual_quaternion_scalar_##name(PyFloat_AsDouble(a), ((PyDualQuaternion*)b)->obval)); \
@@ -378,7 +377,8 @@ pydual_quaternion_setstate(PyDualQuaternion* self, PyObject* args)
   dual_quaternion* q;
   q = &(self->obval);
 
-  if (!PyArg_ParseTuple(args, "dddd:setstate", &q->w, &q->x, &q->y, &q->z)) {
+  if (!PyArg_ParseTuple(args, "dddddddd:setstate",
+      &q->w, &q->x, &q->y, &q->z, &q->er, &q->ei, &q->ej, &q->ek)) {
     return NULL;
   }
   Py_INCREF(Py_None);
@@ -583,12 +583,15 @@ PyMemberDef pydual_quaternion_members[] = {
   {"z", T_DOUBLE, offsetof(PyDualQuaternion, obval.z), 0,
    "The third imaginary component of the dual_quaternion"},
   {NULL, 0, 0, 0, NULL}
+  //TODO: what to name the new variables?
 };
 
+//
 // The dual_quaternion can be conveniently separated into two complex
 // numbers, which we call 'part a' and 'part b'.  These are useful in
 // writing Wigner's D matrices directly in terms of dual_quaternions.  This
 // is essentially the column-vector presentation of spinors.
+//TODO: 4 parts for dual quaternions? Or skip this bit entirely?
 static PyObject *
 pydual_quaternion_get_part_a(PyObject *self, void *NPY_UNUSED(closure))
 {
@@ -676,7 +679,7 @@ pydual_quaternion_set_components(PyObject *self, PyObject *value, void *NPY_UNUS
     PyErr_SetString(PyExc_ValueError, "Cannot set dual_quaternion to empty value");
     return -1;
   }
-  if (! (PySequence_Check(value) && PySequence_Size(value)==4) ) {
+  if (! (PySequence_Check(value) && PySequence_Size(value)==8) ) {
     PyErr_SetString(PyExc_TypeError,
                     "A dual_quaternion's components must be set to something of length 4");
     return -1;
@@ -697,6 +700,22 @@ pydual_quaternion_set_components(PyObject *self, PyObject *value, void *NPY_UNUS
   if(element == NULL) { return -1; } /* Not a sequence, or other failure */
   q->z = PyFloat_AsDouble(element);
   Py_DECREF(element);
+  element = PySequence_GetItem(value, 4);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->er = PyFloat_AsDouble(element);
+  Py_DECREF(element);
+  element = PySequence_GetItem(value, 5);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->ei = PyFloat_AsDouble(element);
+  Py_DECREF(element);
+  element = PySequence_GetItem(value, 6);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->ej = PyFloat_AsDouble(element);
+  Py_DECREF(element);
+  element = PySequence_GetItem(value, 7);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->ek = PyFloat_AsDouble(element);
+  Py_DECREF(element);
   return 0;
 }
 
@@ -704,6 +723,7 @@ pydual_quaternion_set_components(PyObject *self, PyObject *value, void *NPY_UNUS
 // dual_quaternion.  This is packaged up here, and will be used in the
 // `tp_getset` field when definining the PyDualQuaternion_Type
 // below.
+//TODO: edit this to describe dual_quaternion functions
 PyGetSetDef pydual_quaternion_getset[] = {
   {"a", pydual_quaternion_get_part_a, NULL,
    "The complex number (w+i*z)", NULL},
@@ -1387,7 +1407,7 @@ PyMODINIT_FUNC initnumpy_dual_quaternion(void) {
   dual_quaternion_descr->byteorder = '=';
   dual_quaternion_descr->flags = 0;
   dual_quaternion_descr->type_num = 0; // assigned at registration
-  dual_quaternion_descr->elsize = 8*4;
+  dual_quaternion_descr->elsize = 8*8;
   dual_quaternion_descr->alignment = 8;
   dual_quaternion_descr->subarray = NULL;
   dual_quaternion_descr->fields = NULL;

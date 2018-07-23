@@ -56,9 +56,11 @@ if __name__ == "__main__":
         raise DistutilsError('The target NumPy already has a quaternion type')
     extension = Extension(
         name='quaternion.numpy_quaternion',  # This is the name of the object file that will be compiled
-        sources=['quaternion.c', 'numpy_quaternion.c'],
+        sources=['quaternion.c', 'numpy_quaternion.c',
+                 'dual_quaternion.c', 'numpy_dual_quaternion.c'],
         extra_compile_args=['/O2' if on_windows else '-O3'],
-        depends=['quaternion.c', 'quaternion.h', 'numpy_quaternion.c'],
+        depends=['quaternion.c', 'quaternion.h', 'numpy_quaternion.c',
+                 'dual_quaternion.c', 'dual_quaternion.h', 'numpy_dual_quaternion.c'],
         include_dirs=[numpy.get_include()]
     )
     setup(name='numpy-quaternion',  # Uploaded to pypi under this name
