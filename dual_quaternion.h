@@ -54,7 +54,7 @@ extern "C" {
   static NPY_INLINE int dual_quaternion_nonzero(dual_quaternion q) {
     if(dual_quaternion_isnan(q)) { return 1; }
     return ! (q.w == 0 && q.x == 0 && q.y == 0 && q.z == 0
-              && q.er == 0 && q.ei ==0 && q.ej ==0 && q.ek == 0);
+              && q.er == 0 && q.ei == 0 && q.ej == 0 && q.ek == 0);
   }
   static NPY_INLINE int dual_quaternion_isinf(dual_quaternion q) {
     return (isinf(q.w) || isinf(q.x) || isinf(q.y) || isinf(q.z)
