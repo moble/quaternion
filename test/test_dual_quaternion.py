@@ -266,27 +266,30 @@ def test_dual_quaternion_add(Qs):
                     or (k == q_inf1 and j == q_minf1))
     for q in Qs[Qs_nonnan]:
         for s in [-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]:
-            assert (q + s == quaternion.quaternion(q.w + s, q.x, q.y, q.z))
-            assert (s + q == quaternion.quaternion(q.w + s, q.x, q.y, q.z))
+            assert (q + s == quaternion.dual_quaternion(q.w + s, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek))
+            assert (s + q == quaternion.dual_quaternion(q.w + s, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek))
 
 
-def test_quaternion_add_ufunc(Qs):
+'''
+TODO: implement this
+def test_dual_quaternion_add_ufunc(Qs):
     ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finite], operator.add)
+'''
 
-
-def test_quaternion_subtract(Qs):
+def test_dual_quaternion_subtract(Qs):
     for q in Qs[Qs_finite]:
         for p in Qs[Qs_finite]:
-            assert q - p == quaternion.quaternion(q.w - p.w, q.x - p.x, q.y - p.y, q.z - p.z)
+            assert q - p == quaternion.dual_quaternion(q.w - p.w, q.x - p.x, q.y - p.y, q.z - p.z,
+                                                  q.er - p.er, q.ei - p.ei, q.ej - p.ej, q.ek - p.ek)
     for q in Qs[Qs_nonnan]:
         for s in [-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]:
-            assert (q - s == quaternion.quaternion(q.w - s, q.x, q.y, q.z))
-            assert (s - q == quaternion.quaternion(s - q.w, -q.x, -q.y, -q.z))
+            assert (q - s == quaternion.dual_quaternion(q.w - s, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek))
+            assert (s - q == quaternion.dual_quaternion(s - q.w, -q.x, -q.y, -q.z, -q.er, -q.ei, -q.ej, -q.ek))
 
-
+'''
 def test_quaternion_subtract_ufunc(Qs):
     ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finite], operator.sub)
-
+'''
 
 def test_quaternion_multiply(Qs):
     # Check scalar multiplication

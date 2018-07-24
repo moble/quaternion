@@ -234,7 +234,11 @@ extern "C" {
       copysign(q1.w, q2.w),
       copysign(q1.x, q2.x),
       copysign(q1.y, q2.y),
-      copysign(q1.z, q2.z)
+      copysign(q1.z, q2.z),
+      copysign(q1.er, q2.er),
+      copysign(q1.ei, q2.ei),
+      copysign(q1.ej, q2.ej),
+      copysign(q1.ek, q2.ek)
     };
     return r;
   }
@@ -312,7 +316,7 @@ extern "C" {
     return;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_scalar_add(double s, dual_quaternion q) {
-    dual_quaternion r = {s+q.w, q.x, q.y, q.z};
+    dual_quaternion r = {s+q.w, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek};
     return r;
   }
   static NPY_INLINE void dual_quaternion_inplace_scalar_add(double s, dual_quaternion* q) {
@@ -320,7 +324,7 @@ extern "C" {
     return;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_add_scalar(dual_quaternion q, double s) {
-    dual_quaternion r = {s+q.w, q.x, q.y, q.z};
+    dual_quaternion r = {s+q.w, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek};
     return r;
   }
   static NPY_INLINE void dual_quaternion_inplace_add_scalar(dual_quaternion* q, double s) {
@@ -352,11 +356,11 @@ extern "C" {
     return;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_scalar_subtract(double s, dual_quaternion q) {
-    dual_quaternion r = {s-q.w, -q.x, -q.y, -q.z};
+    dual_quaternion r = {s-q.w, -q.x, -q.y, -q.z, -q.er, -q.ei, -q.ej, -q.ek};
     return r;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_subtract_scalar(dual_quaternion q, double s) {
-    dual_quaternion r = {q.w-s, q.x, q.y, q.z};
+    dual_quaternion r = {q.w-s, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek};
     return r;
   }
   static NPY_INLINE void dual_quaternion_inplace_subtract_scalar(dual_quaternion* q, double s) {
@@ -451,7 +455,7 @@ extern "C" {
   /* The following function is impossible, but listed for completeness: */
   /* static NPY_INLINE void dual_quaternion_inplace_scalar_divide(double* sa, dual_quaternion q2) { } */
   static NPY_INLINE dual_quaternion dual_quaternion_divide_scalar(dual_quaternion q, double s) {
-    dual_quaternion r = {q.w/s, q.x/s, q.y/s, q.z/s};
+    dual_quaternion r = {q.w/s, q.x/s, q.y/s, q.z/s, q.er/s, q.ei/s, q.ej/s, q.ek/s};
     return r;
   }
   static NPY_INLINE void dual_quaternion_inplace_divide_scalar(dual_quaternion* q, double s) {
@@ -459,6 +463,10 @@ extern "C" {
     q->x /= s;
     q->y /= s;
     q->z /= s;
+    q->er /= s;
+    q->ei /= s;
+    q->ej /= s;
+    q->ek /= s;
     return;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_power(dual_quaternion q, dual_quaternion p) {
