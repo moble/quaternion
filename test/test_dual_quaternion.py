@@ -67,30 +67,24 @@ def ufunc_binary_utility(array1, array2, op, rtol=2*eps, atol=0.0):
 
 @pytest.fixture
 def Qs():
-    q_nan1 = quaternion.quaternion(np.nan, 0., 0., 0.)
-    q_inf1 = quaternion.quaternion(np.inf, 0., 0., 0.)
-    q_minf1 = quaternion.quaternion(-np.inf, 0., 0., 0.)
-    q_0 = quaternion.quaternion(0., 0., 0., 0.)
-    q_1 = quaternion.quaternion(1., 0., 0., 0.)
-    x = quaternion.quaternion(0., 1., 0., 0.)
-    y = quaternion.quaternion(0., 0., 1., 0.)
-    z = quaternion.quaternion(0., 0., 0., 1.)
-    Q = quaternion.quaternion(1.1, 2.2, 3.3, 4.4)
-    Qneg = quaternion.quaternion(-1.1, -2.2, -3.3, -4.4)
-    Qbar = quaternion.quaternion(1.1, -2.2, -3.3, -4.4)
-    Qnormalized = quaternion.quaternion(0.18257418583505537115232326093360,
-                                        0.36514837167011074230464652186720,
-                                        0.54772255750516611345696978280080,
-                                        0.73029674334022148460929304373440)
-    Qlog = quaternion.quaternion(1.7959088706354, 0.515190292664085,
-                                 0.772785438996128, 1.03038058532817)
-    Qexp = quaternion.quaternion(2.81211398529184, -0.392521193481878,
-                                 -0.588781790222817, -0.785042386963756)
-    return np.array([q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qnormalized, Qlog, Qexp],
-                    dtype=np.quaternion)
+    q_nan1 = quaternion.dual_quaternion(np.nan, 0., 0., 0., 0., 0., 0., 0.)
+    q_inf1 = quaternion.dual_quaternion(np.inf, 0., 0., 0., 0., 0., 0., 0.)
+    q_minf1 = quaternion.dual_quaternion(-np.inf, 0., 0., 0., 0., 0., 0., 0.)
+    q_0 = quaternion.dual_quaternion(0., 0., 0., 0., 0., 0., 0., 0.)
+    q_1 = quaternion.dual_quaternion(1., 0., 0., 0., 0., 0., 0., 0.)
+    x = quaternion.dual_quaternion(0., 1., 0., 0., 0., 0., 0., 0.)
+    y = quaternion.dual_quaternion(0., 0., 1., 0., 0., 0., 0., 0.)
+    z = quaternion.dual_quaternion(0., 0., 0., 1., 0., 0., 0., 0.)
+    ei = quaternion.dual_quaternion(0., 0., 0., 0., 0., 1., 0., 0.)
+    ej = quaternion.dual_quaternion(0., 0., 0., 0., 0., 0., 1., 0.)
+    ek = quaternion.dual_quaternion(0., 0., 0., 0., 0., 0., 0., 1.)
+    Q = quaternion.dual_quaternion(1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8)
+    Qneg = quaternion.dual_quaternion(-1.1, -2.2, -3.3, -4.4, -5.5, -6.6, -7.7, -8.8)
+    Qbar = quaternion.dual_quaternion(1.1, -2.2, -3.3, -4.4, -5.5, -6.6, -7.7, -8.8)
+    return np.array([q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar])
 
 
-q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qnormalized, Qlog, Qexp, = range(len(Qs()))
+q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar,  = range(len(Qs()))
 Qs_zero = [i for i in range(len(Qs())) if not Qs()[i].nonzero()]
 Qs_nonzero = [i for i in range(len(Qs())) if Qs()[i].nonzero()]
 Qs_nan = [i for i in range(len(Qs())) if Qs()[i].isnan()]
@@ -126,302 +120,13 @@ def test_dual_quaternion_members():
     assert Q.ej == 7.7
     assert Q.ek == 8.8
 
-    Q = quaternion.dual_quaternion(2.2, 3.3, 4.4)
-    assert Q.real == 0.0
-    assert Q.w == 0.0
-    assert Q.x == 2.2
-    assert Q.y == 3.3
-    assert Q.z == 4.4
-
-
-def test_constants():
-    assert(quaternion.dual_quaternion)
-    assert quaternion.one == np.quaternion(1.0, 0.0, 0.0, 0.0)
-    assert quaternion.x == np.quaternion(0.0, 1.0, 0.0, 0.0)
-    assert quaternion.y == np.quaternion(0.0, 0.0, 1.0, 0.0)
-    assert quaternion.z == np.quaternion(0.0, 0.0, 0.0, 1.0)
-
-
-def test_isclose():
-    from quaternion import x, y
-
-    assert np.array_equal(quaternion.isclose([1e10*x, 1e-7*y], [1.00001e10*x, 1e-8*y], rtol=1.e-5, atol=2.e-8),
-                          np.array([True, False]))
-    assert np.array_equal(quaternion.isclose([1e10*x, 1e-8*y], [1.00001e10*x, 1e-9*y], rtol=1.e-5, atol=2.e-8),
-                          np.array([True, True]))
-    assert np.array_equal(quaternion.isclose([1e10*x, 1e-8*y], [1.0001e10*x, 1e-9*y], rtol=1.e-5, atol=2.e-8),
-                          np.array([False, True]))
-    assert np.array_equal(quaternion.isclose([x, np.nan*y], [x, np.nan*y]),
-                          np.array([True, False]))
-    assert np.array_equal(quaternion.isclose([x, np.nan*y], [x, np.nan*y], equal_nan=True),
-                          np.array([True, True]))
-
-    np.random.seed(1234)
-    a = quaternion.as_quat_array(np.random.random((3, 5, 4)))
-    assert quaternion.allclose(1e10 * a, 1.00001e10 * a, rtol=1.e-5, atol=2.e-8, verbose=True) == True
-    assert quaternion.allclose(1e-7 * a, 1e-8 * a, rtol=1.e-5, atol=2.e-8) == False
-    assert quaternion.allclose(1e10 * a, 1.00001e10 * a, rtol=1.e-5, atol=2.e-8, verbose=True) == True
-    assert quaternion.allclose(1e-8 * a, 1e-9 * a, rtol=1.e-5, atol=2.e-8, verbose=True) == True
-    assert quaternion.allclose(1e10 * a, 1.0001e10 * a, rtol=1.e-5, atol=2.e-8) == False
-    assert quaternion.allclose(1e-8 * a, 1e-9 * a, rtol=1.e-5, atol=2.e-8, verbose=True) == True
-    assert quaternion.allclose(np.nan * a, np.nan * a) == False
-    assert quaternion.allclose(np.nan * a, np.nan * a, equal_nan=True, verbose=True) == True
-
-
-def test_as_float_quat(Qs):
-    qs = Qs[Qs_nonnan]
-    for quats in [qs, np.vstack((qs,)*3), np.vstack((qs,)*(3*5)).reshape((3, 5)+qs.shape),
-                  np.vstack((qs,)*(3*5*6)).reshape((3, 5, 6)+qs.shape)]:
-        floats = quaternion.as_float_array(quats)
-        assert floats.shape == quats.shape+(4,)
-        assert allclose(quaternion.as_quat_array(floats), quats)
-        assert allclose(quaternion.from_float_array(floats), quats)
-        # Test that we can handle a list just like an array
-        assert np.array_equal(quaternion.as_quat_array(floats), quaternion.as_quat_array(floats.tolist()))
-    a = np.arange(12).reshape(3, 4)
-    assert np.array_equal(quaternion.as_float_array(quaternion.as_quat_array(a)),
-                          a.astype(float))
-    assert quaternion.as_float_array(quaternion.x).ndim == 1
-
-
-def test_as_rotation_matrix(Rs):
-    def quat_mat(quat):
-        return np.array([(quat * v * quat.inverse()).vec for v in [quaternion.x, quaternion.y, quaternion.z]]).T
-
-    def quat_mat_vec(quats):
-        mat_vec = np.array([quaternion.as_float_array(quats * v * np.invert(quats))[..., 1:]
-                            for v in [quaternion.x, quaternion.y, quaternion.z]])
-        return np.transpose(mat_vec, tuple(range(mat_vec.ndim))[1:-1]+(-1, 0))
-
-    with pytest.raises(ZeroDivisionError):
-        quaternion.as_rotation_matrix(quaternion.zero)
-
-    for R in Rs:
-        # Test correctly normalized rotors:
-        assert allclose(quat_mat(R), quaternion.as_rotation_matrix(R), atol=2*eps)
-        # Test incorrectly normalized rotors:
-        assert allclose(quat_mat(R), quaternion.as_rotation_matrix(1.1*R), atol=2*eps)
-
-    Rs0 = Rs.copy()
-    Rs0[Rs.shape[0]//2] = quaternion.zero
-    with pytest.raises(ZeroDivisionError):
-        quaternion.as_rotation_matrix(Rs0)
-
-    # Test correctly normalized rotors:
-    assert allclose(quat_mat_vec(Rs), quaternion.as_rotation_matrix(Rs), atol=2*eps)
-    # Test incorrectly normalized rotors:
-    assert allclose(quat_mat_vec(Rs), quaternion.as_rotation_matrix(1.1*Rs), atol=2*eps)
-
-    # Simply test that this function succeeds and returns the right shape
-    assert quaternion.as_rotation_matrix(Rs.reshape((2, 5, 10))).shape == (2, 5, 10, 3, 3)
-
-
-def test_from_rotation_matrix(Rs):
-    try:
-        from scipy import linalg
-        have_linalg = True
-    except ImportError:
-        have_linalg = False
-
-    for nonorthogonal in [True, False]:
-        if nonorthogonal and have_linalg:
-            rot_mat_eps = 10*eps
-        else:
-            rot_mat_eps = 5*eps
-        for i, R1 in enumerate(Rs):
-            R2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(R1), nonorthogonal=nonorthogonal)
-            d = quaternion.rotation_intrinsic_distance(R1, R2)
-            assert d < rot_mat_eps, (i, R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
-
-        Rs2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(Rs), nonorthogonal=nonorthogonal)
-        for R1, R2 in zip(Rs, Rs2):
-            d = quaternion.rotation_intrinsic_distance(R1, R2)
-            assert d < rot_mat_eps, (R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
-
-        Rs3 = Rs.reshape((2, 5, 10))
-        Rs4 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(Rs3))
-        for R3, R4 in zip(Rs3.flatten(), Rs4.flatten()):
-            d = quaternion.rotation_intrinsic_distance(R3, R4)
-            assert d < rot_mat_eps, (R3, R4, d)  # Can't use allclose here; we don't care about rotor sign
-
-
-def test_as_rotation_vector():
-    np.random.seed(1234)
-    n_tests = 1000
-    vecs = np.random.uniform(high=math.pi/math.sqrt(3), size=n_tests*3).reshape((n_tests, 3))
-    quats = np.zeros(vecs.shape[:-1]+(4,))
-    quats[..., 1:] = vecs[...]
-    quats = quaternion.as_quat_array(quats)
-    quats = np.exp(quats/2)
-    quat_vecs = quaternion.as_rotation_vector(quats)
-    assert allclose(quat_vecs, vecs)
-
-
-def test_from_rotation_vector():
-    np.random.seed(1234)
-    n_tests = 1000
-    vecs = np.random.uniform(high=math.pi/math.sqrt(3), size=n_tests*3).reshape((n_tests, 3))
-    quats = np.zeros(vecs.shape[:-1]+(4,))
-    quats[..., 1:] = vecs[...]
-    quats = quaternion.as_quat_array(quats)
-    quats = np.exp(quats/2)
-    quat_vecs = quaternion.as_rotation_vector(quats)
-    quats2 = quaternion.from_rotation_vector(quat_vecs)
-    assert allclose(quats, quats2)
-
-
-def test_rotate_vectors(Rs):
-    np.random.seed(1234)
-    # Test (1)*(1)
-    vecs = np.random.rand(3)
-    quats = quaternion.z
-    vecsprime = quaternion.rotate_vectors(quats, vecs)
-    assert np.allclose(vecsprime,
-                       (quats * quaternion.quaternion(*vecs) * quats.inverse()).vec,
-                       rtol=0.0, atol=0.0)
-    assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
-    # Test (1)*(5)
-    vecs = np.random.rand(5, 3)
-    quats = quaternion.z
-    vecsprime = quaternion.rotate_vectors(quats, vecs)
-    for i, vec in enumerate(vecs):
-        assert np.allclose(vecsprime[i],
-                           (quats * quaternion.quaternion(*vec) * quats.inverse()).vec,
-                           rtol=0.0, atol=0.0)
-    assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
-    # Test (1)*(5) inner axis
-    vecs = np.random.rand(3, 5)
-    quats = quaternion.z
-    vecsprime = quaternion.rotate_vectors(quats, vecs, axis=-2)
-    for i, vec in enumerate(vecs.T):
-        assert np.allclose(vecsprime[:, i],
-                           (quats * quaternion.quaternion(*vec) * quats.inverse()).vec,
-                           rtol=0.0, atol=0.0)
-    assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
-    # Test (N)*(1)
-    vecs = np.random.rand(3)
-    quats = Rs
-    vecsprime = quaternion.rotate_vectors(quats, vecs)
-    assert np.allclose(vecsprime,
-                       [vprime.vec for vprime in quats * quaternion.quaternion(*vecs) * ~quats],
-                       rtol=1e-15, atol=1e-15)
-    assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
-    # Test (N)*(5)
-    vecs = np.random.rand(5, 3)
-    quats = Rs
-    vecsprime = quaternion.rotate_vectors(quats, vecs)
-    for i, vec in enumerate(vecs):
-        assert np.allclose(vecsprime[:, i],
-                           [vprime.vec for vprime in quats * quaternion.quaternion(*vec) * ~quats],
-                           rtol=1e-15, atol=1e-15)
-    assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
-    # Test (N)*(5) inner axis
-    vecs = np.random.rand(3, 5)
-    quats = Rs
-    vecsprime = quaternion.rotate_vectors(quats, vecs, axis=-2)
-    for i, vec in enumerate(vecs.T):
-        assert np.allclose(vecsprime[:, :, i],
-                           [vprime.vec for vprime in quats * quaternion.quaternion(*vec) * ~quats],
-                           rtol=1e-15, atol=1e-15)
-    assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
-
-
-def test_allclose(Qs):
-    for q in Qs[Qs_nonnan]:
-        assert quaternion.allclose(q, q, rtol=0.0, atol=0.0)
-    assert quaternion.allclose(Qs[Qs_nonnan], Qs[Qs_nonnan], rtol=0.0, atol=0.0)
-
-    for q in Qs[Qs_finitenonzero]:
-        assert quaternion.allclose(q, q*(1+1e-13), rtol=1.1e-13, atol=0.0)
-        assert ~quaternion.allclose(q, q*(1+1e-13), rtol=0.9e-13, atol=0.0)
-        for e in [quaternion.one, quaternion.x, quaternion.y, quaternion.z]:
-            assert quaternion.allclose(q, q+(1e-13*e), rtol=0.0, atol=1.1e-13)
-            assert ~quaternion.allclose(q, q+(1e-13*e), rtol=0.0, atol=0.9e-13)
-    assert quaternion.allclose(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero]*(1+1e-13), rtol=1.1e-13, atol=0.0)
-    assert ~quaternion.allclose(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero]*(1+1e-13), rtol=0.9e-13, atol=0.0)
-    for e in [quaternion.one, quaternion.x, quaternion.y, quaternion.z]:
-        assert quaternion.allclose(Qs[Qs_finite], Qs[Qs_finite]+(1e-13*e), rtol=0.0, atol=1.1e-13)
-        assert ~quaternion.allclose(Qs[Qs_finite], Qs[Qs_finite]+(1e-13*e), rtol=0.0, atol=0.9e-13)
-    assert quaternion.allclose(Qs[Qs_zero], Qs[Qs_zero]*2, rtol=0.0, atol=1.1e-13)
-
-    for qnan in Qs[Qs_nan]:
-        assert ~quaternion.allclose(qnan, qnan, rtol=1.0, atol=1.0)
-        for q in Qs:
-            assert ~quaternion.allclose(q, qnan, rtol=1.0, atol=1.0)
-
-
-def test_from_spherical_coords():
-    np.random.seed(1843)
-    random_angles = [[np.random.uniform(-np.pi, np.pi), np.random.uniform(-np.pi, np.pi)]
-                     for i in range(5000)]
-    for vartheta, varphi in random_angles:
-        q = quaternion.from_spherical_coords(vartheta, varphi)
-        assert abs((np.quaternion(0, 0, 0, varphi / 2.).exp() * np.quaternion(0, 0, vartheta / 2., 0).exp())
-                   - q) < 1.e-15
-        xprime = q * quaternion.x * q.inverse()
-        yprime = q * quaternion.y * q.inverse()
-        zprime = q * quaternion.z * q.inverse()
-        nhat = np.quaternion(0.0, math.sin(vartheta)*math.cos(varphi), math.sin(vartheta)*math.sin(varphi),
-                             math.cos(vartheta))
-        thetahat = np.quaternion(0.0, math.cos(vartheta)*math.cos(varphi), math.cos(vartheta)*math.sin(varphi),
-                                 -math.sin(vartheta))
-        phihat = np.quaternion(0.0, -math.sin(varphi), math.cos(varphi), 0.0)
-        assert abs(xprime - thetahat) < 1.e-15
-        assert abs(yprime - phihat) < 1.e-15
-        assert abs(zprime - nhat) < 1.e-15
-    assert np.max(np.abs(quaternion.from_spherical_coords(random_angles)
-                         - np.array([quaternion.from_spherical_coords(vartheta, varphi)
-                                     for vartheta, varphi in random_angles]))) < 1.e-15
-
-
-def test_as_spherical_coords(Rs):
-    np.random.seed(1843)
-    # First test on rotors that are precisely spherical-coordinate rotors
-    random_angles = [[np.random.uniform(0, np.pi), np.random.uniform(0, 2*np.pi)]
-                     for i in range(5000)]
-    for vartheta, varphi in random_angles:
-        vartheta2, varphi2 = quaternion.as_spherical_coords(quaternion.from_spherical_coords(vartheta, varphi))
-        assert abs(vartheta - vartheta2) < 1e-12, ((vartheta, varphi), (vartheta2, varphi2))
-        assert abs(varphi - varphi2) < 1e-12, ((vartheta, varphi), (vartheta2, varphi2))
-    # Now test that arbitrary rotors rotate z to the appropriate location
-    for R in Rs:
-        vartheta, varphi = quaternion.as_spherical_coords(R)
-        R2 = quaternion.from_spherical_coords(vartheta, varphi)
-        assert (R*quaternion.z*R.inverse() - R2*quaternion.z*R2.inverse()).abs() < 4e-15, (R, R2, (vartheta, varphi))
-
-
-def test_from_euler_angles():
-    np.random.seed(1843)
-    random_angles = [[np.random.uniform(-np.pi, np.pi),
-                      np.random.uniform(-np.pi, np.pi),
-                      np.random.uniform(-np.pi, np.pi)]
-                     for i in range(5000)]
-    for alpha, beta, gamma in random_angles:
-        assert abs((np.quaternion(0, 0, 0, alpha / 2.).exp()
-                    * np.quaternion(0, 0, beta / 2., 0).exp()
-                    * np.quaternion(0, 0, 0, gamma / 2.).exp()
-                   )
-                   - quaternion.from_euler_angles(alpha, beta, gamma)) < 1.e-15
-    assert np.max(np.abs(quaternion.from_euler_angles(random_angles)
-                         - np.array([quaternion.from_euler_angles(alpha, beta, gamma)
-                                     for alpha, beta, gamma in random_angles]))) < 1.e-15
-
-
-def test_as_euler_angles():
-    np.random.seed(1843)
-    random_angles = [[np.random.uniform(-np.pi, np.pi),
-                      np.random.uniform(-np.pi, np.pi),
-                      np.random.uniform(-np.pi, np.pi)]
-                     for i in range(5000)]
-    for alpha, beta, gamma in random_angles:
-        R1 = quaternion.from_euler_angles(alpha, beta, gamma)
-        R2 = quaternion.from_euler_angles(*list(quaternion.as_euler_angles(R1)))
-        d = quaternion.rotation_intrinsic_distance(R1, R2)
-        assert d < 6e3*eps, ((alpha, beta, gamma), R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
+    # quaternion tested members when quaternion is created without the real
+    # component here. If we implement a similar constructor for dual_quaternion
+    # then add test here
 
 
 # Unary bool returners
-def test_quaternion_nonzero(Qs):
+def test_dual_quaternion_nonzero(Qs):
     assert not Qs[q_0].nonzero()  # Do this one explicitly, to not use circular logic
     assert Qs[q_1].nonzero()  # Do this one explicitly, to not use circular logic
     for q in Qs[Qs_zero]:
@@ -430,7 +135,7 @@ def test_quaternion_nonzero(Qs):
         assert q.nonzero()
 
 
-def test_quaternion_isnan(Qs):
+def test_dual_quaternion_isnan(Qs):
     assert not Qs[q_0].isnan()  # Do this one explicitly, to not use circular logic
     assert not Qs[q_1].isnan()  # Do this one explicitly, to not use circular logic
     assert Qs[q_nan1].isnan()  # Do this one explicitly, to not use circular logic
@@ -440,7 +145,7 @@ def test_quaternion_isnan(Qs):
         assert not q.isnan()
 
 
-def test_quaternion_isinf(Qs):
+def test_dual_quaternion_isinf(Qs):
     assert not Qs[q_0].isinf()  # Do this one explicitly, to not use circular logic
     assert not Qs[q_1].isinf()  # Do this one explicitly, to not use circular logic
     assert Qs[q_inf1].isinf()  # Do this one explicitly, to not use circular logic
@@ -451,7 +156,7 @@ def test_quaternion_isinf(Qs):
         assert not q.isinf()
 
 
-def test_quaternion_isfinite(Qs):
+def test_dual_quaternion_isfinite(Qs):
     assert not Qs[q_nan1].isfinite()  # Do this one explicitly, to not use circular logic
     assert not Qs[q_inf1].isfinite()  # Do this one explicitly, to not use circular logic
     assert not Qs[q_minf1].isfinite()  # Do this one explicitly, to not use circular logic
@@ -463,7 +168,7 @@ def test_quaternion_isfinite(Qs):
 
 
 # Binary bool returners
-def test_quaternion_equal(Qs):
+def test_dual_quaternion_equal(Qs):
     for j in Qs_nonnan:
         assert Qs[j] == Qs[j]  # self equality
         for k in range(len(Qs)):  # non-self inequality
@@ -473,7 +178,7 @@ def test_quaternion_equal(Qs):
             assert not q == p  # nan should never equal anything
 
 
-def test_quaternion_not_equal(Qs):
+def test_dual_quaternion_not_equal(Qs):
     for j in Qs_nonnan:
         assert not (Qs[j] != Qs[j])  # self non-not_equality
         for k in Qs_nonnan:  # non-self not_equality
@@ -483,7 +188,7 @@ def test_quaternion_not_equal(Qs):
             assert q != p  # nan should never equal anything
 
 
-def test_quaternion_richcompare(Qs):
+def test_dual_quaternion_richcompare(Qs):
     for p in Qs:
         for q in Qs[Qs_nan]:
             assert not p < q
@@ -519,44 +224,10 @@ def test_quaternion_richcompare(Qs):
         assert p <= Qs[q_1]
         assert Qs[q_1].greater(p)
         assert Qs[q_1].greater_equal(p)
-    for p in [Qs[Qlog], Qs[Qexp]]:
-        assert Qs[q_1] < p
-        assert Qs[q_1] <= p
-        assert p.greater(Qs[q_1])
-        assert p.greater_equal(Qs[q_1])
-
-
-# Unary float returners
-def test_quaternion_absolute(Qs):
-    for q in Qs[Qs_nan]:
-        assert np.isnan(q.abs())
-    for q in Qs[Qs_inf]:
-        if on_windows:
-            assert np.isinf(q.abs()) or np.isnan(q.abs())
-        else:
-            assert np.isinf(q.abs())
-    for q, a in [(Qs[q_0], 0.0), (Qs[q_1], 1.0), (Qs[x], 1.0), (Qs[y], 1.0), (Qs[z], 1.0),
-                 (Qs[Q], np.sqrt(Qs[Q].w ** 2 + Qs[Q].x ** 2 + Qs[Q].y ** 2 + Qs[Q].z ** 2)),
-                 (Qs[Qbar], np.sqrt(Qs[Q].w ** 2 + Qs[Q].x ** 2 + Qs[Q].y ** 2 + Qs[Q].z ** 2))]:
-        assert q.abs() == a
-
-
-def test_quaternion_norm(Qs):
-    for q in Qs[Qs_nan]:
-        assert np.isnan(q.norm())
-    for q in Qs[Qs_inf]:
-        if on_windows:
-            assert np.isinf(q.norm()) or np.isnan(q.norm())
-        else:
-            assert np.isinf(q.norm())
-    for q, a in [(Qs[q_0], 0.0), (Qs[q_1], 1.0), (Qs[x], 1.0), (Qs[y], 1.0), (Qs[z], 1.0),
-                 (Qs[Q], Qs[Q].w ** 2 + Qs[Q].x ** 2 + Qs[Q].y ** 2 + Qs[Q].z ** 2),
-                 (Qs[Qbar], Qs[Q].w ** 2 + Qs[Q].x ** 2 + Qs[Q].y ** 2 + Qs[Q].z ** 2)]:
-        assert q.norm() == a
 
 
 # Unary quaternion returners
-def test_quaternion_negative(Qs):
+def test_dual_quaternion_negative(Qs):
     assert -Qs[Q] == Qs[Qneg]
     for q in Qs[Qs_finite]:
         assert -q == -1.0 * q
@@ -564,7 +235,8 @@ def test_quaternion_negative(Qs):
         assert -(-q) == q
 
 
-def test_quaternion_conjugate(Qs):
+# TODO: dual_quaternion conjugate (this test still works because its using the quaternion code)
+def test_dual_quaternion_conjugate(Qs):
     assert Qs[Q].conjugate() == Qs[Qbar]
     for q in Qs[Qs_nonnan]:
         assert q.conjugate() == q.conj()
@@ -576,81 +248,20 @@ def test_quaternion_conjugate(Qs):
         assert c.z == -q.z
 
 
-def test_quaternion_sqrt(Qs):
-    sqrt_precision = 2.e-15
-    for q in Qs[Qs_finitenonzero]:
-        assert allclose(q.sqrt() * q.sqrt(), q, rtol=sqrt_precision)
-        # Ensure that non-unit quaternions are handled correctly
-        for s in [1, -1, 2, -2, 3.4, -3.4]:
-            for r in [1, quaternion.x, quaternion.y, quaternion.z]:
-                srq = s*r*q
-                assert allclose(srq.sqrt() * srq.sqrt(), srq, rtol=sqrt_precision)
-    # Ensure that inputs close to zero are handled gracefully
-    sqrt_dbl_min = math.sqrt(np.finfo(float).tiny)
-    assert quaternion.quaternion(0, 0, 0, 2e-8*sqrt_dbl_min).sqrt() == quaternion.quaternion(0, 0, 0, 0)
-    assert quaternion.quaternion(0, 0, 0, 0.9999*sqrt_dbl_min).sqrt() == quaternion.quaternion(0, 0, 0, 0)
-    assert quaternion.quaternion(0, 0, 0, 1e-16*sqrt_dbl_min).sqrt() == quaternion.quaternion(0, 0, 0, 0)
-    assert quaternion.quaternion(0, 0, 0, 1.1*sqrt_dbl_min).sqrt() != quaternion.quaternion(0, 0, 0, 0)
-
-
-def test_quaternion_log_exp(Qs):
-    qlogexp_precision = 4.e-15
-    assert (Qs[Q].log() - Qs[Qlog]).abs() < qlogexp_precision
-    assert (Qs[Q].exp() - Qs[Qexp]).abs() < qlogexp_precision
-    assert (Qs[Q].log().exp() - Qs[Q]).abs() < qlogexp_precision
-    assert (Qs[Q].exp().log() - Qs[Q]).abs() > qlogexp_precision  # Note order of operations!
-    assert quaternion.one.log() == quaternion.zero
-    assert quaternion.x.log() == (np.pi / 2) * quaternion.x
-    assert quaternion.y.log() == (np.pi / 2) * quaternion.y
-    assert quaternion.z.log() == (np.pi / 2) * quaternion.z
-    assert (-quaternion.one).log() == (np.pi) * quaternion.x
-    strict_assert(False)  # logs of interesting scalars * basis vectors
-    strict_assert(False)  # logs of negative scalars
-
-
-def test_angle(Rs):
-    angle_precision = 4.e-15
-    unit_vecs = [quaternion.x, quaternion.y, quaternion.z,
-                 -quaternion.x, -quaternion.y, -quaternion.z]
-    for u in unit_vecs:
-        for theta in linspace(-2 * np.pi, 2 * np.pi, num=50):
-            assert abs((theta * u / 2).exp().angle() - abs(theta)) < angle_precision
-
-
-def test_quaternion_normalized(Qs):
-    assert abs(Qs[Q].normalized()-Qs[Qnormalized]) < 4e-16
-    for q in Qs[Qs_finitenonzero]:
-        assert abs(q.normalized().abs() - 1.0) < 1.e-15
-
-
-def test_quaternion_parity_conjugates(Qs):
-    for q in Qs[Qs_finite]:
-        assert q.x_parity_conjugate() == np.quaternion(q.w, q.x, -q.y, -q.z)
-        assert q.y_parity_conjugate() == np.quaternion(q.w, -q.x, q.y, -q.z)
-        assert q.z_parity_conjugate() == np.quaternion(q.w, -q.x, -q.y, q.z)
-        assert q.parity_conjugate() == np.quaternion(q.w, q.x, q.y, q.z)
-    assert np.array_equal(np.x_parity_conjugate(Qs[Qs_finite]),
-                          np.array([q.x_parity_conjugate() for q in Qs[Qs_finite]]))
-    assert np.array_equal(np.y_parity_conjugate(Qs[Qs_finite]),
-                          np.array([q.y_parity_conjugate() for q in Qs[Qs_finite]]))
-    assert np.array_equal(np.z_parity_conjugate(Qs[Qs_finite]),
-                          np.array([q.z_parity_conjugate() for q in Qs[Qs_finite]]))
-    assert np.array_equal(np.parity_conjugate(Qs[Qs_finite]), np.array([q.parity_conjugate() for q in Qs[Qs_finite]]))
-
-
 # Quaternion-quaternion binary quaternion returners
 @pytest.mark.xfail
-def test_quaternion_copysign(Qs):
+def test_dual_quaternion_copysign(Qs):
     assert False
 
 
 # Quaternion-quaternion, scalar-quaternion, or quaternion-scalar binary quaternion returners
-def test_quaternion_add(Qs):
+def test_dual_quaternion_add(Qs):
     for j in Qs_nonnan:
         for k in Qs_nonnan:
             q = Qs[j]
             p = Qs[k]
-            assert (q + p == quaternion.quaternion(q.w + p.w, q.x + p.x, q.y + p.y, q.z + p.z)
+            assert (q + p == quaternion.dual_quaternion(q.w + p.w, q.x + p.x, q.y + p.y, q.z + p.z,
+                                                        q.er + p.er, q.ei + p.ei, q.ej + p.ej, q.ek + p.ek)
                     or (j == q_inf1 and k == q_minf1)
                     or (k == q_inf1 and j == q_minf1))
     for q in Qs[Qs_nonnan]:
