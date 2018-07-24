@@ -582,6 +582,14 @@ PyMemberDef pydual_quaternion_members[] = {
    "The second imaginary component of the dual_quaternion"},
   {"z", T_DOUBLE, offsetof(PyDualQuaternion, obval.z), 0,
    "The third imaginary component of the dual_quaternion"},
+  {"er", T_DOUBLE, offsetof(PyDualQuaternion, obval.er), 0,
+   "TODO: description of er here"},
+  {"ei", T_DOUBLE, offsetof(PyDualQuaternion, obval.ei), 0,
+   "TODO: description of ei here"},
+  {"ej", T_DOUBLE, offsetof(PyDualQuaternion, obval.ej), 0,
+   "TODO: description of ej here"},
+  {"ek", T_DOUBLE, offsetof(PyDualQuaternion, obval.ek), 0,
+   "TODO: description of ek here"},
   {NULL, 0, 0, 0, NULL}
   //TODO: what to name the new variables?
 };
@@ -781,7 +789,8 @@ pydual_quaternion_repr(PyObject *o)
 {
   char str[128];
   dual_quaternion q = ((PyDualQuaternion *)o)->obval;
-  sprintf(str, "dual_quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
+  sprintf(str, "dual_quaternion(%.15g, %.15g, %.15g, %.15g, %.15g, %.15g, %.15g, %.15g)",
+          q.w, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek);
   return PyUString_FromString(str);
 }
 
@@ -790,7 +799,8 @@ pydual_quaternion_str(PyObject *o)
 {
   char str[128];
   dual_quaternion q = ((PyDualQuaternion *)o)->obval;
-  sprintf(str, "dual_quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
+  sprintf(str, "dual_quaternion(%.15g, %.15g, %.15g, %.15g, %.15g, %.15g, %.15g, %.15g)",
+          q.w, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek);
   return PyUString_FromString(str);
 }
 
