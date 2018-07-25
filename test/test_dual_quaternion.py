@@ -82,7 +82,7 @@ def Qs():
     Q = quaternion.dual_quaternion(1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8)
     Qneg = quaternion.dual_quaternion(-1.1, -2.2, -3.3, -4.4, -5.5, -6.6, -7.7, -8.8)
     Qbar = quaternion.dual_quaternion(1.1, -2.2, -3.3, -4.4, -5.5, -6.6, -7.7, -8.8)
-    return np.array([q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, er, ei, ej, ek, Q, Qneg, Qbar])
+    return np.asarray([q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, er, ei, ej, ek, Q, Qneg, Qbar])
 
 
 q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, er, ei, ej, ek, Q, Qneg, Qbar,  = range(len(Qs()))
@@ -249,7 +249,8 @@ def test_dual_quaternion_negative(Qs):
         assert -(-q) == q
 
 
-# TODO: dual_quaternion conjugate (this test still works because its using the quaternion code)
+# TODO: dual_quaternion conjugate
+@pytest.mark.xfail
 def test_dual_quaternion_conjugate(Qs):
     assert Qs[Q].conjugate() == Qs[Qbar]
     for q in Qs[Qs_nonnan]:

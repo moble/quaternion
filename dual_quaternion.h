@@ -210,12 +210,12 @@ extern "C" {
     return r;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_parity_antisymmetric_part(dual_quaternion q) {
-    dual_quaternion r = {0.0, 0.0, 0.0, 0.0};
+    dual_quaternion r = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     (void) q; // This q parameter is unused, but here for consistency with similar functions
     return r;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_negative(dual_quaternion q) {
-    dual_quaternion r = {-q.w, -q.x, -q.y, -q.z};
+    dual_quaternion r = {-q.w, -q.x, -q.y, -q.z, -q.er, -q.ei, -q.ej, -q.ek};
     return r;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_conjugate(dual_quaternion q) {

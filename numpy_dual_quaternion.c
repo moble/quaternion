@@ -365,9 +365,11 @@ pydual_quaternion_getstate(PyDualQuaternion* self, PyObject* args)
   /* printf("\n\n\nI'm Trying, OKAY?\n\n\n"); */
   if (!PyArg_ParseTuple(args, ":getstate"))
     return NULL;
-  return Py_BuildValue("OOOO",
+  return Py_BuildValue("OOOOOOOO",
                        PyFloat_FromDouble(self->obval.w), PyFloat_FromDouble(self->obval.x),
-                       PyFloat_FromDouble(self->obval.y), PyFloat_FromDouble(self->obval.z));
+                       PyFloat_FromDouble(self->obval.y), PyFloat_FromDouble(self->obval.z),
+                       PyFloat_FromDouble(self->obval.er), PyFloat_FromDouble(self->obval.ei),
+                       PyFloat_FromDouble(self->obval.ej), PyFloat_FromDouble(self->obval.ek));
 }
 
 static PyObject *
@@ -668,7 +670,7 @@ pydual_quaternion_get_components(PyObject *self, void *NPY_UNUSED(closure))
 {
   dual_quaternion *q = &((PyDualQuaternion *)self)->obval;
   int nd = 1;
-  npy_intp dims[1] = { 4 };
+  npy_intp dims[1] = { 8 };
   int typenum = NPY_DOUBLE;
   PyObject* components = PyArray_SimpleNewFromData(nd, dims, typenum, &(q->w));
   Py_INCREF(self);
@@ -689,7 +691,7 @@ pydual_quaternion_set_components(PyObject *self, PyObject *value, void *NPY_UNUS
   }
   if (! (PySequence_Check(value) && PySequence_Size(value)==8) ) {
     PyErr_SetString(PyExc_TypeError,
-                    "A dual_quaternion's components must be set to something of length 4");
+                    "A dual_quaternion's components must be set to something of length 8");
     return -1;
   }
   element = PySequence_GetItem(value, 0);
@@ -751,8 +753,8 @@ PyGetSetDef pydual_quaternion_getset[] = {
 static PyObject*
 pydual_quaternion_richcompare(PyObject* a, PyObject* b, int op)
 {
-  dual_quaternion x = {0.0, 0.0, 0.0, 0.0};
-  dual_quaternion y = {0.0, 0.0, 0.0, 0.0};
+  dual_quaternion x = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  dual_quaternion y = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   int result = 0;
   PyDualQuaternion_AsDualQuaternion(x,a);
   PyDualQuaternion_AsDualQuaternion(y,b);
@@ -779,6 +781,10 @@ pydual_quaternion_hash(PyObject *o)
   value = (10000004 * value) ^ _Py_HashDouble(q.x);
   value = (10000004 * value) ^ _Py_HashDouble(q.y);
   value = (10000004 * value) ^ _Py_HashDouble(q.z);
+  value = (10000004 * value) ^ _Py_HashDouble(q.er);
+  value = (10000004 * value) ^ _Py_HashDouble(q.ei);
+  value = (10000004 * value) ^ _Py_HashDouble(q.ej);
+  value = (10000004 * value) ^ _Py_HashDouble(q.ek);
   if (value == -1)
     value = -2;
   return value;
@@ -887,7 +893,7 @@ static npy_bool
 DUAL_QUATERNION_nonzero (char *ip, PyArrayObject *ap)
 {
   dual_quaternion q;
-  dual_quaternion zero = {0,0,0,0};
+  dual_quaternion zero = {0,0,0,0,0,0,0,0};
   if (ap == NULL || PyArray_ISBEHAVED_RO(ap)) {
     q = *(dual_quaternion *)ip;
   }
@@ -898,6 +904,10 @@ DUAL_QUATERNION_nonzero (char *ip, PyArrayObject *ap)
     descr->f->copyswap(&q.x, ip+8, !PyArray_ISNOTSWAPPED(ap), NULL);
     descr->f->copyswap(&q.y, ip+16, !PyArray_ISNOTSWAPPED(ap), NULL);
     descr->f->copyswap(&q.z, ip+24, !PyArray_ISNOTSWAPPED(ap), NULL);
+    descr->f->copyswap(&q.er, ip+32, !PyArray_ISNOTSWAPPED(ap), NULL);
+    descr->f->copyswap(&q.ei, ip+40, !PyArray_ISNOTSWAPPED(ap), NULL);
+    descr->f->copyswap(&q.ej, ip+48, !PyArray_ISNOTSWAPPED(ap), NULL);
+    descr->f->copyswap(&q.ek, ip+56, !PyArray_ISNOTSWAPPED(ap), NULL);
     Py_DECREF(descr);
   }
   return (npy_bool) !dual_quaternion_equal(q, zero);
@@ -909,7 +919,7 @@ DUAL_QUATERNION_copyswap(dual_quaternion *dst, dual_quaternion *src,
 {
   PyArray_Descr *descr;
   descr = PyArray_DescrFromType(NPY_DOUBLE);
-  descr->f->copyswapn(dst, sizeof(double), src, sizeof(double), 4, swap, NULL);
+  descr->f->copyswapn(dst, sizeof(double), src, sizeof(double), 8, swap, NULL);
   Py_DECREF(descr);
 }
 
@@ -924,6 +934,10 @@ DUAL_QUATERNION_copyswapn(dual_quaternion *dst, npy_intp dstride,
   descr->f->copyswapn(&dst->x, dstride, &src->x, sstride, n, swap, NULL);
   descr->f->copyswapn(&dst->y, dstride, &src->y, sstride, n, swap, NULL);
   descr->f->copyswapn(&dst->z, dstride, &src->z, sstride, n, swap, NULL);
+  descr->f->copyswapn(&dst->er, dstride, &src->er, sstride, n, swap, NULL);
+  descr->f->copyswapn(&dst->ei, dstride, &src->ei, sstride, n, swap, NULL);
+  descr->f->copyswapn(&dst->ej, dstride, &src->ej, sstride, n, swap, NULL);
+  descr->f->copyswapn(&dst->ek, dstride, &src->ek, sstride, n, swap, NULL);
   Py_DECREF(descr);
 }
 
