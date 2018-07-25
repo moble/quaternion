@@ -75,16 +75,17 @@ def Qs():
     x = quaternion.dual_quaternion(0., 1., 0., 0., 0., 0., 0., 0.)
     y = quaternion.dual_quaternion(0., 0., 1., 0., 0., 0., 0., 0.)
     z = quaternion.dual_quaternion(0., 0., 0., 1., 0., 0., 0., 0.)
+    er = quaternion.dual_quaternion(0., 0., 0., 0., 1., 0., 0., 0.)
     ei = quaternion.dual_quaternion(0., 0., 0., 0., 0., 1., 0., 0.)
     ej = quaternion.dual_quaternion(0., 0., 0., 0., 0., 0., 1., 0.)
     ek = quaternion.dual_quaternion(0., 0., 0., 0., 0., 0., 0., 1.)
     Q = quaternion.dual_quaternion(1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8)
     Qneg = quaternion.dual_quaternion(-1.1, -2.2, -3.3, -4.4, -5.5, -6.6, -7.7, -8.8)
     Qbar = quaternion.dual_quaternion(1.1, -2.2, -3.3, -4.4, -5.5, -6.6, -7.7, -8.8)
-    return np.array([q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar])
+    return np.array([q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, er, ei, ej, ek, Q, Qneg, Qbar])
 
 
-q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar,  = range(len(Qs()))
+q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, er, ei, ej, ek, Q, Qneg, Qbar,  = range(len(Qs()))
 Qs_zero = [i for i in range(len(Qs())) if not Qs()[i].nonzero()]
 Qs_nonzero = [i for i in range(len(Qs())) if Qs()[i].nonzero()]
 Qs_nan = [i for i in range(len(Qs())) if Qs()[i].isnan()]
@@ -106,6 +107,19 @@ def Rs():
     rs = rs + [r.normalized() for r in [np.quaternion(np.random.uniform(-1, 1), np.random.uniform(-1, 1),
                                                       np.random.uniform(-1, 1), np.random.uniform(-1, 1)) for i in range(20)]]
     return np.array(rs)
+
+
+def dual_quaternion_all_close(dq1, dq2):
+    eps = 1e-10
+    if abs(dq1.w - dq2.w) > eps: return False
+    if abs(dq1.x - dq2.x) > eps: return False
+    if abs(dq1.y - dq2.y) > eps: return False
+    if abs(dq1.z - dq2.z) > eps: return False
+    if abs(dq1.er - dq2.er) > eps: return False
+    if abs(dq1.ei - dq2.ei) > eps: return False
+    if abs(dq1.ej - dq2.ej) > eps: return False
+    if abs(dq1.ek - dq2.ek) > eps: return False
+    return True
 
 
 def test_dual_quaternion_members():
@@ -291,7 +305,8 @@ def test_quaternion_subtract_ufunc(Qs):
     ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finite], operator.sub)
 '''
 
-def test_quaternion_multiply(Qs):
+
+def test_dual_quaternion_multiply(Qs):
     # Check scalar multiplication
     for q in Qs[Qs_finite]:
         assert q * Qs[q_1] == q
@@ -302,7 +317,8 @@ def test_quaternion_multiply(Qs):
         assert 1 * q == q
     for s in [-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]:
         for q in Qs[Qs_finite]:
-            assert q * s == quaternion.quaternion(s * q.w, s * q.x, s * q.y, s * q.z)
+            assert q * s == quaternion.dual_quaternion(s * q.w, s * q.x, s * q.y, s * q.z,
+                                                       s * q.er, s * q.ei, s * q.ej, s * q.ek)
             assert s * q == q * s
     for q in Qs[Qs_finite]:
         assert 0.0 * q == Qs[q_0]
@@ -312,22 +328,68 @@ def test_quaternion_multiply(Qs):
     for q1 in Qs[Qs_finite]:
         for q2 in Qs[Qs_finite]:
             for q3 in Qs[Qs_finite]:
-                assert allclose(q1*(q2+q3), (q1*q2)+(q1*q3))
-                assert allclose((q1+q2)*q3, (q1*q3)+(q2*q3))
+                assert dual_quaternion_all_close(q1*(q2+q3), (q1*q2)+(q1*q3))
+                assert dual_quaternion_all_close((q1+q2)*q3, (q1*q3)+(q2*q3))
 
     # Check the multiplication table
-    for q in [Qs[q_1], Qs[x], Qs[y], Qs[z]]:
+    for q in [Qs[q_1], Qs[x], Qs[y], Qs[z], Qs[ei], Qs[ej], Qs[ek]]:
         assert Qs[q_1] * q == q
         assert q * Qs[q_1] == q
     assert Qs[x] * Qs[x] == -Qs[q_1]
     assert Qs[x] * Qs[y] == Qs[z]
     assert Qs[x] * Qs[z] == -Qs[y]
+    assert Qs[x] * Qs[er] == Qs[ei]
+    assert Qs[x] * Qs[ei] == -Qs[er]
+    assert Qs[x] * Qs[ej] == Qs[ek]
+    assert Qs[x] * Qs[ek] == -Qs[ej]
+
     assert Qs[y] * Qs[x] == -Qs[z]
     assert Qs[y] * Qs[y] == -Qs[q_1]
     assert Qs[y] * Qs[z] == Qs[x]
+    assert Qs[y] * Qs[er] == Qs[ej]
+    assert Qs[y] * Qs[ei] == -Qs[ek]
+    assert Qs[y] * Qs[ej] == -Qs[er]
+    assert Qs[y] * Qs[ek] == Qs[ei]
+
     assert Qs[z] * Qs[x] == Qs[y]
     assert Qs[z] * Qs[y] == -Qs[x]
     assert Qs[z] * Qs[z] == -Qs[q_1]
+    assert Qs[z] * Qs[er] == Qs[ek]
+    assert Qs[z] * Qs[ei] == Qs[ej]
+    assert Qs[z] * Qs[ej] == -Qs[ei]
+    assert Qs[z] * Qs[ek] == -Qs[er]
+
+    assert Qs[er] * Qs[x] == Qs[ei]
+    assert Qs[er] * Qs[y] == Qs[ej]
+    assert Qs[er] * Qs[z] == Qs[ek]
+    assert Qs[er] * Qs[er] == Qs[q_0]
+    assert Qs[er] * Qs[ei] == Qs[q_0]
+    assert Qs[er] * Qs[ej] == Qs[q_0]
+    assert Qs[er] * Qs[ek] == Qs[q_0]
+
+    assert Qs[ei] * Qs[x] == -Qs[er]
+    assert Qs[ei] * Qs[y] == Qs[ek]
+    assert Qs[ei] * Qs[z] == -Qs[ej]
+    assert Qs[ei] * Qs[er] == Qs[q_0]
+    assert Qs[ei] * Qs[ei] == Qs[q_0]
+    assert Qs[ei] * Qs[ej] == Qs[q_0]
+    assert Qs[ei] * Qs[ek] == Qs[q_0]
+
+    assert Qs[ej] * Qs[x] == -Qs[ek]
+    assert Qs[ej] * Qs[y] == -Qs[er]
+    assert Qs[ej] * Qs[z] == Qs[ei]
+    assert Qs[ej] * Qs[er] == Qs[q_0]
+    assert Qs[ej] * Qs[ei] == Qs[q_0]
+    assert Qs[ej] * Qs[ej] == Qs[q_0]
+    assert Qs[ej] * Qs[ek] == Qs[q_0]
+
+    assert Qs[ek] * Qs[x] == Qs[ej]
+    assert Qs[ek] * Qs[y] == -Qs[ei]
+    assert Qs[ek] * Qs[z] == -Qs[er]
+    assert Qs[ek] * Qs[er] == Qs[q_0]
+    assert Qs[ek] * Qs[ei] == Qs[q_0]
+    assert Qs[ek] * Qs[ej] == Qs[q_0]
+    assert Qs[ek] * Qs[ek] == Qs[q_0]
 
 
 def test_quaternion_multiply_ufunc(Qs):

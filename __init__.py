@@ -19,7 +19,7 @@ from ._version import __version__
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 
-__all__ = ['quaternion',
+__all__ = ['quaternion', 'dual_quaternion',
            'as_quat_array', 'as_spinor_array',
            'as_float_array', 'from_float_array',
            'as_rotation_matrix', 'from_rotation_matrix',
@@ -37,13 +37,24 @@ if 'quaternion' in np.__dict__:
     raise RuntimeError('The NumPy package already has a quaternion type')
 
 np.quaternion = quaternion
+np.dual_quaternion = dual_quaternion
 np.typeDict['quaternion'] = np.dtype(quaternion)
+np.typeDict['dual_quaternion'] = np.dtype(dual_quaternion)
 
 zero = np.quaternion(0, 0, 0, 0)
 one = np.quaternion(1, 0, 0, 0)
 x = np.quaternion(0, 1, 0, 0)
 y = np.quaternion(0, 0, 1, 0)
 z = np.quaternion(0, 0, 0, 1)
+
+dual_zero = np.dual_quaternion(0, 0, 0, 0, 0, 0, 0, 0)
+dual_one = np.dual_quaternion(1, 0, 0, 0, 0, 0, 0, 0)
+dual_x = np.dual_quaternion(0, 1, 0, 0, 0, 0, 0, 0)
+dual_y = np.dual_quaternion(0, 0, 1, 0, 0, 0, 0, 0)
+dual_z = np.dual_quaternion(0, 0, 0, 1, 0, 0, 0, 0)
+dual_ei = np.dual_quaternion(0, 0, 0, 0, 0, 1, 0, 0)
+dual_ej = np.dual_quaternion(0, 0, 0, 0, 0, 0, 1, 0)
+dual_ek = np.dual_quaternion(0, 0, 0, 0, 0, 0, 0, 1)
 
 rotor_intrinsic_distance = np.rotor_intrinsic_distance
 rotor_chordal_distance = np.rotor_chordal_distance
@@ -61,8 +72,10 @@ def as_float_array(a):
     array, but is otherwise the same shape.
 
     """
-    return np.asarray(a, dtype=np.quaternion).view((np.double, 4))
-
+    if isinstance(a, quaternion):
+        return np.asarray(a, dtype=np.quaternion).view((np.double, 4))
+    elif isinstance(a, dual_quaternion):
+        return np.asarray(a, dtype=np.dual_quaternion).view((np.double, 8))
 
 def as_quat_array(a):
     """View a float array as an array of quaternions
@@ -693,7 +706,10 @@ def isclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False):
     try:
         dt = np.result_type(y, 1.)
     except TypeError:
-        dt = np.dtype(np.quaternion)
+        if isinstance(a, np.quaternion):
+            dt = np.dtype(np.quaternion)
+        else:
+            dt = np.dtype(np.dual_quaternion)
     y = np.array(y, dtype=dt, copy=False, subok=True)
 
     xfin = np.isfinite(x)
