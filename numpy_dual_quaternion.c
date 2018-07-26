@@ -354,9 +354,12 @@ static PyObject *
 pydual_quaternion__reduce(PyDualQuaternion* self)
 {
   /* printf("\n\n\nI'm trying, most of all!\n\n\n"); */
-  return Py_BuildValue("O(OOOO)", Py_TYPE(self),
+  return Py_BuildValue("O(OOOOOOOO)", Py_TYPE(self),
                        PyFloat_FromDouble(self->obval.w), PyFloat_FromDouble(self->obval.x),
-                       PyFloat_FromDouble(self->obval.y), PyFloat_FromDouble(self->obval.z));
+                       PyFloat_FromDouble(self->obval.y), PyFloat_FromDouble(self->obval.z),
+                       PyFloat_FromDouble(self->obval.er), PyFloat_FromDouble(self->obval.ei),
+                       PyFloat_FromDouble(self->obval.ej), PyFloat_FromDouble(self->obval.ek));
+}
 }
 
 static PyObject *
@@ -616,6 +619,7 @@ pydual_quaternion_get_part_b(PyObject *self, void *NPY_UNUSED(closure))
 // This will be defined as a member function on the dual_quaternion
 // objects, so that calling "vec" will return a numpy array
 // with the last three components of the dual_quaternion.
+//TODO
 static PyObject *
 pydual_quaternion_get_vec(PyObject *self, void *NPY_UNUSED(closure))
 {
@@ -632,6 +636,7 @@ pydual_quaternion_get_vec(PyObject *self, void *NPY_UNUSED(closure))
 // This will be defined as a member function on the dual_quaternion
 // objects, so that calling `q.vec = [1,2,3]`, for example,
 // will set the vector components appropriately.
+//TODO
 static int
 pydual_quaternion_set_vec(PyObject *self, PyObject *value, void *NPY_UNUSED(closure))
 {
@@ -744,7 +749,7 @@ PyGetSetDef pydual_quaternion_getset[] = {
   {"vec", pydual_quaternion_get_vec, pydual_quaternion_set_vec,
    "The vector part (x,y,z) of the dual_quaternion as a numpy array", NULL},
   {"components", pydual_quaternion_get_components, pydual_quaternion_set_components,
-   "The components (w,x,y,z) of the dual_quaternion as a numpy array", NULL},
+   "The components (w,x,y,z,er,ei,ej,ek) of the dual_quaternion as a numpy array", NULL},
   {NULL, NULL, NULL, NULL, NULL}
 };
 
@@ -963,6 +968,22 @@ static int DUAL_QUATERNION_setitem(PyObject* item, dual_quaternion* qp, void* NP
     if(element == NULL) { return -1; } /* Not a sequence, or other failure */
     qp->z = PyFloat_AsDouble(element);
     Py_DECREF(element);
+    element = PySequence_GetItem(item, 4);
+    if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+    qp->er = PyFloat_AsDouble(element);
+    Py_DECREF(element);
+    element = PySequence_GetItem(item, 5);
+    if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+    qp->ei = PyFloat_AsDouble(element);
+    Py_DECREF(element);
+    element = PySequence_GetItem(item, 6);
+    if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+    qp->ej = PyFloat_AsDouble(element);
+    Py_DECREF(element);
+    element = PySequence_GetItem(item, 7);
+    if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+    qp->ek = PyFloat_AsDouble(element);
+    Py_DECREF(element);
   } else {
     PyErr_SetString(PyExc_TypeError,
                     "Unknown input to DUAL_QUATERNION_setitem");
@@ -1059,7 +1080,12 @@ DUAL_QUATERNION_fillwithscalar(dual_quaternion *buffer, npy_intp length, dual_qu
       op->x = 0;                                                        \
       op->y = 0;                                                        \
       op->z = 0;                                                        \
+      op->er = 0;                                                        \
+      op->ei = 0;                                                        \
+      op->ej = 0;
+      op->ek = 0;
       op++;                                                             \
+
     }                                                                   \
   }
 MAKE_T_TO_DUAL_QUATERNION(FLOAT, npy_float);
@@ -1091,6 +1117,11 @@ MAKE_T_TO_DUAL_QUATERNION(ULONGLONG, npy_ulonglong);
       op->x = (double)(*ip++);                                          \
       op->y = 0;                                                        \
       op->z = 0;                                                        \
+      op->er = 0;
+      op->ei = 0;
+      op->ej = 0;
+      op->ek = 0;
+
     }                                                                   \
   }
 MAKE_CT_TO_DUAL_QUATERNION(CFLOAT, npy_float);
