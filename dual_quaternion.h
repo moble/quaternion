@@ -219,7 +219,7 @@ extern "C" {
     return r;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_conjugate(dual_quaternion q) {
-    dual_quaternion r = {q.w, -q.x, -q.y, -q.z};
+    dual_quaternion r = {q.w, -q.x, -q.y, -q.z, q.er, -q.ei, -q.ej, -q.ek};
     return r;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_inverse(dual_quaternion q) {
