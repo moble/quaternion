@@ -72,9 +72,9 @@ def as_float_array(a):
     array, but is otherwise the same shape.
 
     """
-    if isinstance(a, quaternion):
+    if a.dtype == np.dtype(quaternion):
         return np.asarray(a, dtype=np.quaternion).view((np.double, 4))
-    elif isinstance(a, dual_quaternion):
+    elif a.dtype == np.dtype(dual_quaternion):
         return np.asarray(a, dtype=np.dual_quaternion).view((np.double, 8))
 
 def as_quat_array(a):
@@ -116,6 +116,41 @@ def as_quat_array(a):
         message = (str(e) + '\n            '
                    + 'Failed to view input data as a series of quaternions.  '
                    + 'Please ensure that the last dimension has size divisible by 4.\n            '
+                   + 'Input data has shape {0} and dtype {1}.'.format(a.shape, a.dtype))
+        raise ValueError(message)
+
+    # special case: don't create an axis for a single quaternion, to
+    # match the output of `as_float_array`
+    if av.shape[-1] == 1:
+        av = av.reshape(a.shape[:-1])
+
+    return av
+
+
+def as_dual_quat_array(a):
+    """View a float array as an array of dual quaternions
+
+        The input array must have a final dimension whose size is
+        divisible by eight (or better yet *is* 8), because successive
+        indices in that last dimension will be considered successive
+        components of the output quaternion.
+
+        """
+    a = np.asarray(a, dtype=np.double)
+
+    # fast path
+    if a.shape == (8,):
+        return dual_quaternion(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7])
+
+    # view only works if the last axis is C-contiguous
+    if not a.flags['C_CONTIGUOUS'] or a.strides[-1] != a.itemsize:
+        a = a.copy(order='C')
+    try:
+        av = a.view(np.dual_quaternion)
+    except ValueError as e:
+        message = (str(e) + '\n            '
+                   + 'Failed to view input data as a series of quaternions.  '
+                   + 'Please ensure that the last dimension has size divisible by 8.\n            '
                    + 'Input data has shape {0} and dtype {1}.'.format(a.shape, a.dtype))
         raise ValueError(message)
 

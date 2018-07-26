@@ -144,6 +144,14 @@ extern "C" {
   // Unary float returners
   dual_quaternion dual_quaternion_log(dual_quaternion q); // Pre-declare; declared again below, in its rightful place
   static NPY_INLINE double dual_quaternion_norm(dual_quaternion q) {
+    //dual_quaternion q_conj = dual_quaternion_conjugate(q);
+    //double scalar = q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z;
+    //double w = q1_conj.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z;
+    //double x = q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y;
+    //double y = q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x;
+    //double z = q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w;
+    //double vector = ()/(2*scalar);
+    //return (PyObject*) PyComplex_FromDoubles(scalar, vector);
     PyErr_SetNone(PyExc_NotImplementedError);
     return 0;
   }

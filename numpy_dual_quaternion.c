@@ -951,7 +951,7 @@ static int DUAL_QUATERNION_setitem(PyObject* item, dual_quaternion* qp, void* NP
   PyObject *element;
   if(PyDualQuaternion_Check(item)) {
     memcpy(qp,&(((PyDualQuaternion *)item)->obval),sizeof(dual_quaternion));
-  } else if(PySequence_Check(item) && PySequence_Length(item)==4) {
+  } else if(PySequence_Check(item) && PySequence_Length(item)==8) {
     element = PySequence_GetItem(item, 0);
     if(element == NULL) { return -1; } /* Not a sequence, or other failure */
     qp->w = PyFloat_AsDouble(element);
