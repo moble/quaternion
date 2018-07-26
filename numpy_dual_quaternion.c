@@ -359,7 +359,7 @@ pydual_quaternion__reduce(PyDualQuaternion* self)
                        PyFloat_FromDouble(self->obval.y), PyFloat_FromDouble(self->obval.z),
                        PyFloat_FromDouble(self->obval.er), PyFloat_FromDouble(self->obval.ei),
                        PyFloat_FromDouble(self->obval.ej), PyFloat_FromDouble(self->obval.ek));
-}
+
 }
 
 static PyObject *
@@ -1082,10 +1082,9 @@ DUAL_QUATERNION_fillwithscalar(dual_quaternion *buffer, npy_intp length, dual_qu
       op->z = 0;                                                        \
       op->er = 0;                                                        \
       op->ei = 0;                                                        \
-      op->ej = 0;
-      op->ek = 0;
+      op->ej = 0;                                                        \
+      op->ek = 0;                                                       \
       op++;                                                             \
-
     }                                                                   \
   }
 MAKE_T_TO_DUAL_QUATERNION(FLOAT, npy_float);
@@ -1117,11 +1116,10 @@ MAKE_T_TO_DUAL_QUATERNION(ULONGLONG, npy_ulonglong);
       op->x = (double)(*ip++);                                          \
       op->y = 0;                                                        \
       op->z = 0;                                                        \
-      op->er = 0;
-      op->ei = 0;
-      op->ej = 0;
-      op->ek = 0;
-
+      op->er = 0;                                                       \
+      op->ei = 0;                                                       \
+      op->ej = 0;                                                       \
+      op->ek = 0;                                                       \
     }                                                                   \
   }
 MAKE_CT_TO_DUAL_QUATERNION(CFLOAT, npy_float);
