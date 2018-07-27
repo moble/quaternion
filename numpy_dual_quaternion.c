@@ -99,8 +99,6 @@ pydual_quaternion_init(PyObject *self, PyObject *args, PyObject *kwds)
                     "dual_quaternion constructor takes no keyword arguments");
     return -1;
   }
-  /*TODO: Can we leave out some arguments in the dual_quaternion constructor
-    as quaternion can have 3 arguments and sets w to 0? */
   if (((size == 8) && (!PyArg_ParseTuple(args, "dddddddd",
            &q->w, &q->x, &q->y, &q->z, &q->er, &q->ei, &q->ej, &q->ek)))
       || ((size<8) || (size>8))) {
@@ -604,7 +602,6 @@ PyMemberDef pydual_quaternion_members[] = {
 // numbers, which we call 'part a' and 'part b'.  These are useful in
 // writing Wigner's D matrices directly in terms of dual_quaternions.  This
 // is essentially the column-vector presentation of spinors.
-//TODO: 4 parts for dual quaternions? Or skip this bit entirely?
 static PyObject *
 pydual_quaternion_get_part_a(PyObject *self, void *NPY_UNUSED(closure))
 {
@@ -619,13 +616,12 @@ pydual_quaternion_get_part_b(PyObject *self, void *NPY_UNUSED(closure))
 // This will be defined as a member function on the dual_quaternion
 // objects, so that calling "vec" will return a numpy array
 // with the last three components of the dual_quaternion.
-//TODO
 static PyObject *
 pydual_quaternion_get_vec(PyObject *self, void *NPY_UNUSED(closure))
 {
   dual_quaternion *q = &((PyDualQuaternion *)self)->obval;
   int nd = 1;
-  npy_intp dims[1] = { 3 };
+  npy_intp dims[1] = { 7 };
   int typenum = NPY_DOUBLE;
   PyObject* components = PyArray_SimpleNewFromData(nd, dims, typenum, &(q->x));
   Py_INCREF(self);
@@ -636,7 +632,6 @@ pydual_quaternion_get_vec(PyObject *self, void *NPY_UNUSED(closure))
 // This will be defined as a member function on the dual_quaternion
 // objects, so that calling `q.vec = [1,2,3]`, for example,
 // will set the vector components appropriately.
-//TODO
 static int
 pydual_quaternion_set_vec(PyObject *self, PyObject *value, void *NPY_UNUSED(closure))
 {
@@ -646,9 +641,9 @@ pydual_quaternion_set_vec(PyObject *self, PyObject *value, void *NPY_UNUSED(clos
     PyErr_SetString(PyExc_TypeError, "Cannot set dual_quaternion to empty value");
     return -1;
   }
-  if (! (PySequence_Check(value) && PySequence_Size(value)==3) ) {
+  if (! (PySequence_Check(value) && PySequence_Size(value)==7) ) {
     PyErr_SetString(PyExc_TypeError,
-                    "A dual_quaternion's vector components must be set to something of length 3");
+                    "A dual_quaternion's vector components must be set to something of length 7");
     return -1;
   }
   /* PySequence_GetItem INCREFs element. */
@@ -663,6 +658,22 @@ pydual_quaternion_set_vec(PyObject *self, PyObject *value, void *NPY_UNUSED(clos
   element = PySequence_GetItem(value, 2);
   if(element == NULL) { return -1; } /* Not a sequence, or other failure */
   q->z = PyFloat_AsDouble(element);
+  Py_DECREF(element);
+  element = PySequence_GetItem(value, 3);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->er = PyFloat_AsDouble(element);
+  Py_DECREF(element);
+  element = PySequence_GetItem(value, 4);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->ei = PyFloat_AsDouble(element);
+  Py_DECREF(element);
+  element = PySequence_GetItem(value, 5);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->ej = PyFloat_AsDouble(element);
+  Py_DECREF(element);
+  element = PySequence_GetItem(value, 6);
+  if(element == NULL) { return -1; } /* Not a sequence, or other failure */
+  q->ek = PyFloat_AsDouble(element);
   Py_DECREF(element);
   return 0;
 }
@@ -736,18 +747,17 @@ pydual_quaternion_set_components(PyObject *self, PyObject *value, void *NPY_UNUS
 
 // This collects the methods for getting and setting elements of the
 // dual_quaternion.  This is packaged up here, and will be used in the
-// `tp_getset` field when definining the PyDualQuaternion_Type
+// `tp_getset` field when defining the PyDualQuaternion_Type
 // below.
-//TODO: edit this to describe dual_quaternion functions
 PyGetSetDef pydual_quaternion_getset[] = {
   {"a", pydual_quaternion_get_part_a, NULL,
    "The complex number (w+i*z)", NULL},
   {"b", pydual_quaternion_get_part_b, NULL,
    "The complex number (y+i*x)", NULL},
   {"imag", pydual_quaternion_get_vec, pydual_quaternion_set_vec,
-   "The vector part (x,y,z) of the dual_quaternion as a numpy array", NULL},
+   "The vector part (x,y,z,er,ei,ej,ek) of the dual_quaternion as a numpy array", NULL},
   {"vec", pydual_quaternion_get_vec, pydual_quaternion_set_vec,
-   "The vector part (x,y,z) of the dual_quaternion as a numpy array", NULL},
+   "The vector part (x,y,z,er,ei,ej,ek) of the dual_quaternion as a numpy array", NULL},
   {"components", pydual_quaternion_get_components, pydual_quaternion_set_components,
    "The components (w,x,y,z,er,ei,ej,ek) of the dual_quaternion as a numpy array", NULL},
   {NULL, NULL, NULL, NULL, NULL}

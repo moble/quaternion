@@ -287,11 +287,10 @@ def test_dual_quaternion_add(Qs):
             assert (s + q == quaternion.dual_quaternion(q.w + s, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek))
 
 
-'''
-TODO: implement this
+@pytest.mark.xfail
 def test_dual_quaternion_add_ufunc(Qs):
     ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finite], operator.add)
-'''
+
 
 def test_dual_quaternion_subtract(Qs):
     for q in Qs[Qs_finite]:
@@ -303,10 +302,9 @@ def test_dual_quaternion_subtract(Qs):
             assert (q - s == quaternion.dual_quaternion(q.w - s, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek))
             assert (s - q == quaternion.dual_quaternion(s - q.w, -q.x, -q.y, -q.z, -q.er, -q.ei, -q.ej, -q.ek))
 
-'''
+@pytest.mark.xfail
 def test_quaternion_subtract_ufunc(Qs):
     ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finite], operator.sub)
-'''
 
 
 def test_dual_quaternion_multiply(Qs):
@@ -394,7 +392,7 @@ def test_dual_quaternion_multiply(Qs):
     assert Qs[ek] * Qs[ej] == Qs[q_0]
     assert Qs[ek] * Qs[ek] == Qs[q_0]
 
-'''
+@pytest.mark.xfail
 def test_quaternion_multiply_ufunc(Qs):
     ufunc_binary_utility(np.array([quaternion.one]), Qs[Qs_finite], operator.mul)
     ufunc_binary_utility(Qs[Qs_finite], np.array([quaternion.one]), operator.mul)
@@ -413,7 +411,7 @@ def test_quaternion_multiply_ufunc(Qs):
                          np.array([-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]), operator.mul)
 
     ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finite], operator.mul)
-'''
+
 @pytest.mark.xfail
 def test_quaternion_divide(Qs):
     # Check scalar division
@@ -489,8 +487,8 @@ def test_quaternion_getset(Qs):
     # get components/vec
     for q in Qs[Qs_nonnan]:
         assert np.array_equal(q.components, np.array([q.w, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek]))
-        #assert np.array_equal(q.vec, np.array([q.x, q.y, q.z]))
-        #assert np.array_equal(q.imag, np.array([q.x, q.y, q.z]))
+        assert np.array_equal(q.vec, np.array([q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek]))
+        assert np.array_equal(q.imag, np.array([q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek]))
     # set components/vec from np.array, list, tuple
     for q in Qs[Qs_nonnan]:
         for seq_type in [np.array, list, tuple]:
@@ -498,11 +496,11 @@ def test_quaternion_getset(Qs):
             r = np.dual_quaternion(*q.components)
             s = np.dual_quaternion(*q.components)
             p.components = seq_type((-1.1, 2.2, -3.3, 4.4, -5.5, 6.6, -7.7, 8.8))
-            #r.vec = seq_type((6.6, -7.7, 8.8))
-            #s.imag = seq_type((6.6, -7.7, 8.8))
+            r.vec = seq_type((6.6, -7.7, 8.8, 2.2, -3.3, 4.4, -5.5))
+            s.imag = seq_type((6.6, -7.7, 8.8, 2.2, -3.3, 4.4, -5.5))
             assert np.array_equal(p.components, np.array([-1.1, 2.2, -3.3, 4.4, -5.5, 6.6, -7.7, 8.8]))
-            #assert np.array_equal(r.components, np.array([q.w, 6.6, -7.7, 8.8]))
-            #assert np.array_equal(s.components, np.array([q.w, 6.6, -7.7, 8.8]))
+            assert np.array_equal(r.components, np.array([q.w, 6.6, -7.7, 8.8, 2.2, -3.3, 4.4, -5.5]))
+            assert np.array_equal(s.components, np.array([q.w, 6.6, -7.7, 8.8, 2.2, -3.3, 4.4, -5.5]))
     # TypeError when setting components with the wrong type or size of thing
     for q in Qs:
         for seq_type in [np.array, list, tuple]:
@@ -523,9 +521,9 @@ def test_quaternion_getset(Qs):
                 p.components = seq_type((-5.5, 6.6, -7.7, 8.8, -9.9))
             with pytest.raises(TypeError):
                 p.components = seq_type((-5.5, 6.6, -7.7, 8.8, -9.9, 1.1, 2.2, 3.3, 4.4))
-            '''
+
             with pytest.raises(TypeError):
-                r.vec = '2.2, 3.3, 4.4'
+                r.vec = '2.2, 3.3, 4.4, 5.5, 6.6, -7.7, 8.8'
             with pytest.raises(TypeError):
                 r.vec = seq_type([])
             with pytest.raises(TypeError):
@@ -535,7 +533,10 @@ def test_quaternion_getset(Qs):
             with pytest.raises(TypeError):
                 r.vec = seq_type((-5.5, 6.6, -7.7, 8.8))
             with pytest.raises(TypeError):
-                s.vec = '2.2, 3.3, 4.4'
+                r.vec = seq_type((2.2, 3.3, 4.4, -5.5, 6.6, -7.7, 8.8, 9,9))
+
+            with pytest.raises(TypeError):
+                s.vec = '2.2, 3.3, 4.4, 5.5, 6.6, -7.7, 8.8'
             with pytest.raises(TypeError):
                 s.vec = seq_type([])
             with pytest.raises(TypeError):
@@ -544,7 +545,9 @@ def test_quaternion_getset(Qs):
                 s.vec = seq_type((-5.5, 6.6))
             with pytest.raises(TypeError):
                 s.vec = seq_type((-5.5, 6.6, -7.7, 8.8))
-                '''
+            with pytest.raises(TypeError):
+                s.vec = seq_type((2.2, 3.3, 4.4, -5.5, 6.6, -7.7, 8.8, 9, 9))
+
 
 
 @pytest.mark.xfail
