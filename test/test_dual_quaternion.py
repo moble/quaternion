@@ -202,6 +202,20 @@ def test_dual_quaternion_not_equal(Qs):
             assert q != p  # nan should never equal anything
 
 
+def test_dual_quaternion_norm(Qs):
+    for q in Qs[Qs_nan]:
+        assert np.isnan(q.norm())
+    for q in Qs[Qs_inf]:
+        if on_windows:
+            assert np.isinf(q.norm()) or np.isnan(q.norm())
+        else:
+            assert np.isinf(q.norm())
+    q = quaternion.dual_quaternion(1, 2, 3, 4, 5, 6, 7, 8)
+    nm = q.norm()
+    assert nm.real == 30
+    assert nm.imag == 140 / 60
+
+
 def test_dual_quaternion_richcompare(Qs):
     for p in Qs:
         for q in Qs[Qs_nan]:

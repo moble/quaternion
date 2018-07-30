@@ -146,10 +146,10 @@ extern "C" {
   static NPY_INLINE PyObject * dual_quaternion_norm(dual_quaternion q) {
     dual_quaternion q_conj = {q.w, -q.x, -q.y, -q.z, q.er, -q.ei, -q.ej, -q.ek};
     double scalar = q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z;
-    double w = q_conj.w*q.er - q_conj.x*q.ei - q_conj.y*q.ej - q_conj.z*q.ek - q_conj.er*q.w - q_conj.ei*q.x - q_conj.ej*q.y - q_conj.ek*q.z;
-    double x = q_conj.w*q.ei + q_conj.x*q.er + q_conj.y*q.ek - q_conj.z*q.ej - q_conj.er*q.x + q_conj.ei*q.w + q_conj.ej*q.z - q_conj.ek*q.y;
-    double y = q_conj.w*q.ej - q_conj.x*q.ek + q_conj.y*q.er + q_conj.z*q.ei - q_conj.er*q.y - q_conj.ei*q.z + q_conj.ej*q.w + q_conj.ek*q.x;
-    double z = q_conj.w*q.ek + q_conj.x*q.ej - q_conj.y*q.ei + q_conj.z*q.er - q_conj.er*q.z + q_conj.ei*q.y - q_conj.ej*q.x + q_conj.ek*q.w;
+    double w = q_conj.w*q.er - q_conj.x*q.ei - q_conj.y*q.ej - q_conj.z*q.ek + q_conj.er*q.w - q_conj.ei*q.x - q_conj.ej*q.y - q_conj.ek*q.z;
+    double x = q_conj.w*q.ei + q_conj.x*q.er + q_conj.y*q.ek - q_conj.z*q.ej + q_conj.er*q.x + q_conj.ei*q.w + q_conj.ej*q.z - q_conj.ek*q.y;
+    double y = q_conj.w*q.ej - q_conj.x*q.ek + q_conj.y*q.er + q_conj.z*q.ei + q_conj.er*q.y - q_conj.ei*q.z + q_conj.ej*q.w + q_conj.ek*q.x;
+    double z = q_conj.w*q.ek + q_conj.x*q.ej - q_conj.y*q.ei + q_conj.z*q.er + q_conj.er*q.z + q_conj.ei*q.y - q_conj.ej*q.x + q_conj.ek*q.w;
 
     double vector = (w)/(2*scalar);
     return PyComplex_FromDoubles(scalar, vector);
