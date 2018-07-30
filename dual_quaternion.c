@@ -41,20 +41,9 @@ dual_quaternion_create_from_euler_angles(double alpha, double beta, double gamma
 dual_quaternion
 dual_quaternion_sqrt(dual_quaternion q)
 {
-  double absolute = dual_quaternion_norm(q);  // pre-square-root
-  if(absolute<=DBL_MIN) {
-      dual_quaternion r = {0.0, 0.0, 0.0, 0.0};
-      return r;
-  }
-  absolute = sqrt(absolute);
-  if(fabs(absolute+q.w)<_DUAL_QUATERNION_EPS*absolute) {
-    dual_quaternion r = {0.0, sqrt(absolute), 0.0, 0.0};
-    return r;
-  } else {
-    double c = sqrt(0.5/(absolute+q.w));
-    dual_quaternion r = {(absolute+q.w)*c, q.x*c, q.y*c, q.z*c};
-    return r;
-  }
+  PyErr_SetNone(PyExc_NotImplementedError);
+  dual_quaternion r = {0, 0, 0, 0, 0, 0, 0, 0};
+  return r;
 }
 
 dual_quaternion

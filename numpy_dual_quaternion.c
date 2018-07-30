@@ -146,7 +146,6 @@ BINARY_BOOL_RETURNER(greater_equal)
     return PyFloat_FromDouble(dual_quaternion_##name(q));                    \
   }
 UNARY_FLOAT_RETURNER(absolute)
-UNARY_FLOAT_RETURNER(norm)
 UNARY_FLOAT_RETURNER(angle)
 
 #define UNARY_DUAL_QUATERNION_RETURNER(name)                                 \
@@ -347,6 +346,13 @@ QQ_QS_SQ_BINARY_DUAL_QUATERNION_INPLACE(divide)
 /* QQ_QS_SQ_BINARY_DUAL_QUATERNION_INPLACE_FULL(true_divide, divide) */
 /* QQ_QS_SQ_BINARY_DUAL_QUATERNION_INPLACE_FULL(floor_divide, divide) */
 QQ_QS_SQ_BINARY_DUAL_QUATERNION_INPLACE(power)
+
+static PyObject*
+pydual_quaternion_norm(PyObject* a, PyObject* NPY_UNUSED(b)) {
+    dual_quaternion q = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    PyDualQuaternion_AsDualQuaternion(q, a);
+    return dual_quaternion_norm(q);
+}
 
 static PyObject *
 pydual_quaternion__reduce(PyDualQuaternion* self)
@@ -1166,7 +1172,7 @@ static void register_cast_function(int sourceType, int destType, PyArray_VectorU
 UNARY_UFUNC(isnan, npy_bool)
 UNARY_UFUNC(isinf, npy_bool)
 UNARY_UFUNC(isfinite, npy_bool)
-UNARY_UFUNC(norm, npy_double)
+//UNARY_UFUNC(norm, npy_double)
 UNARY_UFUNC(absolute, npy_double)
 UNARY_UFUNC(angle, npy_double)
 UNARY_UFUNC(sqrt, dual_quaternion)
@@ -1535,8 +1541,8 @@ PyMODINIT_FUNC initnumpy_dual_quaternion(void) {
   // quat -> double
   arg_types[0] = dual_quaternion_descr->type_num;
   arg_types[1] = NPY_DOUBLE;
-  REGISTER_NEW_UFUNC(norm, 1, 1,
-                     "Return Cayley norm (square of the absolute value) of each dual_quaternion.\n");
+  //REGISTER_NEW_UFUNC(norm, 1, 1,
+  //                   "Return Cayley norm (square of the absolute value) of each dual_quaternion.\n");
   REGISTER_UFUNC(absolute);
   REGISTER_NEW_UFUNC_GENERAL(angle_of_rotor, angle, 1, 1,
                              "Return angle of rotation, assuming input is a unit rotor\n");

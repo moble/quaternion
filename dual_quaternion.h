@@ -143,17 +143,16 @@ extern "C" {
 
   // Unary float returners
   dual_quaternion dual_quaternion_log(dual_quaternion q); // Pre-declare; declared again below, in its rightful place
-  static NPY_INLINE double dual_quaternion_norm(dual_quaternion q) {
-    //dual_quaternion q_conj = dual_quaternion_conjugate(q);
-    //double scalar = q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z;
-    //double w = q1_conj.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z;
-    //double x = q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y;
-    //double y = q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x;
-    //double z = q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w;
-    //double vector = ()/(2*scalar);
-    //return (PyObject*) PyComplex_FromDoubles(scalar, vector);
-    PyErr_SetNone(PyExc_NotImplementedError);
-    return 0;
+  static NPY_INLINE PyObject * dual_quaternion_norm(dual_quaternion q) {
+    dual_quaternion q_conj = {q.w, -q.x, -q.y, -q.z, q.er, -q.ei, -q.ej, -q.ek};
+    double scalar = q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z;
+    double w = q_conj.w*q.er - q_conj.x*q.ei - q_conj.y*q.ej - q_conj.z*q.ek - q_conj.er*q.w - q_conj.ei*q.x - q_conj.ej*q.y - q_conj.ek*q.z;
+    double x = q_conj.w*q.ei + q_conj.x*q.er + q_conj.y*q.ek - q_conj.z*q.ej - q_conj.er*q.x + q_conj.ei*q.w + q_conj.ej*q.z - q_conj.ek*q.y;
+    double y = q_conj.w*q.ej - q_conj.x*q.ek + q_conj.y*q.er + q_conj.z*q.ei - q_conj.er*q.y - q_conj.ei*q.z + q_conj.ej*q.w + q_conj.ek*q.x;
+    double z = q_conj.w*q.ek + q_conj.x*q.ej - q_conj.y*q.ei + q_conj.z*q.er - q_conj.er*q.z + q_conj.ei*q.y - q_conj.ej*q.x + q_conj.ek*q.w;
+
+    double vector = (w)/(2*scalar);
+    return PyComplex_FromDoubles(scalar, vector);
   }
   static NPY_INLINE double dual_quaternion_absolute(dual_quaternion q) {
     PyErr_SetNone(PyExc_NotImplementedError);
@@ -231,8 +230,8 @@ extern "C" {
     return r;
   }
   static NPY_INLINE dual_quaternion dual_quaternion_inverse(dual_quaternion q) {
-    double norm = dual_quaternion_norm(q);
-    dual_quaternion r = {q.w/norm, -q.x/norm, -q.y/norm, -q.z/norm};
+    PyErr_SetNone(PyExc_NotImplementedError);
+    dual_quaternion r = {0, 0, 0, 0, 0, 0, 0, 0};
     return r;
   }
 
