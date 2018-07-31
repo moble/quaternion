@@ -162,18 +162,6 @@ UNARY_DUAL_QUATERNION_RETURNER(sqrt)
 UNARY_DUAL_QUATERNION_RETURNER(log)
 UNARY_DUAL_QUATERNION_RETURNER(exp)
 UNARY_DUAL_QUATERNION_RETURNER(normalized)
-UNARY_DUAL_QUATERNION_RETURNER(x_parity_conjugate)
-UNARY_DUAL_QUATERNION_RETURNER(x_parity_symmetric_part)
-UNARY_DUAL_QUATERNION_RETURNER(x_parity_antisymmetric_part)
-UNARY_DUAL_QUATERNION_RETURNER(y_parity_conjugate)
-UNARY_DUAL_QUATERNION_RETURNER(y_parity_symmetric_part)
-UNARY_DUAL_QUATERNION_RETURNER(y_parity_antisymmetric_part)
-UNARY_DUAL_QUATERNION_RETURNER(z_parity_conjugate)
-UNARY_DUAL_QUATERNION_RETURNER(z_parity_symmetric_part)
-UNARY_DUAL_QUATERNION_RETURNER(z_parity_antisymmetric_part)
-UNARY_DUAL_QUATERNION_RETURNER(parity_conjugate)
-UNARY_DUAL_QUATERNION_RETURNER(parity_symmetric_part)
-UNARY_DUAL_QUATERNION_RETURNER(parity_antisymmetric_part)
 static PyObject*
 pydual_quaternion_positive(PyObject* self, PyObject* NPY_UNUSED(b)) {
   Py_INCREF(self);
@@ -453,30 +441,6 @@ PyMethodDef pydual_quaternion_methods[] = {
    "Return the exponential of the dual_quaternion (e**q)"},
   {"normalized", pydual_quaternion_normalized, METH_NOARGS,
    "Return a normalized copy of the dual_quaternion"},
-  {"x_parity_conjugate", pydual_quaternion_x_parity_conjugate, METH_NOARGS,
-   "Reflect across y-z plane (note spinorial character)"},
-  {"x_parity_symmetric_part", pydual_quaternion_x_parity_symmetric_part, METH_NOARGS,
-   "Part invariant under reflection across y-z plane (note spinorial character)"},
-  {"x_parity_antisymmetric_part", pydual_quaternion_x_parity_antisymmetric_part, METH_NOARGS,
-   "Part anti-invariant under reflection across y-z plane (note spinorial character)"},
-  {"y_parity_conjugate", pydual_quaternion_y_parity_conjugate, METH_NOARGS,
-   "Reflect across x-z plane (note spinorial character)"},
-  {"y_parity_symmetric_part", pydual_quaternion_y_parity_symmetric_part, METH_NOARGS,
-   "Part invariant under reflection across x-z plane (note spinorial character)"},
-  {"y_parity_antisymmetric_part", pydual_quaternion_y_parity_antisymmetric_part, METH_NOARGS,
-   "Part anti-invariant under reflection across x-z plane (note spinorial character)"},
-  {"z_parity_conjugate", pydual_quaternion_z_parity_conjugate, METH_NOARGS,
-   "Reflect across x-y plane (note spinorial character)"},
-  {"z_parity_symmetric_part", pydual_quaternion_z_parity_symmetric_part, METH_NOARGS,
-   "Part invariant under reflection across x-y plane (note spinorial character)"},
-  {"z_parity_antisymmetric_part", pydual_quaternion_z_parity_antisymmetric_part, METH_NOARGS,
-   "Part anti-invariant under reflection across x-y plane (note spinorial character)"},
-  {"parity_conjugate", pydual_quaternion_parity_conjugate, METH_NOARGS,
-   "Reflect all dimensions (note spinorial character)"},
-  {"parity_symmetric_part", pydual_quaternion_parity_symmetric_part, METH_NOARGS,
-   "Part invariant under negation of all vectors (note spinorial character)"},
-  {"parity_antisymmetric_part", pydual_quaternion_parity_antisymmetric_part, METH_NOARGS,
-   "Part anti-invariant under negation of all vectors (note spinorial character)"},
 
   // DualQuaternion-dual_quaternion binary dual_quaternion returners
   // {"add", pydual_quaternion_add, METH_O,
@@ -1182,18 +1146,6 @@ UNARY_UFUNC(negative, dual_quaternion)
 UNARY_UFUNC(conjugate, dual_quaternion)
 UNARY_GEN_UFUNC(invert, inverse, dual_quaternion)
 UNARY_UFUNC(normalized, dual_quaternion)
-UNARY_UFUNC(x_parity_conjugate, dual_quaternion)
-UNARY_UFUNC(x_parity_symmetric_part, dual_quaternion)
-UNARY_UFUNC(x_parity_antisymmetric_part, dual_quaternion)
-UNARY_UFUNC(y_parity_conjugate, dual_quaternion)
-UNARY_UFUNC(y_parity_symmetric_part, dual_quaternion)
-UNARY_UFUNC(y_parity_antisymmetric_part, dual_quaternion)
-UNARY_UFUNC(z_parity_conjugate, dual_quaternion)
-UNARY_UFUNC(z_parity_symmetric_part, dual_quaternion)
-UNARY_UFUNC(z_parity_antisymmetric_part, dual_quaternion)
-UNARY_UFUNC(parity_conjugate, dual_quaternion)
-UNARY_UFUNC(parity_symmetric_part, dual_quaternion)
-UNARY_UFUNC(parity_antisymmetric_part, dual_quaternion)
 
 
 // This is a macro that will be used to define the various basic binary
@@ -1242,141 +1194,6 @@ BINARY_GEN_UFUNC(floor_divide_scalar, divide_scalar, dual_quaternion, npy_double
 BINARY_GEN_UFUNC(scalar_true_divide, scalar_divide, npy_double, dual_quaternion, dual_quaternion)
 BINARY_GEN_UFUNC(scalar_floor_divide, scalar_divide, npy_double, dual_quaternion, dual_quaternion)
 BINARY_SCALAR_UFUNC(power, dual_quaternion)
-BINARY_UFUNC(rotor_intrinsic_distance, npy_double)
-BINARY_UFUNC(rotor_chordal_distance, npy_double)
-BINARY_UFUNC(rotation_intrinsic_distance, npy_double)
-BINARY_UFUNC(rotation_chordal_distance, npy_double)
-
-
-// Interface to the module-level slerp function
-static PyObject*
-pydual_quaternion_slerp_evaluate(PyObject *NPY_UNUSED(self), PyObject *args)
-{
-  double tau;
-  PyObject* Q1 = {0};
-  PyObject* Q2 = {0};
-  PyDualQuaternion* Q = (PyDualQuaternion*)PyDualQuaternion_Type.tp_alloc(&PyDualQuaternion_Type,0);
-  if (!PyArg_ParseTuple(args, "OOd", &Q1, &Q2, &tau)) {
-    return NULL;
-  }
-  Q->obval = slerp(((PyDualQuaternion*)Q1)->obval, ((PyDualQuaternion*)Q2)->obval, tau);
-  return (PyObject*)Q;
-}
-
-// Interface to the evaluate a squad interpolant at a particular time
-static PyObject*
-pydual_quaternion_squad_evaluate(PyObject *NPY_UNUSED(self), PyObject *args)
-{
-  double tau_i;
-  PyObject* q_i = {0};
-  PyObject* a_i = {0};
-  PyObject* b_ip1 = {0};
-  PyObject* q_ip1 = {0};
-  PyDualQuaternion* Q = (PyDualQuaternion*)PyDualQuaternion_Type.tp_alloc(&PyDualQuaternion_Type,0);
-  if (!PyArg_ParseTuple(args, "dOOOO", &tau_i, &q_i, &a_i, &b_ip1, &q_ip1)) {
-    return NULL;
-  }
-  Q->obval = squad_evaluate(tau_i,
-                        ((PyDualQuaternion*)q_i)->obval, ((PyDualQuaternion*)a_i)->obval,
-                        ((PyDualQuaternion*)b_ip1)->obval, ((PyDualQuaternion*)q_ip1)->obval);
-  return (PyObject*)Q;
-}
-
-// This will be used to create the ufunc needed for `slerp`, which
-// evaluates the interpolant at a point.  The method for doing this
-// was pieced together from examples given on the page
-// <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
-static void
-slerp_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* NPY_UNUSED(data))
-{
-  npy_intp i;
-  double tau_i;
-  dual_quaternion *q_1, *q_2;
-
-  npy_intp is1=steps[0];
-  npy_intp is2=steps[1];
-  npy_intp is3=steps[2];
-  npy_intp os=steps[3];
-  npy_intp n=dimensions[0];
-
-  char *i1=args[0];
-  char *i2=args[1];
-  char *i3=args[2];
-  char *op=args[3];
-
-  for (i = 0; i < n; i++) {
-    q_1 = (dual_quaternion*)i1;
-    q_2 = (dual_quaternion*)i2;
-    tau_i = *(double *)i3;
-
-    *((dual_quaternion *)op) = slerp(*q_1, *q_2, tau_i);
-
-    i1 += is1;
-    i2 += is2;
-    i3 += is3;
-    op += os;
-  }
-}
-
-// This will be used to create the ufunc needed for `squad`, which
-// evaluates the interpolant at a point.  The method for doing this
-// was pieced together from examples given on the page
-// <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
-static void
-squad_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* NPY_UNUSED(data))
-{
-  npy_intp i;
-  double tau_i;
-  dual_quaternion *q_i, *a_i, *b_ip1, *q_ip1;
-
-  npy_intp is1=steps[0];
-  npy_intp is2=steps[1];
-  npy_intp is3=steps[2];
-  npy_intp is4=steps[3];
-  npy_intp is5=steps[4];
-  npy_intp os=steps[5];
-  npy_intp n=dimensions[0];
-
-  char *i1=args[0];
-  char *i2=args[1];
-  char *i3=args[2];
-  char *i4=args[3];
-  char *i5=args[4];
-  char *op=args[5];
-
-  for (i = 0; i < n; i++) {
-    tau_i = *(double *)i1;
-    q_i = (dual_quaternion*)i2;
-    a_i = (dual_quaternion*)i3;
-    b_ip1 = (dual_quaternion*)i4;
-    q_ip1 = (dual_quaternion*)i5;
-
-    *((dual_quaternion *)op) = squad_evaluate(tau_i, *q_i, *a_i, *b_ip1, *q_ip1);
-
-    i1 += is1;
-    i2 += is2;
-    i3 += is3;
-    i4 += is4;
-    i5 += is5;
-    op += os;
-  }
-}
-
-
-// This contains assorted other top-level methods for the module
-static PyMethodDef DualQuaternionMethods[] = {
-  {"slerp_evaluate", pydual_quaternion_slerp_evaluate, METH_VARARGS,
-   "Interpolate linearly along the geodesic between two rotors \n\n"
-   "See also `numpy.slerp_vectorized` for a vectorized version of this function, and\n"
-   "`dual_quaternion.slerp` for the most useful form, which automatically finds the correct\n"
-   "rotors to interpolate and the relative time to which they must be interpolated."},
-  {"squad_evaluate", pydual_quaternion_squad_evaluate, METH_VARARGS,
-   "Interpolate linearly along the geodesic between two rotors\n\n"
-   "See also `numpy.squad_vectorized` for a vectorized version of this function, and\n"
-   "`dual_quaternion.squad` for the most useful form, which automatically finds the correct\n"
-   "rotors to interpolate and the relative time to which they must be interpolated."},
-  {NULL, NULL, 0, NULL}
-};
 
 
 #if PY_MAJOR_VERSION >= 3
@@ -1386,7 +1203,7 @@ static struct PyModuleDef moduledef = {
     "numpy_dual_quaternion",
     NULL,
     -1,
-    DualQuaternionMethods,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -1409,11 +1226,8 @@ PyMODINIT_FUNC initnumpy_dual_quaternion(void) {
 
   PyObject *module;
   PyObject *tmp_ufunc;
-  PyObject *slerp_evaluate_ufunc;
-  PyObject *squad_evaluate_ufunc;
   int dual_quaternionNum;
   int arg_types[3];
-  PyArray_Descr* arg_dtypes[6];
   PyObject* numpy;
   PyObject* numpy_dict;
 
@@ -1556,30 +1370,6 @@ PyMODINIT_FUNC initnumpy_dual_quaternion(void) {
   REGISTER_UFUNC(exp);
   REGISTER_NEW_UFUNC(normalized, 1, 1,
                      "Normalize all dual_quaternions in this array\n");
-  REGISTER_NEW_UFUNC(x_parity_conjugate, 1, 1,
-                     "Reflect across y-z plane (note spinorial character)\n");
-  REGISTER_NEW_UFUNC(x_parity_symmetric_part, 1, 1,
-                     "Part invariant under reflection across y-z plane (note spinorial character)\n");
-  REGISTER_NEW_UFUNC(x_parity_antisymmetric_part, 1, 1,
-                     "Part anti-invariant under reflection across y-z plane (note spinorial character)\n");
-  REGISTER_NEW_UFUNC(y_parity_conjugate, 1, 1,
-                     "Reflect across x-z plane (note spinorial character)\n");
-  REGISTER_NEW_UFUNC(y_parity_symmetric_part, 1, 1,
-                     "Part invariant under reflection across x-z plane (note spinorial character)\n");
-  REGISTER_NEW_UFUNC(y_parity_antisymmetric_part, 1, 1,
-                     "Part anti-invariant under reflection across x-z plane (note spinorial character)\n");
-  REGISTER_NEW_UFUNC(z_parity_conjugate, 1, 1,
-                     "Reflect across x-y plane (note spinorial character)\n");
-  REGISTER_NEW_UFUNC(z_parity_symmetric_part, 1, 1,
-                     "Part invariant under reflection across x-y plane (note spinorial character)\n");
-  REGISTER_NEW_UFUNC(z_parity_antisymmetric_part, 1, 1,
-                     "Part anti-invariant under reflection across x-y plane (note spinorial character)\n");
-  REGISTER_NEW_UFUNC(parity_conjugate, 1, 1,
-                     "Reflect all dimensions (note spinorial character)\n");
-  REGISTER_NEW_UFUNC(parity_symmetric_part, 1, 1,
-                     "Part invariant under reversal of all vectors (note spinorial character)\n");
-  REGISTER_NEW_UFUNC(parity_antisymmetric_part, 1, 1,
-                     "Part anti-invariant under reversal of all vectors (note spinorial character)\n");
   REGISTER_UFUNC(negative);
   REGISTER_UFUNC(conjugate);
   REGISTER_UFUNC(invert);
@@ -1629,66 +1419,6 @@ PyMODINIT_FUNC initnumpy_dual_quaternion(void) {
   REGISTER_UFUNC_SCALAR(true_divide);
   REGISTER_UFUNC_SCALAR(floor_divide);
   REGISTER_UFUNC_SCALAR(power);
-
-  // quat, quat -> double
-  arg_types[0] = dual_quaternion_descr->type_num;
-  arg_types[1] = dual_quaternion_descr->type_num;
-  arg_types[2] = NPY_DOUBLE;
-  REGISTER_NEW_UFUNC(rotor_intrinsic_distance, 2, 1,
-                     "Distance measure intrinsic to rotor manifold");
-  REGISTER_NEW_UFUNC(rotor_chordal_distance, 2, 1,
-                     "Distance measure from embedding of rotor manifold");
-  REGISTER_NEW_UFUNC(rotation_intrinsic_distance, 2, 1,
-                     "Distance measure intrinsic to rotation manifold");
-  REGISTER_NEW_UFUNC(rotation_chordal_distance, 2, 1,
-                     "Distance measure from embedding of rotation manifold");
-
-
-  /* I think before I do the following, I'll have to update numpy_dict
-   * somehow, presumably with something related to
-   * `PyUFunc_RegisterLoopForType`.  I should also do this for the
-   * various other methods defined above. */
-
-  // Create a custom ufunc and register it for loops.  The method for
-  // doing this was pieced together from examples given on the page
-  // <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
-  arg_dtypes[0] = PyArray_DescrFromType(NPY_DOUBLE);
-  arg_dtypes[1] = dual_quaternion_descr;
-  arg_dtypes[2] = dual_quaternion_descr;
-  arg_dtypes[3] = dual_quaternion_descr;
-  arg_dtypes[4] = dual_quaternion_descr;
-  arg_dtypes[5] = dual_quaternion_descr;
-  squad_evaluate_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, 5, 1,
-                                                 PyUFunc_None, "squad_vectorized",
-                                                 "Calculate squad from arrays of (tau, q_i, a_i, b_ip1, q_ip1)\n\n"
-                                                 "See `dual_quaternion.squad` for an easier-to-use version of this function",
-                                                  0);
-  PyUFunc_RegisterLoopForDescr((PyUFuncObject*)squad_evaluate_ufunc,
-                               dual_quaternion_descr,
-                               &squad_loop,
-                               arg_dtypes,
-                               NULL);
-  PyDict_SetItemString(numpy_dict, "squad_vectorized", squad_evaluate_ufunc);
-  Py_DECREF(squad_evaluate_ufunc);
-
-  // Create a custom ufunc and register it for loops.  The method for
-  // doing this was pieced together from examples given on the page
-  // <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
-  arg_dtypes[0] = dual_quaternion_descr;
-  arg_dtypes[1] = dual_quaternion_descr;
-  arg_dtypes[2] = PyArray_DescrFromType(NPY_DOUBLE);
-  slerp_evaluate_ufunc = PyUFunc_FromFuncAndData(NULL, NULL, NULL, 0, 3, 1,
-                                                 PyUFunc_None, "slerp_vectorized",
-                                                 "Calculate slerp from arrays of (q_1, q_2, tau)\n\n"
-                                                 "See `dual_quaternion.slerp` for an easier-to-use version of this function",
-                                                  0);
-  PyUFunc_RegisterLoopForDescr((PyUFuncObject*)slerp_evaluate_ufunc,
-                               dual_quaternion_descr,
-                               &slerp_loop,
-                               arg_dtypes,
-                               NULL);
-  PyDict_SetItemString(numpy_dict, "slerp_vectorized", slerp_evaluate_ufunc);
-  Py_DECREF(slerp_evaluate_ufunc);
 
 
   // Add the constant `_DUAL_QUATERNION_EPS` to the module as `dual_quaternion._eps`
