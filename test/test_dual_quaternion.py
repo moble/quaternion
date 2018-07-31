@@ -24,16 +24,18 @@ on_windows = ('win' in platform.lower() and not 'darwin' in platform.lower())
 eps = np.finfo(float).eps
 
 
-def allclose(*args, **kwargs):
-    kwargs.update({'verbose': True})
-    return quaternion.allclose(*args, **kwargs)
-
 
 def passer(b):
     pass
 # Change this to strict_assert = assert_ to check for missing tests
 strict_assert = passer
 
+def allclose(lis1, lis2):
+    passed = True
+    for i in range(len(lis1)):
+        if not dual_quaternion_all_close(lis1[i], lis2[i]):
+            passed = False
+    return passed
 
 def ufunc_binary_utility(array1, array2, op, rtol=2*eps, atol=0.0):
     """Make sure broadcasting is consistent with individual operations
@@ -47,17 +49,14 @@ def ufunc_binary_utility(array1, array2, op, rtol=2*eps, atol=0.0):
     """
     for arg1 in array1:
         assert allclose(op(arg1, array2),
-                        np.array([op(arg1, arg2) for arg2 in array2]),
-                        rtol=rtol, atol=atol)
+                        np.array([op(arg1, arg2) for arg2 in array2]))
     for arg2 in array2:
         assert allclose(op(array1, arg2),
-                        np.array([op(arg1, arg2) for arg1 in array1]),
-                        rtol=rtol, atol=atol)
+                        np.array([op(arg1, arg2) for arg1 in array1]))
 
     if array1.shape == array2.shape:
         assert allclose(op(array1, array2),
-                        np.array([op(arg1, arg2) for arg1, arg2 in zip(array1, array2)]),
-                        rtol=rtol, atol=atol)
+                        np.array([op(arg1, arg2) for arg1, arg2 in zip(array1, array2)]))
 
 
 # The following fixtures are used to establish some re-usable data
@@ -97,16 +96,6 @@ Qs_noninfnonzero = [i for i in range(len(Qs())) if not Qs()[i].isinf() and Qs()[
 Qs_finite = [i for i in range(len(Qs())) if Qs()[i].isfinite()]
 Qs_nonfinite = [i for i in range(len(Qs())) if not Qs()[i].isfinite()]
 Qs_finitenonzero = [i for i in range(len(Qs())) if Qs()[i].isfinite() and Qs()[i].nonzero()]
-
-
-@pytest.fixture
-def Rs():
-    ones = [0, -1., 1.]
-    rs = [np.quaternion(w, x, y, z).normalized() for w in ones for x in ones for y in ones for z in ones][1:]
-    np.random.seed(1842)
-    rs = rs + [r.normalized() for r in [np.quaternion(np.random.uniform(-1, 1), np.random.uniform(-1, 1),
-                                                      np.random.uniform(-1, 1), np.random.uniform(-1, 1)) for i in range(20)]]
-    return np.array(rs)
 
 
 def dual_quaternion_all_close(dq1, dq2):
@@ -301,7 +290,7 @@ def test_dual_quaternion_add(Qs):
             assert (s + q == quaternion.dual_quaternion(q.w + s, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek))
 
 
-@pytest.mark.xfail
+
 def test_dual_quaternion_add_ufunc(Qs):
     ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finite], operator.add)
 
@@ -316,7 +305,6 @@ def test_dual_quaternion_subtract(Qs):
             assert (q - s == quaternion.dual_quaternion(q.w - s, q.x, q.y, q.z, q.er, q.ei, q.ej, q.ek))
             assert (s - q == quaternion.dual_quaternion(s - q.w, -q.x, -q.y, -q.z, -q.er, -q.ei, -q.ej, -q.ek))
 
-@pytest.mark.xfail
 def test_quaternion_subtract_ufunc(Qs):
     ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finite], operator.sub)
 
@@ -406,10 +394,9 @@ def test_dual_quaternion_multiply(Qs):
     assert Qs[ek] * Qs[ej] == Qs[q_0]
     assert Qs[ek] * Qs[ek] == Qs[q_0]
 
-@pytest.mark.xfail
 def test_quaternion_multiply_ufunc(Qs):
-    ufunc_binary_utility(np.array([quaternion.one]), Qs[Qs_finite], operator.mul)
-    ufunc_binary_utility(Qs[Qs_finite], np.array([quaternion.one]), operator.mul)
+    ufunc_binary_utility(np.array([quaternion.dual_one]), Qs[Qs_finite], operator.mul)
+    ufunc_binary_utility(Qs[Qs_finite], np.array([quaternion.dual_one]), operator.mul)
     ufunc_binary_utility(np.array([1.0]), Qs[Qs_finite], operator.mul)
     ufunc_binary_utility(Qs[Qs_finite], np.array([1.0]), operator.mul)
     ufunc_binary_utility(np.array([1]), Qs[Qs_finite], operator.mul)
@@ -645,52 +632,6 @@ def test_casts():
     # CDOUBLE, npy_double
     # CLONGDOUBLE, npy_longdouble
     assert False
-
-@pytest.mark.xfail
-def test_ufuncs(Rs, Qs):
-    np.random.seed(1234)
-    assert np.allclose(np.abs(Rs), np.ones(Rs.shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(np.abs(np.log(Rs) - np.array([r.log() for r in Rs])), np.zeros(Rs.shape), atol=1.e-14,
-                       rtol=1.e-15)
-    assert np.allclose(np.abs(np.exp(Rs) - np.array([r.exp() for r in Rs])), np.zeros(Rs.shape), atol=1.e-14,
-                       rtol=1.e-15)
-    assert np.allclose(np.abs(Rs - Rs), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(np.abs(Rs + (-Rs)), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(np.abs(np.conjugate(Rs) - np.array([r.conjugate() for r in Rs])), np.zeros(Rs.shape),
-                       atol=1.e-14, rtol=1.e-15)
-    assert np.all(Rs == Rs)
-    assert np.all(Rs <= Rs)
-    for i in range(10):
-        x = np.random.uniform(-10, 10)
-        assert np.allclose(np.abs(Rs * x - np.array([r * x for r in Rs])), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
-        # assert np.allclose( np.abs( x*Rs - np.array([r*x for r in Rs]) ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
-        strict_assert(False)
-        assert np.allclose(np.abs(Rs / x - np.array([r / x for r in Rs])), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
-        assert np.allclose(np.abs(Rs ** x - np.array([r ** x for r in Rs])), np.zeros(Rs.shape), atol=1.e-14,
-                           rtol=1.e-15)
-    assert np.allclose(
-        np.abs(Qs[Qs_finite] + Qs[Qs_finite] - np.array([q1 + q2 for q1, q2 in zip(Qs[Qs_finite], Qs[Qs_finite])])),
-        np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(
-        np.abs(Qs[Qs_finite] - Qs[Qs_finite] - np.array([q1 - q2 for q1, q2 in zip(Qs[Qs_finite], Qs[Qs_finite])])),
-        np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(
-        np.abs(Qs[Qs_finite] * Qs[Qs_finite] - np.array([q1 * q2 for q1, q2 in zip(Qs[Qs_finite], Qs[Qs_finite])])),
-        np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
-    for Q in Qs[Qs_finite]:
-        assert np.allclose(np.abs(Qs[Qs_finite] * Q - np.array([q1 * Q for q1 in Qs[Qs_finite]])),
-                           np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
-        # assert np.allclose( np.abs( Q*Qs[Qs_finite] - np.array([Q*q1 for q1 in Qs[Qs_finite]]) ),
-        # np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(np.abs(Qs[Qs_finitenonzero] / Qs[Qs_finitenonzero]
-                              - np.array([q1 / q2 for q1, q2 in zip(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero])])),
-                       np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(np.abs(Qs[Qs_finitenonzero] ** Qs[Qs_finitenonzero]
-                              - np.array([q1 ** q2 for q1, q2 in zip(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero])])),
-                       np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(np.abs(~Qs[Qs_finitenonzero]
-                              - np.array([q.inverse() for q in Qs[Qs_finitenonzero]])),
-                       np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
 
 
 def test_numpy_array_conversion(Qs):
