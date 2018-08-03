@@ -16,8 +16,8 @@ from .quaternion_time_series import slerp, squad, integrate_angular_velocity, mi
 from .calculus import derivative, definite_integral, indefinite_integral
 from ._version import __version__
 
-__doc_title__ = "Quaternion dtype for NumPy"
-__doc__ = "Adds a quaternion dtype to NumPy."
+__doc_title__ = "Quaternion and Dual Quaternion dtypes for NumPy"
+__doc__ = "Adds quaternion dtype and dual_quaternion dtype to NumPy."
 
 __all__ = ['quaternion', 'dual_quaternion',
            'as_quat_array', 'as_dual_quat_array', 'as_spinor_array',
