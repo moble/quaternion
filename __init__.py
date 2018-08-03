@@ -20,7 +20,7 @@ __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 
 __all__ = ['quaternion', 'dual_quaternion',
-           'as_quat_array', 'as_spinor_array',
+           'as_quat_array', 'as_dual_quat_array', 'as_spinor_array',
            'as_float_array', 'from_float_array',
            'as_rotation_matrix', 'from_rotation_matrix',
            'as_rotation_vector', 'from_rotation_vector',

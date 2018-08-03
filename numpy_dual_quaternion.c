@@ -1235,7 +1235,7 @@ PyMODINIT_FUNC initnumpy_dual_quaternion(void) {
 #if PY_MAJOR_VERSION >= 3
   module = PyModule_Create(&moduledef);
 #else
-  module = Py_InitModule("numpy_dual_quaternion", DualQuaternionMethods);
+  module = Py_InitModule("numpy_dual_quaternion", NULL);
 #endif
 
   if(module==NULL) {
