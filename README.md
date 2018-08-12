@@ -10,7 +10,7 @@ This Python module adds a quaternion dtype to NumPy.
 
 The code was originally based on [code by Martin
 Ling](https://github.com/martinling/numpy_quaternion) (which he wrote
-with help from Mark Weibe), but has been rewritten with ideas from
+with help from Mark Wiebe), but has been rewritten with ideas from
 [rational](https://github.com/numpy/numpy-dtypes/tree/master/npytypes/rational)
 to work with both python 2.x and 3.x (and to fix a few bugs), and
 *greatly* expands the applications of quaternions.
