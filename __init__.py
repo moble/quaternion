@@ -10,15 +10,17 @@ from .numpy_quaternion import (quaternion, _eps,
                                # slerp_vectorized, squad_vectorized,
                                # slerp, squad,
                                )
+from .numpy_dual_quaternion import dual_quaternion
+
 from .quaternion_time_series import slerp, squad, integrate_angular_velocity, minimal_rotation
 from .calculus import derivative, definite_integral, indefinite_integral
 from ._version import __version__
 
-__doc_title__ = "Quaternion dtype for NumPy"
-__doc__ = "Adds a quaternion dtype to NumPy."
+__doc_title__ = "Quaternion and Dual Quaternion dtypes for NumPy"
+__doc__ = "Adds quaternion dtype and dual_quaternion dtype to NumPy."
 
-__all__ = ['quaternion',
-           'as_quat_array', 'as_spinor_array',
+__all__ = ['quaternion', 'dual_quaternion',
+           'as_quat_array', 'as_dual_quat_array', 'as_spinor_array',
            'as_float_array', 'from_float_array',
            'as_rotation_matrix', 'from_rotation_matrix',
            'as_rotation_vector', 'from_rotation_vector',
@@ -35,13 +37,24 @@ if 'quaternion' in np.__dict__:
     raise RuntimeError('The NumPy package already has a quaternion type')
 
 np.quaternion = quaternion
+np.dual_quaternion = dual_quaternion
 np.typeDict['quaternion'] = np.dtype(quaternion)
+np.typeDict['dual_quaternion'] = np.dtype(dual_quaternion)
 
 zero = np.quaternion(0, 0, 0, 0)
 one = np.quaternion(1, 0, 0, 0)
 x = np.quaternion(0, 1, 0, 0)
 y = np.quaternion(0, 0, 1, 0)
 z = np.quaternion(0, 0, 0, 1)
+
+dual_zero = np.dual_quaternion(0, 0, 0, 0, 0, 0, 0, 0)
+dual_one = np.dual_quaternion(1, 0, 0, 0, 0, 0, 0, 0)
+dual_x = np.dual_quaternion(0, 1, 0, 0, 0, 0, 0, 0)
+dual_y = np.dual_quaternion(0, 0, 1, 0, 0, 0, 0, 0)
+dual_z = np.dual_quaternion(0, 0, 0, 1, 0, 0, 0, 0)
+dual_ei = np.dual_quaternion(0, 0, 0, 0, 0, 1, 0, 0)
+dual_ej = np.dual_quaternion(0, 0, 0, 0, 0, 0, 1, 0)
+dual_ek = np.dual_quaternion(0, 0, 0, 0, 0, 0, 0, 1)
 
 rotor_intrinsic_distance = np.rotor_intrinsic_distance
 rotor_chordal_distance = np.rotor_chordal_distance
@@ -59,8 +72,10 @@ def as_float_array(a):
     array, but is otherwise the same shape.
 
     """
-    return np.asarray(a, dtype=np.quaternion).view((np.double, 4))
-
+    if a.dtype == np.dtype(quaternion):
+        return np.asarray(a, dtype=np.quaternion).view((np.double, 4))
+    elif a.dtype == np.dtype(dual_quaternion):
+        return np.asarray(a, dtype=np.dual_quaternion).view((np.double, 8))
 
 def as_quat_array(a):
     """View a float array as an array of quaternions
@@ -101,6 +116,41 @@ def as_quat_array(a):
         message = (str(e) + '\n            '
                    + 'Failed to view input data as a series of quaternions.  '
                    + 'Please ensure that the last dimension has size divisible by 4.\n            '
+                   + 'Input data has shape {0} and dtype {1}.'.format(a.shape, a.dtype))
+        raise ValueError(message)
+
+    # special case: don't create an axis for a single quaternion, to
+    # match the output of `as_float_array`
+    if av.shape[-1] == 1:
+        av = av.reshape(a.shape[:-1])
+
+    return av
+
+
+def as_dual_quat_array(a):
+    """View a float array as an array of dual quaternions
+
+        The input array must have a final dimension whose size is
+        divisible by eight (or better yet *is* 8), because successive
+        indices in that last dimension will be considered successive
+        components of the output quaternion.
+
+        """
+    a = np.asarray(a, dtype=np.double)
+
+    # fast path
+    if a.shape == (8,):
+        return dual_quaternion(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7])
+
+    # view only works if the last axis is C-contiguous
+    if not a.flags['C_CONTIGUOUS'] or a.strides[-1] != a.itemsize:
+        a = a.copy(order='C')
+    try:
+        av = a.view(np.dual_quaternion)
+    except ValueError as e:
+        message = (str(e) + '\n            '
+                   + 'Failed to view input data as a series of quaternions.  '
+                   + 'Please ensure that the last dimension has size divisible by 8.\n            '
                    + 'Input data has shape {0} and dtype {1}.'.format(a.shape, a.dtype))
         raise ValueError(message)
 
@@ -691,7 +741,10 @@ def isclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False):
     try:
         dt = np.result_type(y, 1.)
     except TypeError:
-        dt = np.dtype(np.quaternion)
+        if isinstance(a, np.quaternion):
+            dt = np.dtype(np.quaternion)
+        else:
+            dt = np.dtype(np.dual_quaternion)
     y = np.array(y, dtype=dt, copy=False, subok=True)
 
     xfin = np.isfinite(x)
