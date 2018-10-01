@@ -17,6 +17,7 @@ PYTHON_VERSIONS=( 2.7 3.5 3.6 3.7 )
 /bin/rm -rf "${wheelhouse}"
 mkdir -p "${wheelhouse}"
 
+pip install --upgrade delocate
 pip install --upgrade wheel
 pip install --upgrade pipenv
 
@@ -39,6 +40,9 @@ for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"; do
     conda deactivate
 done
 
+# Just in case we failed to deactivate somehow:
+conda deactivate
+
 # Bundle external shared libraries into the wheels
 for whl in $(ls $(echo "${wheelhouse}/numpy_quaternion*.whl")); do
     echo
@@ -59,7 +63,7 @@ done
 # done
 
 # Just in case we failed to deactivate somehow:
-source deactivate
+conda deactivate
 
 # Upload to pypi
 echo "Uploading to pypi"
