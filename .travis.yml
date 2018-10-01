@@ -18,7 +18,7 @@ before_install:
 
 install:
   - pip install --upgrade pip
-  - pip install --upgrade packaging scipy numba setuptools
+  - pip install --upgrade packaging scipy numba setuptools wheel
   - git checkout "${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}"
   - git reset --hard "${TRAVIS_COMMIT}"
   - python setup.py install
