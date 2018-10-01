@@ -16,10 +16,11 @@ else:
         # For cases where this is being installed from git.  This gives the true version number.
         from subprocess import check_output
         if on_windows:
-            version = check_output("""git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S'""", shell=False)
+            version = check_output("""git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S'""", shell=False, stderr=subprocess.DEVNULL)
             version = version.decode('ascii').strip().replace('.0', '.').replace("'", "")
         else:
-            version = check_output("""git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S'""", shell=True).decode('ascii').rstrip()
+            version = check_output("""git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S'""", shell=True, stderr=subprocess.DEVNULL)
+            version = version.decode('ascii').rstrip()
         print("Setup.py using git log version='{0}'".format(version))
     except:
         # For cases where this isn't being installed from git.  This gives the wrong version number,
