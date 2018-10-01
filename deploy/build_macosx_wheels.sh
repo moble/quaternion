@@ -23,7 +23,7 @@ pip install --upgrade pipenv
 
 # Loop through python versions, building wheels
 for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"; do
-    if [ "$PYTHON_VERSION" -gt "3.6" ]; then
+    if (( $(echo "${PYTHON_VERSION} > 3.6" |bc -l) )); then
         requirements_build_txt="requirements-build-114.txt"
     else
         requirements_build_txt="requirements-build.txt"
