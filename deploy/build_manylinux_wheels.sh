@@ -32,6 +32,8 @@ PYBINS=()
 for PYBIN in /opt/python/*/bin; do
     if [[ "${PYBIN}" == "/opt/python/cp26-cp26m/bin"
           || "${PYBIN}" == "/opt/python/cp26-cp26mu/bin"
+          || "${PYBIN}" == "/opt/python/cp27-cp27m/bin"
+          || "${PYBIN}" == "/opt/python/cp27-cp27mu/bin"
           || "${PYBIN}" == "/opt/python/cp33-cp33m/bin" ]]; then
         continue
     fi
