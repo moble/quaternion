@@ -22,9 +22,11 @@ else:
             version = check_output("""git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S'""", shell=True, stderr=devnull)
             version = version.decode('ascii').rstrip()
         print("Setup.py using git log version='{0}'".format(version))
-    except:
+    except Exception:
         # For cases where this isn't being installed from git.  This gives the wrong version number,
         # but at least it provides some information.
+        import traceback
+        print(traceback.format_exc())
         try:
             from time import strftime, gmtime
             try:
