@@ -12,7 +12,7 @@ temp_dir="${HOME}/Research/Temp"
 wheelhouse="${temp_dir}/wheelhouse"
 code_dir="${PWD}"
 
-PYTHON_VERSIONS=( 2.7 3.5 3.6 )
+PYTHON_VERSIONS=( 2.7 3.5 3.6 3.7 )
 # PYTHON_VERSIONS=( 2.7 3.4 3.5 3.6 )
 
 /bin/rm -rf "${wheelhouse}"
