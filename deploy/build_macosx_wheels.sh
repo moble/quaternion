@@ -13,7 +13,6 @@ wheelhouse="${temp_dir}/wheelhouse"
 code_dir="${PWD}"
 
 PYTHON_VERSIONS=( 2.7 3.5 3.6 3.7 )
-# PYTHON_VERSIONS=( 2.7 3.4 3.5 3.6 )
 
 /bin/rm -rf "${wheelhouse}"
 mkdir -p "${wheelhouse}"
@@ -21,15 +20,21 @@ mkdir -p "${wheelhouse}"
 pip install --upgrade wheel
 pip install --upgrade pipenv
 
+
 # Loop through python versions, building wheels
 for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"; do
+    if [ "$PYTHON_VERSION" -gt "3.6" ]; then
+        requirements_build_txt="requirements-build-114.txt"
+    else
+        requirements_build_txt="requirements-build.txt"
+    fi
     conda activate "py${PYTHON_VERSION}"
     /bin/rm -rf "${temp_dir}/quaternion-pipenv"
     mkdir -p "${temp_dir}/quaternion-pipenv"
     pushd "${temp_dir}/quaternion-pipenv"
     pipenv --python "${PYTHON_VERSION}"
-    pipenv run pip install -r "${code_dir}/requirements-build.txt"
-    pipenv run pip wheel "${code_dir}/" -r "${code_dir}/requirements-build.txt" -w "${wheelhouse}/"
+    pipenv run pip install -r "${code_dir}/${requirements_build_txt}"
+    pipenv run pip wheel "${code_dir}/" -r "${code_dir}/${requirements_build_txt}" -w "${wheelhouse}/"
     popd
     conda deactivate
 done
