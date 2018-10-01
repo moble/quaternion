@@ -25,6 +25,8 @@ echo "Building manylinux1 wheels, version '${package_version}'"
 ### version, which means pypi will display them on the same screen, and pip will treat them equally.
 
 
+
+
 /bin/rm -rf /wheelhouse
 mkdir -p /wheelhouse
 
@@ -44,8 +46,8 @@ done
 # Compile wheels
 for PYBIN in "${PYBINS[@]}"; do
     ### NOTE: The path to the requirements file is specialized for spinsfast
-    PYTHON_VERSION=$("${PYBIN}/python" -c 'import sys; print("{0}.{1}".format(sys.version_info.major, sys.version_info.minor))')
-    if (( $(echo "${PYTHON_VERSION} > 3.6" |bc -l) )); then
+    PYTHON_VERSION=$("${PYBIN}/python" -c 'import sys; print("{0}{1}".format(sys.version_info.major, sys.version_info.minor))')
+    if [ "${PYTHON_VERSION}" -gt "36" ]; then
         requirements_build_txt="requirements-build-115.txt"
     else
         requirements_build_txt="requirements-build.txt"
