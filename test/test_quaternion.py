@@ -1308,9 +1308,10 @@ def test_integrate_angular_velocity():
 def test_numpy_save_and_load():
     import tempfile
     a = quaternion.as_quat_array(np.random.rand(5,3,4))
-    with tempfile.NamedTemporaryFile(suffix='.npy') as temp:
-        np.save(temp.name, a)
-        b = np.load(temp.name).view(dtype=np.quaternion)
+    with tempfile.TemporaryFile() as temp:
+        np.save(temp, a)
+        temp.seek(0)  # Only needed here to simulate closing & reopening file, per np.save docs
+        b = np.load(temp).view(dtype=np.quaternion)
     assert np.array_equal(a, b)
 
 
