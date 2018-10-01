@@ -44,9 +44,15 @@ done
 # Compile wheels
 for PYBIN in "${PYBINS[@]}"; do
     ### NOTE: The path to the requirements file is specialized for spinsfast
+    PYTHON_VERSION=$("${PYBIN}/python" -c 'import sys; print("{0}.{1}".format(sys.version_info.major, sys.version_info.minor))')
+    if (( $(echo "${PYTHON_VERSION} > 3.6" |bc -l) )); then
+        requirements_build_txt="requirements-build-115.txt"
+    else
+        requirements_build_txt="requirements-build.txt"
+    fi
     "${PYBIN}/pip" install --upgrade pip wheel
-    "${PYBIN}/pip" install -r /code/requirements-build.txt
-    "${PYBIN}/pip" wheel /code/ -r /code/requirements-build.txt  -w /wheelhouse/
+    "${PYBIN}/pip" install -r "/code/${requirements_build_txt}"
+    "${PYBIN}/pip" wheel /code/ -r "/code/${requirements_build_txt}" -w /wheelhouse/
 done
 
 # Bundle external shared libraries into the wheels
