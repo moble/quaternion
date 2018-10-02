@@ -52,7 +52,7 @@ for PYBIN in "${PYBINS[@]}"; do
     else
         requirements_build_txt="requirements-build.txt"
     fi
-    "${PYBIN}/pip" install --upgrade pip wheel
+    "${PYBIN}/pip" install --upgrade pip wheel==0.31.1 auditwheel
     "${PYBIN}/pip" install -r "/code/${requirements_build_txt}"
     "${PYBIN}/pip" wheel /code/ -r "/code/${requirements_build_txt}" -w /wheelhouse/
 done
