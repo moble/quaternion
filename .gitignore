@@ -61,3 +61,4 @@ target/
 quaternion.zip
 MANIFEST
 _version.py
+pip_manylinux1_cache

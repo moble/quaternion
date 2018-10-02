@@ -29,4 +29,5 @@ docker run -i -t \
     -v ${HOME}/.pypirc:/root/.pypirc:ro \
     -v `pwd`:/code \
     -v `pwd`/deploy/build_manylinux_wheels.sh:/build_manylinux_wheels.sh \
+    -v `pwd`/deploy/pip_manylinux1_cache:/root/.cache/pip \
     quay.io/pypa/manylinux1_x86_64 /build_manylinux_wheels.sh "${package_version}"
