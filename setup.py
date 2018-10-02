@@ -16,7 +16,7 @@ else:
         # For cases where this is being installed from git.  This gives the true version number.
         from subprocess import check_output
         if on_windows:
-            version = check_output("""git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S'""", shell=False, stderr=devnull)
+            version = check_output("""git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S'""", shell=False)
             version = version.decode('ascii').strip().replace('.0', '.').replace("'", "")
         else:
             version = check_output("""git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S'""", shell=True, stderr=devnull)
@@ -25,8 +25,8 @@ else:
     except Exception:
         # For cases where this isn't being installed from git.  This gives the wrong version number,
         # but at least it provides some information.
-        import traceback
-        print(traceback.format_exc())
+        #import traceback
+        #print(traceback.format_exc())
         try:
             from time import strftime, gmtime
             try:
