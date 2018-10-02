@@ -58,7 +58,7 @@ for PYBIN in "${PYBINS[@]}"; do
 done
 
 # Bundle external shared libraries into the wheels
-for whl in /wheelhouse/*.whl; do
+for whl in /wheelhouse/numpy_quaternion*manylinux*.whl; do
     auditwheel repair "$whl" -w /wheelhouse/
 done
 
