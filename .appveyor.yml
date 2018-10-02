@@ -13,15 +13,19 @@ environment:
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.x"
       PYTHON_ARCH: "64"
+      REQUIREMENTS_TXT: "requirements-build.txt"
     - PYTHON: "C:\\Python35-x64"
       PYTHON_VERSION: "3.5.x"
       PYTHON_ARCH: "64"
+      REQUIREMENTS_TXT: "requirements-build.txt"
     - PYTHON: "C:\\Python36-x64"
       PYTHON_VERSION: "3.6.x"
       PYTHON_ARCH: "64"
+      REQUIREMENTS_TXT: "requirements-build.txt"
     - PYTHON: "C:\\Python37-x64"
       PYTHON_VERSION: "3.7.x"
       PYTHON_ARCH: "64"
+      REQUIREMENTS_TXT: "requirements-build-115.txt"
 
 cache:
   - '%LOCALAPPDATA%\pip\Cache'
@@ -41,7 +45,7 @@ install:
   - ECHO "%cd%"
 
   - "python -m pip install --upgrade pip"
-  - "%CMD_IN_ENV% pip install -r requirements-build.txt"
+  - "%CMD_IN_ENV% pip install -r %REQUIREMENTS_TXT%"
   - "%CMD_IN_ENV% pip install --upgrade pytest wheel twine"
 
 build_script:
