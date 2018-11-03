@@ -198,115 +198,109 @@ pyquaternion_positive(PyObject* self, PyObject* NPY_UNUSED(b)) {
 QQ_BINARY_QUATERNION_RETURNER(copysign)
 
 #define QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(fake_name, name)       \
-  static PyObject*                                                      \
-  pyquaternion_##fake_name##_array_operator(PyObject* a, PyObject* b) { \
-    /* fprintf (stderr, "\nfile %s, line %d, pyquaternion_%s_array_operator(PyObject* a, PyObject* b).\n", __FILE__, __LINE__, #fake_name); */ \
-    PyArrayObject *in_array = (PyArrayObject*) b;                       \
-    PyObject      *out_array;                                           \
-    NpyIter *in_iter;                                                   \
-    NpyIter *out_iter;                                                  \
-    NpyIter_IterNextFunc *in_iternext;                                  \
-    NpyIter_IterNextFunc *out_iternext;                                 \
-    quaternion p = {0.0, 0.0, 0.0, 0.0};                                \
-    quaternion ** out_dataptr;                                          \
-    PyQuaternion_AsQuaternion(p, a);                                    \
-    out_array = PyArray_NewLikeArray(in_array, NPY_ANYORDER, quaternion_descr, 0); \
-    if (out_array == NULL) return NULL;                                 \
-    in_iter = NpyIter_New(in_array, NPY_ITER_READONLY, NPY_KEEPORDER,   \
-                          NPY_NO_CASTING, NULL);                        \
-    if (in_iter == NULL) goto fail;                                     \
-    out_iter = NpyIter_New((PyArrayObject *)out_array, NPY_ITER_READWRITE, \
-                           NPY_KEEPORDER, NPY_NO_CASTING, NULL);        \
-    if (out_iter == NULL) {                                             \
-      NpyIter_Deallocate(in_iter);                                      \
-      goto fail;                                                        \
-    }                                                                   \
-    in_iternext = NpyIter_GetIterNext(in_iter, NULL);                   \
-    out_iternext = NpyIter_GetIterNext(out_iter, NULL);                 \
-    if (in_iternext == NULL || out_iternext == NULL) {                  \
-      NpyIter_Deallocate(in_iter);                                      \
-      NpyIter_Deallocate(out_iter);                                     \
-      goto fail;                                                        \
-    }                                                                   \
-    out_dataptr = (quaternion **) NpyIter_GetDataPtrArray(out_iter);    \
-    if(PyArray_EquivTypes(PyArray_DESCR((PyArrayObject*) b), quaternion_descr)) { \
-      quaternion ** in_dataptr = (quaternion **) NpyIter_GetDataPtrArray(in_iter); \
-      do {                                                              \
-        **out_dataptr = quaternion_##name(p, **in_dataptr);             \
-      } while(in_iternext(in_iter) && out_iternext(out_iter));          \
-    } else if(PyArray_ISFLOAT((PyArrayObject*) b)) {                    \
-      double ** in_dataptr = (double **) NpyIter_GetDataPtrArray(in_iter); \
-      do {                                                              \
-        **out_dataptr = quaternion_##name##_scalar(p, **in_dataptr);    \
-      } while(in_iternext(in_iter) && out_iternext(out_iter));          \
-    } else if(PyArray_ISINTEGER((PyArrayObject*) b)) {                  \
-      int ** in_dataptr = (int **) NpyIter_GetDataPtrArray(in_iter);    \
-      do {                                                              \
-        **out_dataptr = quaternion_##name##_scalar(p, **in_dataptr);    \
-      } while(in_iternext(in_iter) && out_iternext(out_iter));          \
-    } else {                                                            \
-      NpyIter_Deallocate(in_iter);                                      \
-      NpyIter_Deallocate(out_iter);                                     \
-      goto fail;                                                        \
-    }                                                                   \
-    NpyIter_Deallocate(in_iter);                                        \
-    NpyIter_Deallocate(out_iter);                                       \
-    Py_INCREF(out_array);                                               \
-    return out_array;                                                   \
-  fail:                                                                 \
-    Py_XDECREF(out_array);                                              \
+static PyObject*                                                        \
+pyquaternion_##fake_name##_array_operator(PyObject* a, PyObject* b) {   \
+  NpyIter *iter;                                                        \
+  NpyIter_IterNextFunc *iternext;                                       \
+  PyArrayObject *op[2];                                                 \
+  PyObject *ret;                                                        \
+  npy_uint32 flags;                                                     \
+  npy_uint32 op_flags[2];                                               \
+  PyArray_Descr *op_dtypes[2];                                          \
+  npy_intp itemsize, *innersizeptr, innerstride;                        \
+  char **dataptrarray;                                                  \
+  char *src, *dst;                                                      \
+  quaternion p = {0.0, 0.0, 0.0, 0.0};                                  \
+  PyQuaternion_AsQuaternion(p, a);                                      \
+  flags = NPY_ITER_EXTERNAL_LOOP;                                       \
+  op[0] = (PyArrayObject *) b;                                          \
+  op[1] = NULL;                                                         \
+  op_flags[0] = NPY_ITER_READONLY;                                      \
+  op_flags[1] = NPY_ITER_WRITEONLY | NPY_ITER_ALLOCATE;                 \
+  op_dtypes[0] = PyArray_DESCR((PyArrayObject*) b);                     \
+  op_dtypes[1] = quaternion_descr;                                      \
+  iter = NpyIter_MultiNew(2, op, flags, NPY_KEEPORDER, NPY_NO_CASTING, op_flags, op_dtypes); \
+  if (iter == NULL) {                                                   \
     return NULL;                                                        \
   }                                                                     \
-  static PyObject*                                                      \
-  pyquaternion_##fake_name(PyObject* a, PyObject* b) {                  \
-    /* PyObject *a_type, *a_repr, *b_type, *b_repr, *a_repr2, *b_repr2;    \ */ \
-    /* char* a_char, b_char, a_char2, b_char2;                             \ */ \
-    npy_int64 val64;                                                    \
-    npy_int32 val32;                                                    \
-    quaternion p = {0.0, 0.0, 0.0, 0.0};                                \
-    if(PyArray_Check(b)) { return pyquaternion_##fake_name##_array_operator(a, b); } \
-    if(PyFloat_Check(a) && PyQuaternion_Check(b)) {                     \
-      return PyQuaternion_FromQuaternion(quaternion_scalar_##name(PyFloat_AsDouble(a), ((PyQuaternion*)b)->obval)); \
-    }                                                                   \
-    if(PyInt_Check(a) && PyQuaternion_Check(b)) {                       \
-      return PyQuaternion_FromQuaternion(quaternion_scalar_##name(PyInt_AsLong(a), ((PyQuaternion*)b)->obval)); \
-    }                                                                   \
-    PyQuaternion_AsQuaternion(p, a);                                    \
-    if(PyQuaternion_Check(b)) {                                         \
-      return PyQuaternion_FromQuaternion(quaternion_##name(p,((PyQuaternion*)b)->obval)); \
-    } else if(PyFloat_Check(b)) {                                       \
-      return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyFloat_AsDouble(b))); \
-    } else if(PyInt_Check(b)) {                                         \
-      return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyInt_AsLong(b))); \
-    } else if(PyObject_TypeCheck(b, &PyInt64ArrType_Type)) {            \
-      PyArray_ScalarAsCtype(b, &val64);                                 \
-      return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p, val64)); \
-    } else if(PyObject_TypeCheck(b, &PyInt32ArrType_Type)) {            \
-      PyArray_ScalarAsCtype(b, &val32);                                 \
-      return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p, val32)); \
-    }                                                                   \
-    /* a_type = PyObject_Type(a);                                          \ */ \
-    /* a_repr = PyObject_Repr(a_type);                                     \ */ \
-    /* a_char = PyString_AsString(a_repr);                                 \ */ \
-    /* b_type = PyObject_Type(b);                                          \ */ \
-    /* b_repr = PyObject_Repr(b_type);                                     \ */ \
-    /* b_char = PyString_AsString(b_repr);                                 \ */ \
-    /* a_repr2 = PyObject_Repr(a);                                         \ */ \
-    /* a_char2 = PyString_AsString(a_repr2);                               \ */ \
-    /* b_repr2 = PyObject_Repr(b);                                         \ */ \
-    /* b_char2 = PyString_AsString(b_repr2);                               \ */ \
-    /* fprintf (stderr, "\nfile %s, line %d, pyquaternion_%s(PyObject* a, PyObject* b).\n", __FILE__, __LINE__, #fake_name); \ */ \
-    /* fprintf (stderr, "\na: '%s'\tb: '%s'", a_char, b_char);             \ */ \
-    /* fprintf (stderr, "\na: '%s'\tb: '%s'", a_char2, b_char2);           \ */ \
-    /* Py_DECREF(a_type);                                                  \ */ \
-    /* Py_DECREF(a_repr);                                                  \ */ \
-    /* Py_DECREF(b_type);                                                  \ */ \
-    /* Py_DECREF(b_repr);                                                  \ */ \
-    /* Py_DECREF(a_repr2);                                                 \ */ \
-    /* Py_DECREF(b_repr2);                                                 \ */ \
-    PyErr_SetString(PyExc_TypeError, "Binary operation involving quaternion and \\neither float nor quaternion."); \
+  iternext = NpyIter_GetIterNext(iter, NULL);                           \
+  innerstride = NpyIter_GetInnerStrideArray(iter)[0];                   \
+  itemsize = NpyIter_GetDescrArray(iter)[1]->elsize;                    \
+  innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);                     \
+  dataptrarray = NpyIter_GetDataPtrArray(iter);                         \
+  if(PyArray_EquivTypes(PyArray_DESCR((PyArrayObject*) b), quaternion_descr)) { \
+    npy_intp i;                                                         \
+    do {                                                                \
+      npy_intp size = *innersizeptr;                                    \
+      src = dataptrarray[0];                                            \
+      dst = dataptrarray[1];                                            \
+      for(i = 0; i < size; i++, src += innerstride, dst += itemsize) {  \
+        *((quaternion *) dst) = quaternion_##name(p, *((quaternion *) src)); \
+      }                                                                 \
+    } while (iternext(iter));                                           \
+  } else if(PyArray_ISFLOAT((PyArrayObject*) b)) {                      \
+    npy_intp i;                                                         \
+    do {                                                                \
+      npy_intp size = *innersizeptr;                                    \
+      src = dataptrarray[0];                                            \
+      dst = dataptrarray[1];                                            \
+      for(i = 0; i < size; i++, src += innerstride, dst += itemsize) {  \
+        *(quaternion *) dst = quaternion_##name##_scalar(p, *((double *) src)); \
+      }                                                                 \
+    } while (iternext(iter));                                           \
+  } else if(PyArray_ISINTEGER((PyArrayObject*) b)) {                    \
+    npy_intp i;                                                         \
+    do {                                                                \
+      npy_intp size = *innersizeptr;                                    \
+      src = dataptrarray[0];                                            \
+      dst = dataptrarray[1];                                            \
+      for(i = 0; i < size; i++, src += innerstride, dst += itemsize) {  \
+        *((quaternion *) dst) = quaternion_##name##_scalar(p, *((int *) src)); \
+      }                                                                 \
+    } while (iternext(iter));                                           \
+  } else {                                                              \
+    NpyIter_Deallocate(iter);                                           \
     return NULL;                                                        \
-  }
+  }                                                                     \
+  ret = (PyObject *) NpyIter_GetOperandArray(iter)[1];                  \
+  Py_INCREF(ret);                                                       \
+  if (NpyIter_Deallocate(iter) != NPY_SUCCEED) {                        \
+    Py_DECREF(ret);                                                     \
+    return NULL;                                                        \
+  }                                                                     \
+  return ret;                                                           \
+}                                                                       \
+static PyObject*                                                        \
+pyquaternion_##fake_name(PyObject* a, PyObject* b) {                    \
+  /* PyObject *a_type, *a_repr, *b_type, *b_repr, *a_repr2, *b_repr2;    \ */ \
+  /* char* a_char, b_char, a_char2, b_char2;                             \ */ \
+  npy_int64 val64;                                                     \
+  npy_int32 val32;                                                     \
+  quaternion p = {0.0, 0.0, 0.0, 0.0};                                 \
+  if(PyArray_Check(b)) { return pyquaternion_##fake_name##_array_operator(a, b); } \
+  if(PyFloat_Check(a) && PyQuaternion_Check(b)) {                      \
+    return PyQuaternion_FromQuaternion(quaternion_scalar_##name(PyFloat_AsDouble(a), ((PyQuaternion*)b)->obval)); \
+  }                                                                    \
+  if(PyInt_Check(a) && PyQuaternion_Check(b)) {                        \
+    return PyQuaternion_FromQuaternion(quaternion_scalar_##name(PyInt_AsLong(a), ((PyQuaternion*)b)->obval)); \
+  }                                                                    \
+  PyQuaternion_AsQuaternion(p, a);                                     \
+  if(PyQuaternion_Check(b)) {                                          \
+    return PyQuaternion_FromQuaternion(quaternion_##name(p,((PyQuaternion*)b)->obval)); \
+  } else if(PyFloat_Check(b)) {                                        \
+    return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyFloat_AsDouble(b))); \
+  } else if(PyInt_Check(b)) {                                          \
+    return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p,PyInt_AsLong(b))); \
+  } else if(PyObject_TypeCheck(b, &PyInt64ArrType_Type)) {             \
+    PyArray_ScalarAsCtype(b, &val64);                                  \
+    return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p, val64)); \
+  } else if(PyObject_TypeCheck(b, &PyInt32ArrType_Type)) {             \
+    PyArray_ScalarAsCtype(b, &val32);                                  \
+    return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p, val32)); \
+  }                                                                    \
+  PyErr_SetString(PyExc_TypeError, "Binary operation involving quaternion and \\neither float nor quaternion."); \
+  return NULL;                                                          \
+}
 #define QQ_QS_SQ_BINARY_QUATERNION_RETURNER(name) QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(name, name)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(add)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(subtract)
