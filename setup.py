@@ -4,7 +4,7 @@
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 # Construct the version number from the date and time this python version was created.
-from os import environ, devnull
+from os import environ
 from sys import platform
 on_windows = ('win' in platform.lower() and not 'darwin' in platform.lower())
 if "package_version" in environ:
@@ -19,7 +19,12 @@ else:
             version = check_output("""git log -1 --format=%cd --date=format:'%Y.%m.%d.%H.%M.%S'""", shell=False)
             version = version.decode('ascii').strip().replace('.0', '.').replace("'", "")
         else:
-            version = check_output("""git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S'""", shell=True, stderr=devnull)
+            try:
+                from subprocess import DEVNULL as devnull
+                version = check_output("""git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S'""", shell=True, stderr=devnull)
+            except AttributeError:
+                from os import devnull
+                version = check_output("""git log -1 --format=%cd --date=format:'%Y.%-m.%-d.%-H.%-M.%-S'""", shell=True, stderr=devnull)
             version = version.decode('ascii').rstrip()
         print("Setup.py using git log version='{0}'".format(version))
     except Exception:
