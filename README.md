@@ -15,6 +15,10 @@ with help from Mark Wiebe), but has been rewritten with ideas from
 to work with both python 2.x and 3.x (and to fix a few bugs), and
 *greatly* expands the applications of quaternions.
 
+## Documentation
+
+API documentation can be found on [readthedocs.io](https://numpy-quaternion.readthedocs.io/en/stable/).
+
 ## Quickstart
 
 ```sh
