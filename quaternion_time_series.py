@@ -330,3 +330,15 @@ def minimal_rotation(R, t, iterations=2):
     halfgamma = spline(t, halfgammadot).antiderivative()(t)
     Rgamma = np.exp(quaternion.z * halfgamma)
     return minimal_rotation(R * Rgamma, t, iterations=iterations-1)
+
+
+def angular_velocity(R, t):
+    from scipy.interpolate import InterpolatedUnivariateSpline as spline
+    R = quaternion.as_float_array(R)
+    Rdot = np.empty_like(R)
+    for i in range(4):
+        Rdot[:, i] = spline(t, R[:, i]).derivative()(t)
+    R = quaternion.from_float_array(R)
+    Rdot = quaternion.from_float_array(Rdot)
+    return np.array([omega.vec for omega in (2*Rdot/R)])
+    
