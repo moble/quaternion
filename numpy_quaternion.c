@@ -93,24 +93,41 @@ pyquaternion_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   Py_ssize_t size = PyTuple_Size(args);
   quaternion* q;
+  PyObject* Q = {0};
   q = &(((PyQuaternion*)self)->obval);
+
   if (kwds && PyDict_Size(kwds)) {
     PyErr_SetString(PyExc_TypeError,
                     "quaternion constructor takes no keyword arguments");
     return -1;
   }
 
-  if (((size == 3) && (!PyArg_ParseTuple(args, "ddd", &q->x, &q->y, &q->z)))
-      || ((size == 4) && (!PyArg_ParseTuple(args, "dddd", &q->w, &q->x, &q->y, &q->z)))
-      || ((size<3) || (size>4))) {
-    PyErr_SetString(PyExc_TypeError,
-                    "quaternion constructor takes three or four float arguments");
-    return -1;
-  } else if(size == 3) {
-    q->w = 0.0;
+  q->w = 0.0;
+  q->x = 0.0;
+  q->y = 0.0;
+  q->z = 0.0;
+
+  if(size == 0) {
+    return 0;
+  } else if(size == 1) {
+    if(PyArg_ParseTuple(args, "O", &Q) && PyQuaternion_Check(Q)) {
+      q->w = ((PyQuaternion*)Q)->obval.w;
+      q->x = ((PyQuaternion*)Q)->obval.x;
+      q->y = ((PyQuaternion*)Q)->obval.y;
+      q->z = ((PyQuaternion*)Q)->obval.z;
+      return 0;
+    } else if(PyArg_ParseTuple(args, "d", &q->w)) {
+      return 0;
+    }
+  } else if(size == 3 && PyArg_ParseTuple(args, "ddd", &q->x, &q->y, &q->z)) {
+    return 0;
+  } else if(size == 4 && PyArg_ParseTuple(args, "dddd", &q->w, &q->x, &q->y, &q->z)) {
+    return 0;
   }
 
-  return 0;
+  PyErr_SetString(PyExc_TypeError,
+                  "quaternion constructor takes zero, one, three, or four float arguments, or a single quaternion");
+  return -1;
 }
 
 #define UNARY_BOOL_RETURNER(name)                                       \

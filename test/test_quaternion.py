@@ -127,12 +127,42 @@ def test_quaternion_members():
     assert Q.y == 3.3
     assert Q.z == 4.4
 
+
+def test_quaternion_constructors():
     Q = quaternion.quaternion(2.2, 3.3, 4.4)
     assert Q.real == 0.0
     assert Q.w == 0.0
     assert Q.x == 2.2
     assert Q.y == 3.3
     assert Q.z == 4.4
+    
+    P = quaternion.quaternion(1.1, 2.2, 3.3, 4.4)
+    Q = quaternion.quaternion(P)
+    assert Q.real == 1.1
+    assert Q.w == 1.1
+    assert Q.x == 2.2
+    assert Q.y == 3.3
+    assert Q.z == 4.4
+
+    Q = quaternion.quaternion(1.1)
+    assert Q.real == 1.1
+    assert Q.w == 1.1
+    assert Q.x == 0.0
+    assert Q.y == 0.0
+    assert Q.z == 0.0
+
+    Q = quaternion.quaternion(0.0)
+    assert Q.real == 0.0
+    assert Q.w == 0.0
+    assert Q.x == 0.0
+    assert Q.y == 0.0
+    assert Q.z == 0.0
+
+    with pytest.raises(TypeError):
+        quaternion.quaternion(1.2, 3.4)
+
+    with pytest.raises(TypeError):
+        quaternion.quaternion(1.2, 3.4, 5.6, 7.8, 9.0)
 
 
 def test_constants():
