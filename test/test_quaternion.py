@@ -67,6 +67,9 @@ def ufunc_binary_utility(array1, array2, op, rtol=2*eps, atol=0.0):
 
 @pytest.fixture
 def Qs():
+    return make_Qs()
+    
+def make_Qs():
     q_nan1 = quaternion.quaternion(np.nan, 0., 0., 0.)
     q_inf1 = quaternion.quaternion(np.inf, 0., 0., 0.)
     q_minf1 = quaternion.quaternion(-np.inf, 0., 0., 0.)
@@ -89,19 +92,21 @@ def Qs():
     return np.array([q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qnormalized, Qlog, Qexp],
                     dtype=np.quaternion)
 
+Qs_array = make_Qs()
 
-q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qnormalized, Qlog, Qexp, = range(len(Qs()))
-Qs_zero = [i for i in range(len(Qs())) if not Qs()[i].nonzero()]
-Qs_nonzero = [i for i in range(len(Qs())) if Qs()[i].nonzero()]
-Qs_nan = [i for i in range(len(Qs())) if Qs()[i].isnan()]
-Qs_nonnan = [i for i in range(len(Qs())) if not Qs()[i].isnan()]
-Qs_nonnannonzero = [i for i in range(len(Qs())) if not Qs()[i].isnan() and Qs()[i].nonzero()]
-Qs_inf = [i for i in range(len(Qs())) if Qs()[i].isinf()]
-Qs_noninf = [i for i in range(len(Qs())) if not Qs()[i].isinf()]
-Qs_noninfnonzero = [i for i in range(len(Qs())) if not Qs()[i].isinf() and Qs()[i].nonzero()]
-Qs_finite = [i for i in range(len(Qs())) if Qs()[i].isfinite()]
-Qs_nonfinite = [i for i in range(len(Qs())) if not Qs()[i].isfinite()]
-Qs_finitenonzero = [i for i in range(len(Qs())) if Qs()[i].isfinite() and Qs()[i].nonzero()]
+
+q_nan1, q_inf1, q_minf1, q_0, q_1, x, y, z, Q, Qneg, Qbar, Qnormalized, Qlog, Qexp, = range(len(Qs_array))
+Qs_zero = [i for i in range(len(Qs_array)) if not Qs_array[i].nonzero()]
+Qs_nonzero = [i for i in range(len(Qs_array)) if Qs_array[i].nonzero()]
+Qs_nan = [i for i in range(len(Qs_array)) if Qs_array[i].isnan()]
+Qs_nonnan = [i for i in range(len(Qs_array)) if not Qs_array[i].isnan()]
+Qs_nonnannonzero = [i for i in range(len(Qs_array)) if not Qs_array[i].isnan() and Qs_array[i].nonzero()]
+Qs_inf = [i for i in range(len(Qs_array)) if Qs_array[i].isinf()]
+Qs_noninf = [i for i in range(len(Qs_array)) if not Qs_array[i].isinf()]
+Qs_noninfnonzero = [i for i in range(len(Qs_array)) if not Qs_array[i].isinf() and Qs_array[i].nonzero()]
+Qs_finite = [i for i in range(len(Qs_array)) if Qs_array[i].isfinite()]
+Qs_nonfinite = [i for i in range(len(Qs_array)) if not Qs_array[i].isfinite()]
+Qs_finitenonzero = [i for i in range(len(Qs_array)) if Qs_array[i].isfinite() and Qs_array[i].nonzero()]
 
 
 @pytest.fixture
