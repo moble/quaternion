@@ -12,6 +12,7 @@ from .numpy_quaternion import (quaternion, _eps,
                                )
 from .quaternion_time_series import slerp, squad, integrate_angular_velocity, minimal_rotation
 from .calculus import derivative, definite_integral, indefinite_integral
+from .means import mean_rotor_in_chordal_metric, optimal_alignment_in_chordal_metric
 from ._version import __version__
 
 __doc_title__ = "Quaternion dtype for NumPy"
