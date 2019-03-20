@@ -33,6 +33,9 @@ for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"; do
     /bin/rm -rf "${temp_dir}/quaternion-pipenv"
     mkdir -p "${temp_dir}/quaternion-pipenv"
     pushd "${temp_dir}/quaternion-pipenv"
+    pip install --upgrade delocate
+    pip install --upgrade wheel
+    pip install --upgrade pipenv
     pipenv --python "${PYTHON_VERSION}"
     pipenv run pip install -r "${code_dir}/${requirements_build_txt}"
     pipenv run pip wheel "${code_dir}/" -r "${code_dir}/${requirements_build_txt}" -w "${wheelhouse}/"
