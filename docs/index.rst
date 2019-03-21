@@ -1,7 +1,7 @@
-numpy-quaternion
+quaternion
 ================
 
-You're likely looking for the :py:mod:`quaternion` documentation.
+This is documentation for the :py:mod:`quaternion` python module.
 
 
 .. toctree::
