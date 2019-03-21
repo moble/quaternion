@@ -40,7 +40,7 @@ release = ''
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinxcontrib.napoleon',
+    'sphinx.ext.napoleon',
 ]
 
 napoleon_google_docstring = False
