@@ -22,10 +22,11 @@ def mean_rotor_in_chordal_metric(R, t=None):
     faster).
 
     """
-    if not t:
-        return np.quaternion(*(np.sum(as_float_array(R)))).normalized()
+    R_as_array = np.asarray(R, dtype=np.quaternion).view((np.double, 4))
+    if t is not None:
+        return np.quaternion(*sum(R_as_array)).normalized()
     mean = np.empty((4,), dtype=float)
-    definite_integral(as_float_array(R), t, mean)
+    definite_integral(R_as_array, t, mean)
     return np.quaternion(*mean).normalized()
 
 
