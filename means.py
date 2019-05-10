@@ -26,7 +26,7 @@ def mean_rotor_in_chordal_metric(R, t=None):
     if t is None:
         return np.sum(R).normalized()
     mean = definite_integral(R, t)
-    return np.sum(mean).normalized()
+    return mean.normalized()
 
 
 def optimal_alignment_in_chordal_metric(Ra, Rb, t=None):
