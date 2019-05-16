@@ -6,6 +6,7 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 
 from .calculus import definite_integral
+from . import as_float_array
 
 
 def mean_rotor_in_chordal_metric(R, t=None):
@@ -22,11 +23,10 @@ def mean_rotor_in_chordal_metric(R, t=None):
     faster).
 
     """
-    if not t:
-        return np.quaternion(*(np.sum(as_float_array(R)))).normalized()
-    mean = np.empty((4,), dtype=float)
-    definite_integral(as_float_array(R), t, mean)
-    return np.quaternion(*mean).normalized()
+    if t is None:
+        return np.sum(R).normalized()
+    mean = definite_integral(R, t)
+    return mean.normalized()
 
 
 def optimal_alignment_in_chordal_metric(Ra, Rb, t=None):

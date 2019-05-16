@@ -319,6 +319,5 @@ def indefinite_integral(f, t):
 @jit
 def definite_integral(f, t):
     Sfdt = np.zeros_like(f)
-    for i in xrange(1, f.shape[0]):
-        Sfdt[i, ...] += (f[i, ...] + f[i - 1, ...]) * ((t[i] - t[i - 1]) / 2.0)
-    return Sfdt
+    Sfdt[1:, ...] = (f[1:, ...] + f[:-1, ...]) * ((t[1:] - t[:-1]) / 2.0)
+    return np.sum(Sfdt)
