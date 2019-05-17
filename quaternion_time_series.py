@@ -340,5 +340,5 @@ def angular_velocity(R, t):
         Rdot[:, i] = spline(t, R[:, i]).derivative()(t)
     R = quaternion.from_float_array(R)
     Rdot = quaternion.from_float_array(Rdot)
-    return np.array([omega.vec for omega in (2*Rdot/R)])
+    return quaternion.as_float_array(2*Rdot/R)[:, 1:]
     
