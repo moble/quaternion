@@ -6,7 +6,6 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 
 from .calculus import definite_integral
-from . import as_float_array
 
 
 def mean_rotor_in_chordal_metric(R, t=None):
