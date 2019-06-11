@@ -304,7 +304,6 @@ def _derivative_3d(f, t, dfdt):
     return
 
 
-# @njit('void(f8[:,:], f8[:], f8[:,:])')
 @jit
 def fd_indefinite_integral(f, t):
     Sfdt = np.empty_like(f)
@@ -315,8 +314,6 @@ def fd_indefinite_integral(f, t):
     return Sfdt
 
 
-#@njit('void(f8[:,:], f8[:], f8[:])')
-@jit
 def fd_definite_integral(f, t):
     Sfdt = np.zeros_like(f)
     Sfdt[1:, ...] = (f[1:, ...] + f[:-1, ...]) * ((t[1:] - t[:-1]) / 2.0)
