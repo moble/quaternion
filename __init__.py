@@ -11,7 +11,14 @@ from .numpy_quaternion import (quaternion, _eps,
                                # slerp, squad,
                                )
 from .quaternion_time_series import slerp, squad, integrate_angular_velocity, minimal_rotation, angular_velocity
-from .calculus import derivative, definite_integral, indefinite_integral
+from .calculus import (
+    derivative, antiderivative, definite_integral, indefinite_integral,
+    fd_derivative, fd_definite_integral, fd_indefinite_integral,
+    spline_derivative, spline_definite_integral, spline_indefinite_integral)
+try:
+    from .calculus import spline
+except:
+    pass
 from .means import mean_rotor_in_chordal_metric, optimal_alignment_in_chordal_metric
 from ._version import __version__
 

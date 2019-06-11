@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Michael Boyle
+# Copyright (c) 2019, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 from __future__ import division, print_function, absolute_import
@@ -6,7 +6,7 @@ import numpy as np
 from quaternion.numba_wrapper import njit, jit, xrange
 
 
-def derivative(f, t):
+def fd_derivative(f, t):
     """Fourth-order finite-differencing with non-uniform time steps
 
     The formula for this finite difference comes from Eq. (A 5b) of "Derivative formulas and errors for non-uniformly
@@ -306,7 +306,7 @@ def _derivative_3d(f, t, dfdt):
 
 # @njit('void(f8[:,:], f8[:], f8[:,:])')
 @jit
-def indefinite_integral(f, t):
+def fd_indefinite_integral(f, t):
     Sfdt = np.empty_like(f)
     Sfdt[0] = 0.0
     for i in xrange(1, len(t)):
@@ -317,7 +317,166 @@ def indefinite_integral(f, t):
 
 #@njit('void(f8[:,:], f8[:], f8[:])')
 @jit
-def definite_integral(f, t):
+def fd_definite_integral(f, t):
     Sfdt = np.zeros_like(f)
     Sfdt[1:, ...] = (f[1:, ...] + f[:-1, ...]) * ((t[1:] - t[:-1]) / 2.0)
     return np.sum(Sfdt)
+
+
+def spline_evaluation(f, t, t_out=None, axis=None, spline_degree=3,
+                      derivative_order=0, definite_integral_bounds=None):
+    """Approximate input data using a spline and evaluate
+
+    Note that this function is somewhat more general than it needs to be, so that it can be reused
+    for closely related functions involving derivatives, antiderivatives, and integrals.
+
+    Parameters
+    ==========
+    f: (..., N, ...) array_like
+        Real or complex function values to be interpolated.
+
+    t: (N,) array_like
+        An N-D array of increasing real values. The length of f along the interpolation axis must be
+        equal to the length of t.  The number of data points must be larger than the spline degree.
+
+    t_out: None or (M,) array_like [defaults to None]
+        The new values of `t` on which to evaluate the result.  If None, it is assumed that some
+        other feature of the data is needed, like a derivative or antiderivative, which are then
+        output using the same `t` values as the input.
+
+    axis: None or int [defaults to None]
+        The axis of `f` with length equal to the length of `t`.  If None, this function searches for
+        an axis of equal length in reverse order -- that is, starting from the last axis of `f`.
+        Note that this feature is helpful when `f` is one-dimensional or will always satisfy that
+        criterion, but is dangerous otherwise.  Caveat emptor.
+
+    spline_degree: int [defaults to 3]
+        Degree of the interpolating spline. Must be 1 <= spline_degree <= 5.
+
+    derivative_order: int [defaults to 0]
+        The order of the derivative to apply to the data.  Note that this may be negative, in which
+        case the corresponding antiderivative is returned.
+
+    definite_integral_bounds: None or (2,) array_like [defaults to None]
+        If this is not None, the `t_out` and `derivative_order` parameters are ignored, and the
+        returned values are just the (first) definite integrals of the splines between these limits,
+        along each remaining axis.
+
+    """
+    import numpy as np
+    from scipy.interpolate import InterpolatedUnivariateSpline
+
+    # Process input arguments and get data into correct shape
+    if not 1 <= spline_degree <= 5:
+        raise ValueError('The spline degree must be between 1 and 5 (inclusive); it is {0}.'.format(spline_degree))
+    t = np.asarray(t, dtype=float, order='C')
+    if t.ndim != 1:
+        raise ValueError('Input t values must be a one-dimensional array; this input has {0}.'.format(t.ndim))
+    n = t.size
+    if spline_degree >= n:
+        raise ValueError('The spline degree ({0}) must be less than the number of data points ({1}).'.format(spline_degree, n))
+    f = np.asanyarray(f)
+    if axis is None:
+        try:
+            axis = f.ndim - 1 - list(reversed(f.shape)).index(n)
+        except ValueError:
+            axis = None
+    if axis is None or f.shape[axis] != n:
+        raise ValueError(
+            "Input function values `f` [shape {0}] should have at least one axis with ".format(f.shape)
+            + "the same length as input `t` [{1}].".format(n)
+        )
+    shape = list(f.shape)
+    if definite_integral_bounds is not None:
+        shape[axis] = 1  # We'll keep this axis for now (set to length 1) for uniform treatment, and remove it before returning
+        definite_integral_bounds = np.array(definite_integral_bounds, dtype=float)
+        if definite_integral_bounds.shape != (2,):
+            raise ValueError("Expected exactly two bounds for the definite integral; got {0}.".format(definite_integral_bounds.shape))
+        f_out = np.empty(shape, dtype=f.dtype)
+        t_a, t_b = definite_integral_bounds
+        def evaluator(s):
+            return s.integral(t_a, t_b)
+        axis_slice = slice(max(0, np.argmin(np.abs(t-t_a))-10), min(n, np.argmin(np.abs(t-t_b))+11))
+    else:
+        if t_out is None:
+            t_out = t
+            axis_slice = slice(None)
+        else:
+            axis_slice = slice(max(0, np.argmin(np.abs(t-t_out[0]))-10), min(n, np.argmin(np.abs(t-t_out[-1]))+11))
+        shape[axis] = t_out.size
+        if derivative_order != 0 and derivative_order > spline_degree:
+            raise ValueError("Order of derivative ({0}) must not be greater than degree of spline ({1})".format(derivative_order, spline_degree))
+        f_out = np.empty(shape, dtype=f.dtype)
+        if derivative_order < 0:
+            def evaluator(s):
+                return s.antiderivative(n=-derivative_order)(t_out)
+        elif derivative_order > 0:
+            def evaluator(s):
+                return s.derivative(n=derivative_order)(t_out)
+        else:
+            def evaluator(s):
+                return s(t_out)
+    def spline(f, t):
+        return InterpolatedUnivariateSpline(t[axis_slice], f[axis_slice], k=spline_degree)
+
+    # Move the axis to the end so that we can just iterate over all but the last index
+    if axis != -1 and axis != n-1:
+        f = np.moveaxis(f, axis, -1)
+        f_out = np.moveaxis(f_out, axis, -1)
+
+    # Iterate over all extra axes and evaluate
+    complex_valued = np.iscomplexobj(f)
+    for index in np.ndindex(f.shape[:-1]):
+        if complex_valued:
+            f_out[index] = evaluator(spline(f[index].real, t)) + 1j * evaluator(spline(f[index].imag, t))
+        else:
+            f_out[index] = evaluator(spline(f[index], t))
+
+    # Undo the axis move we did previously to the output (input doesn't matter any more)
+    if axis != -1 and axis != n-1:
+        f_out = np.moveaxis(f_out, -1, axis)
+
+    # If this is a definite integral, remove that extraneous axis
+    if definite_integral_bounds is not None:
+        f_out = np.squeeze(f_out, axis=axis)
+
+    return f_out
+
+
+def spline_derivative(f, t, derivative_order=1):
+    return spline_evaluation(f, t, axis=0, derivative_order=derivative_order)
+
+
+def spline_indefinite_integral(f, t, integral_order=1):
+    return spline_evaluation(f, t, axis=0, derivative_order=-integral_order)
+
+
+def spline_definite_integral(f, t, t1=None, t2=None):
+    if t1 is None:
+        t1 = t[0]
+    if t2 is None:
+        t2 = t[-1]
+    return spline_evaluation(f, t, axis=0, definite_integral_bounds=(t1, t2))
+
+
+try:
+    from scipy.interpolate import InterpolatedUnivariateSpline
+    spline = spline_evaluation
+    derivative = spline_derivative
+    antiderivative = spline_indefinite_integral
+    indefinite_integral = spline_indefinite_integral
+    definite_integral = spline_definite_integral
+except ImportError:
+    import warnings
+    warning_text = (
+        "\n\n" + "!" * 57 + "\n" +
+        "Could not import from scipy, which means that derivatives\n" +
+        "and integrals will use less accurate finite-differencing\n" +
+        "techniques.  You may want to install scipy." +
+        "\n" + "!" * 57 + "\n"
+    )
+    warnings.warn(warning_text)
+    derivative = fd_derivative
+    antiderivative = fd_indefinite_integral
+    indefinite_integral = fd_indefinite_integral
+    definite_integral = fd_definite_integral
