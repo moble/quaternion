@@ -825,7 +825,7 @@ static PyTypeObject PyQuaternion_Type = {
 #else
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES, // tp_flags
 #endif
-  0,                                          // tp_doc
+  "Floating-point quaternion numbers",        // tp_doc
   0,                                          // tp_traverse
   0,                                          // tp_clear
   pyquaternion_richcompare,                   // tp_richcompare
@@ -1072,6 +1072,40 @@ static void register_cast_function(int sourceType, int destType, PyArray_VectorU
   Py_DECREF(descr);
 }
 
+// NOTE!  THIS IS TEMPORARY TESTING CODE, JUST TO SEE IF CASTING IS BEING CALLED.
+#define BAD_CASTER(TYPE, type)                                          \
+  static void                                                           \
+  TYPE ## _bad_cast(void *from_, void *to_, npy_intp n,                 \
+                    void* fromarr, void* toarr)                         \
+  {                                                                     \
+    PyErr_SetString(PyExc_TypeError, "Bad cast happening with " #TYPE); \
+    const quaternion* from = (quaternion*)from_;                        \
+    type* to = (type*)to_;                                              \
+    npy_intp i;                                                         \
+    for (i = 0; i < n; i++) {                                           \
+      quaternion x = from[i];                                           \
+      double y = x.w;                                                   \
+      to[i] = y;                                                        \
+    }                                                                   \
+  }
+BAD_CASTER(FLOAT, npy_float);
+BAD_CASTER(DOUBLE, npy_double);
+BAD_CASTER(LONGDOUBLE, npy_longdouble);
+BAD_CASTER(BOOL, npy_bool);
+BAD_CASTER(BYTE, npy_byte);
+BAD_CASTER(UBYTE, npy_ubyte);
+BAD_CASTER(SHORT, npy_short);
+BAD_CASTER(USHORT, npy_ushort);
+BAD_CASTER(INT, npy_int);
+BAD_CASTER(UINT, npy_uint);
+BAD_CASTER(LONG, npy_long);
+BAD_CASTER(ULONG, npy_ulong);
+BAD_CASTER(LONGLONG, npy_longlong);
+BAD_CASTER(ULONGLONG, npy_ulonglong);
+BAD_CASTER(CFLOAT, npy_float);
+BAD_CASTER(CDOUBLE, npy_double);
+BAD_CASTER(CLONGDOUBLE, npy_longdouble);
+
 
 // This is a macro that will be used to define the various basic unary
 // quaternion functions, so that they can be applied quickly to a
@@ -1300,6 +1334,22 @@ static PyMethodDef QuaternionMethods[] = {
   {NULL, NULL, 0, NULL}
 };
 
+int quaternion_elsize = sizeof(quaternion);
+
+typedef struct { char c; quaternion q; } align_test;
+int quaternion_alignment = offsetof(align_test, q);
+
+
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+//                                                             //
+//  Everything above was preparation for the following set up  //
+//                                                             //
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+
 
 #if PY_MAJOR_VERSION >= 3
 
@@ -1396,10 +1446,10 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   quaternion_descr->kind = 'V';
   quaternion_descr->type = 'q';
   quaternion_descr->byteorder = '=';
-  quaternion_descr->flags = 0;
+  quaternion_descr->flags = NPY_NEEDS_PYAPI | NPY_USE_GETITEM | NPY_USE_SETITEM;
   quaternion_descr->type_num = 0; // assigned at registration
-  quaternion_descr->elsize = 8*4;
-  quaternion_descr->alignment = 8;
+  quaternion_descr->elsize = quaternion_elsize;
+  quaternion_descr->alignment = quaternion_alignment;
   quaternion_descr->subarray = NULL;
   quaternion_descr->fields = NULL;
   quaternion_descr->names = NULL;
@@ -1431,6 +1481,24 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   register_cast_function(NPY_CFLOAT, quaternionNum, (PyArray_VectorUnaryFunc*)CFLOAT_to_quaternion);
   register_cast_function(NPY_CDOUBLE, quaternionNum, (PyArray_VectorUnaryFunc*)CDOUBLE_to_quaternion);
   register_cast_function(NPY_CLONGDOUBLE, quaternionNum, (PyArray_VectorUnaryFunc*)CLONGDOUBLE_to_quaternion);
+
+  register_cast_function(quaternionNum, NPY_BOOL, (PyArray_VectorUnaryFunc*)BOOL_bad_cast);
+  register_cast_function(quaternionNum, NPY_BYTE, (PyArray_VectorUnaryFunc*)BYTE_bad_cast);
+  register_cast_function(quaternionNum, NPY_UBYTE, (PyArray_VectorUnaryFunc*)UBYTE_bad_cast);
+  register_cast_function(quaternionNum, NPY_SHORT, (PyArray_VectorUnaryFunc*)SHORT_bad_cast);
+  register_cast_function(quaternionNum, NPY_USHORT, (PyArray_VectorUnaryFunc*)USHORT_bad_cast);
+  register_cast_function(quaternionNum, NPY_INT, (PyArray_VectorUnaryFunc*)INT_bad_cast);
+  register_cast_function(quaternionNum, NPY_UINT, (PyArray_VectorUnaryFunc*)UINT_bad_cast);
+  register_cast_function(quaternionNum, NPY_LONG, (PyArray_VectorUnaryFunc*)LONG_bad_cast);
+  register_cast_function(quaternionNum, NPY_ULONG, (PyArray_VectorUnaryFunc*)ULONG_bad_cast);
+  register_cast_function(quaternionNum, NPY_LONGLONG, (PyArray_VectorUnaryFunc*)LONGLONG_bad_cast);
+  register_cast_function(quaternionNum, NPY_ULONGLONG, (PyArray_VectorUnaryFunc*)ULONGLONG_bad_cast);
+  register_cast_function(quaternionNum, NPY_FLOAT, (PyArray_VectorUnaryFunc*)FLOAT_bad_cast);
+  register_cast_function(quaternionNum, NPY_DOUBLE, (PyArray_VectorUnaryFunc*)DOUBLE_bad_cast);
+  register_cast_function(quaternionNum, NPY_LONGDOUBLE, (PyArray_VectorUnaryFunc*)LONGDOUBLE_bad_cast);
+  register_cast_function(quaternionNum, NPY_CFLOAT, (PyArray_VectorUnaryFunc*)CFLOAT_bad_cast);
+  register_cast_function(quaternionNum, NPY_CDOUBLE, (PyArray_VectorUnaryFunc*)CDOUBLE_bad_cast);
+  register_cast_function(quaternionNum, NPY_CLONGDOUBLE, (PyArray_VectorUnaryFunc*)CLONGDOUBLE_bad_cast);
 
   // These macros will be used below
   #define REGISTER_UFUNC(name)                                          \
