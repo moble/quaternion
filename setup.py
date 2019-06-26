@@ -77,9 +77,7 @@ if __name__ == "__main__":
     if version is not None:
         setup_metadata['version'] = version
 
-    if len(sys.argv) >= 2 and ('--help' in sys.argv[1:] or
-            sys.argv[1] in ('--help-commands', 'egg_info', '--version',
-                            'clean')):
+    if len(sys.argv) >= 2 and ('--help' in sys.argv[1:] or sys.argv[1] in ('--help-commands', 'egg_info', '--version', 'clean')):
         # For these actions, NumPy is not required.
         #
         # They are required to succeed without Numpy for example when
@@ -92,10 +90,6 @@ if __name__ == "__main__":
     else:
         from setuptools import setup, Extension
         from setuptools.command.build_ext import build_ext as _build_ext
-        import numpy
-        if numpy.__dict__.get('quaternion') is not None:
-            from distutils.errors import DistutilsError
-            raise DistutilsError('The target NumPy already has a quaternion type')
         setup_metadata['install_requires'] = ['numpy>=1.13',]
         setup_metadata['setup_requires'] = setup_metadata['install_requires']
         extension = Extension(
@@ -103,17 +97,19 @@ if __name__ == "__main__":
             sources=['quaternion.c', 'numpy_quaternion.c'],
             extra_compile_args=['/O2' if on_windows else '-O3'],
             depends=['quaternion.c', 'quaternion.h', 'numpy_quaternion.c'],
-            include_dirs=[numpy.get_include()]
         )
         setup_metadata['ext_modules'] = [extension]
-        # As suggested in https://stackoverflow.com/a/21621689/1194883:
         class build_ext(_build_ext):
+            # This addition was suggested in https://stackoverflow.com/a/21621689/1194883
             def finalize_options(self):
                 _build_ext.finalize_options(self)
                 # Prevent numpy from thinking it is still in its setup process:
                 __builtins__.__NUMPY_SETUP__ = False
                 import numpy
                 self.include_dirs.append(numpy.get_include())
+                if numpy.__dict__.get('quaternion') is not None:
+                    from distutils.errors import DistutilsError
+                    raise DistutilsError('The target NumPy already has a quaternion type')
         setup_metadata['cmdclass'] = {'build_ext': build_ext}
 
     setup(**setup_metadata)
