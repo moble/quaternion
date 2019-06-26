@@ -6,6 +6,7 @@
 # Construct the version number from the date and time this python version was created.
 from os import environ
 from sys import platform
+version = None
 on_windows = ('win' in platform.lower() and not 'darwin' in platform.lower())
 if "package_version" in environ:
     version = environ["package_version"]
@@ -28,22 +29,10 @@ else:
             version = version.decode('ascii').rstrip()
         print("Setup.py using git log version='{0}'".format(version))
     except Exception:
-        # For cases where this isn't being installed from git.  This gives the wrong version number,
-        # but at least it provides some information.
-        #import traceback
-        #print(traceback.format_exc())
-        try:
-            from time import strftime, gmtime
-            try:
-                version = strftime("%Y.%-m.%-d.%-H.%-M.%-S", gmtime())
-            except ValueError:  # because Windows
-                version = strftime("%Y.%m.%d.%H.%M.%S", gmtime()).replace('.0', '.')
-            print("Setup.py using strftime version='{0}'".format(version))
-        except:
-            version = '0.0.0'
-            print("Setup.py failed to determine the version; using '{0}'".format(version))
-with open('_version.py', 'w') as f:
-    f.write('__version__ = "{0}"'.format(version))
+        pass
+if version is not None:
+    with open('_version.py', 'w') as f:
+        f.write('__version__ = "{0}"'.format(version))
 
 
 long_description = """\
