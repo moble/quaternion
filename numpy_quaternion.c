@@ -516,6 +516,18 @@ static int pyquaternion_num_nonzero(PyObject* a) {
   quaternion q = ((PyQuaternion*)a)->obval;
   return quaternion_nonzero(q);
 }
+#define CANNOT_CONVERT(target)                                          \
+  static PyObject* pyquaternion_convert_##target(PyObject* a) {         \
+    PyErr_SetString(PyExc_TypeError, "Cannot convert quaternion to " #target); \
+    return NULL;                                                        \
+  }
+CANNOT_CONVERT(int)
+CANNOT_CONVERT(float)
+#if PY_MAJOR_VERSION < 3
+CANNOT_CONVERT(long)
+CANNOT_CONVERT(oct)
+CANNOT_CONVERT(hex)
+#endif
 
 static PyNumberMethods pyquaternion_as_number = {
   pyquaternion_add,               // nb_add
@@ -540,16 +552,16 @@ static PyNumberMethods pyquaternion_as_number = {
   #if PY_MAJOR_VERSION < 3
   0,                              // nb_coerce
   #endif
-  0,                              // nb_int
+  pyquaternion_convert_int,       // nb_int
   #if PY_MAJOR_VERSION >= 3
   0,                              // nb_reserved
   #else
-  0,                              // nb_long
+  pyquaternion_convert_long,      // nb_long
   #endif
-  0,                              // nb_float
+  pyquaternion_convert_float,     // nb_float
   #if PY_MAJOR_VERSION < 3
-  0,                              // nb_oct
-  0,                              // nb_hex
+  pyquaternion_convert_oct,       // nb_oct
+  pyquaternion_convert_hex,       // nb_hex
   #endif
   pyquaternion_inplace_add,       // nb_inplace_add
   pyquaternion_inplace_subtract,  // nb_inplace_subtract
@@ -572,7 +584,7 @@ static PyNumberMethods pyquaternion_as_number = {
   #if PY_MAJOR_VERSION >= 3
   #if PY_MINOR_VERSION >= 5
   0,                              // nb_matrix_multiply
-  0,                              //  nb_inplace_matrix_multiply
+  0,                              // nb_inplace_matrix_multiply
   #endif
   #endif
 };

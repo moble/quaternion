@@ -198,6 +198,20 @@ def test_isclose():
     assert quaternion.allclose(np.nan * a, np.nan * a, equal_nan=True, verbose=True) == True
 
 
+@pytest.mark.parametrize("q", make_Qs())
+def test_bad_conversions(q):
+    with pytest.raises(TypeError):
+        s = int(q)
+    with pytest.raises(TypeError):
+        s = float(q)
+    with pytest.raises(TypeError):
+        a = np.zeros(3, dtype=int)
+        a[0] = q
+    with pytest.raises(TypeError):
+        a = np.zeros(3)
+        a[0] = q
+
+
 def test_as_float_quat(Qs):
     qs = Qs[Qs_nonnan]
     for quats in [qs, np.vstack((qs,)*3), np.vstack((qs,)*(3*5)).reshape((3, 5)+qs.shape),
