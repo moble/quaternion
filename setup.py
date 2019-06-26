@@ -67,12 +67,6 @@ if __name__ == "__main__":
         name='numpy-quaternion',  # Uploaded to pypi under this name
         packages=['quaternion'],  # This is the actual package name
         package_dir={'quaternion': ''},
-        install_requires=[
-            'numpy>=1.13',
-        ],
-        setup_requires=[
-            'numpy>=1.13',
-        ],
         url='https://github.com/moble/quaternion',
         author='Michael Boyle',
         author_email='mob22@cornell.edu',
@@ -102,6 +96,8 @@ if __name__ == "__main__":
         if numpy.__dict__.get('quaternion') is not None:
             from distutils.errors import DistutilsError
             raise DistutilsError('The target NumPy already has a quaternion type')
+        setup_metadata['install_requires'] = ['numpy>=1.13',]
+        setup_metadata['setup_requires'] = setup_metadata['install_requires']
         extension = Extension(
             name='quaternion.numpy_quaternion',  # This is the name of the object file that will be compiled
             sources=['quaternion.c', 'numpy_quaternion.c'],
