@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     setup_metadata = dict(
         name='numpy-quaternion',  # Uploaded to pypi under this name
-        packages=['quaternion'],  # This is the actual package name
+        packages=['quaternion'],  # This is the actual package name, as used in python
         package_dir={'quaternion': ''},
         url='https://github.com/moble/quaternion',
         author='Michael Boyle',
@@ -85,13 +85,15 @@ if __name__ == "__main__":
         # the system.
         try:
             from setuptools import setup
+            setup_metadata['install_requires'] = ['numpy>=1.13',]
+            setup_metadata['setup_requires'] = ['setuptools', 'wheel', 'numpy>=1.13',]
         except ImportError:
             from distutils.core import setup
     else:
         from setuptools import setup, Extension
         from setuptools.command.build_ext import build_ext as _build_ext
         setup_metadata['install_requires'] = ['numpy>=1.13',]
-        setup_metadata['setup_requires'] = setup_metadata['install_requires']
+        setup_metadata['setup_requires'] = ['setuptools', 'wheel', 'numpy>=1.13',]
         extension = Extension(
             name='quaternion.numpy_quaternion',  # This is the name of the object file that will be compiled
             sources=['quaternion.c', 'numpy_quaternion.c'],
