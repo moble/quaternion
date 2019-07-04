@@ -686,9 +686,7 @@ def isclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False):
     def within_tol(x, y, atol, rtol):
         with np.errstate(invalid='ignore'):
             result = np.less_equal(abs(x-y), atol + rtol * abs(y))
-        if np.isscalar(a) and np.isscalar(b):
-            result = bool(result)
-        return result
+        return result[()]
 
     x = np.array(a, copy=False, subok=True, ndmin=1)
     y = np.array(b, copy=False, subok=True, ndmin=1)
@@ -723,10 +721,7 @@ def isclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False):
             both_nan = np.isnan(x) & np.isnan(y)
             cond[both_nan] = both_nan[both_nan]
 
-        if np.isscalar(a) and np.isscalar(b):
-            return bool(cond)
-        else:
-            return cond
+        return cond[()]
 
 
 def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False, verbose=False):
