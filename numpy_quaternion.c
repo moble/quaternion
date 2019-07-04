@@ -810,7 +810,7 @@ static PyTypeObject PyQuaternion_Type = {
   PyObject_HEAD_INIT(NULL)
   0,                                          // ob_size
 #endif
-  "quaternion",                               // tp_name
+  "quaternion.quaternion",                    // tp_name
   sizeof(PyQuaternion),                       // tp_basicsize
   0,                                          // tp_itemsize
   0,                                          // tp_dealloc

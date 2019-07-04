@@ -1364,6 +1364,12 @@ def test_numpy_save_and_load():
     assert np.array_equal(a, b)
 
 
+def test_pickle():
+    import pickle
+    a = quaternion.one
+    assert pickle.loads(pickle.dumps(a)) == a
+
+
 if __name__ == '__main__':
     print("The tests should be run automatically via pytest (`pip install pytest` and then just `pytest`)")
 
