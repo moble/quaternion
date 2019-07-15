@@ -440,20 +440,20 @@ def spline_evaluation(f, t, t_out=None, axis=None, spline_degree=3,
     return f_out
 
 
-def spline_derivative(f, t, derivative_order=1):
-    return spline_evaluation(f, t, axis=0, derivative_order=derivative_order)
+def spline_derivative(f, t, derivative_order=1, axis=0):
+    return spline_evaluation(f, t, axis=axis, derivative_order=derivative_order)
 
 
-def spline_indefinite_integral(f, t, integral_order=1):
-    return spline_evaluation(f, t, axis=0, derivative_order=-integral_order)
+def spline_indefinite_integral(f, t, integral_order=1, axis=0):
+    return spline_evaluation(f, t, axis=axis, derivative_order=-integral_order)
 
 
-def spline_definite_integral(f, t, t1=None, t2=None):
+def spline_definite_integral(f, t, t1=None, t2=None, axis=0):
     if t1 is None:
         t1 = t[0]
     if t2 is None:
         t2 = t[-1]
-    return spline_evaluation(f, t, axis=0, definite_integral_bounds=(t1, t2))
+    return spline_evaluation(f, t, axis=axis, definite_integral_bounds=(t1, t2))
 
 
 try:
