@@ -379,10 +379,10 @@ def spline_evaluation(f, t, t_out=None, axis=None, spline_degree=3,
         except ValueError:
             axis = None
     if axis is None or f.shape[axis] != n:
-        raise ValueError(
-            "Input function values `f` [shape {0}] should have at least one axis with ".format(f.shape)
-            + "the same length as input `t` [{1}].".format(n)
-        )
+        raise ValueError((
+            "Input function values `f` [shape {0}] should have at least one "
+            "axis with the same length as input `t` [{1}], or bad axis input."
+            ).format(f.shape, n))
     shape = list(f.shape)
     if definite_integral_bounds is not None:
         shape[axis] = 1  # We'll keep this axis for now (set to length 1) for uniform treatment, and remove it before returning
