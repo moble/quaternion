@@ -1,6 +1,5 @@
 <a href="https://zenodo.org/badge/latestdoi/27896013"><img src="https://zenodo.org/badge/27896013.svg" alt="DOI"></a>
 <a href="https://anaconda.org/conda-forge/quaternion"><img align="right" style="margin: 0px 2px" alt="Available from conda on Linux, MacOS, and Windows" src="https://img.shields.io/conda/pn/conda-forge/quaternion.svg"></a>
-<a href="https://ci.appveyor.com/project/moble/quaternion"><img align="right" style="margin: 0px 2px" alt="Status of automatic build and test suite on Appveyor" src="https://ci.appveyor.com/api/projects/status/gp53k0vn7c9nmk29?svg=true"></a>
  <a href="https://github.com/moble/quaternion/blob/master/LICENSE"><img align="right" style="margin: 0px 2px" alt="MIT license" src="https://img.shields.io/github/license/moble/quaternion.svg"></a>
 
 # Quaternions in numpy
@@ -30,10 +29,11 @@ pip install --user numpy numpy-quaternion
 ## Dependencies
 
 The basic requirements for this code are reasonably current versions
-of `python` and `numpy`.  In particular, `python` versions 2.7 and 3.6
-are [routinely tested](https://travis-ci.org/moble/quaternion).  Also,
-any `numpy` version greater than 1.13.0 should work, but the tests are
-run on the most recent release at the time of the test.
+of `python` and `numpy`.  In particular, `python` versions 2.7, 3.6,
+and 3.7 are routinely tested.  Also, any `numpy` version [greater than
+1.13.0](https://github.com/moble/quaternion/issues/114) should work,
+but the tests are run on the most recent release at the time of the
+test.
 
 However, certain advanced functions in this package (including
 `squad`, `mean_rotor_in_intrinsic_metric`,
@@ -49,10 +49,10 @@ run all the code without `numba`, but these particular functions are
 roughly 4 to 400 times slower without it.
 
 The only drawback of `numba` is that it is nontrivial to install on
-its own.  Fortunately, the best python installer,
-[`anaconda`](http://continuum.io/downloads), makes it trivial.  Just
-install the main `anaconda` package, which installs both `numba` and
-`scipy`.  If you prefer the smaller download size of
+its own.  Fortunately, the best python installer for scientific
+python, [`anaconda`](http://continuum.io/downloads), makes it trivial.
+Just install the main `anaconda` package, which installs both `numba`
+and `scipy`.  If you prefer the smaller download size of
 [`miniconda`](http://conda.pydata.org/miniconda.html) (which comes
 with minimal extras), you'll also have to run this command:
 
@@ -63,8 +63,9 @@ conda install numpy scipy numba
 
 ## Installation
 
-Assuming you use `conda` to manage your python installation (like any
-sane python user), you can install this package simply as
+Assuming you use `conda` to manage your python installation (which is
+currently the preferred choice for science and engineering with
+python), you can install this package simply as
 
 ```sh
 conda install -c conda-forge quaternion
@@ -78,17 +79,15 @@ pip install numpy numpy-quaternion
 ```
 
 If you refuse to use `conda`, you might want to install inside your
-home directory without root privileges.  (Anaconda does this by
-default anyway.)  This is done by adding `--user` to the above
-command:
+home directory without root privileges.  (Conda does this by default
+anyway.)  This is done by adding `--user` to the above command:
 
 ```sh
 pip install --user numpy numpy-quaternion
 ```
 
-Pre-built binaries will usually be chosen by `pip`.  If none are
-available for your configuration, pip will attempt to compile the code
-— which requires a working `C` compiler.
+Note that pip will attempt to compile the code — which requires a
+working `C` compiler.
 
 Finally, there's also the fully manual option of just downloading the
 code, changing to the code directory, and running
@@ -99,10 +98,16 @@ python setup.py install
 
 This should work regardless of the installation method, as long as you
 have a compiler hanging around.  However, note that you will need to
-have at least `numpy` installed already, as noted above.
+have at least `numpy` installed *before* this can compile (because
+this package uses a header file provided by `numpy`).
 
 
-## Usage
+## Basic usage
+
+The full documentation can be found on [Read the
+Docs](https://quaternion.readthedocs.io/), and most functions have
+docstrings that should explain the relevant points.  The following are
+mostly for the purposes of example.
 
 ```python
 >>> import numpy as np
@@ -220,10 +225,9 @@ are also entirely welcome, of course, if you have an idea where the
 code is going wrong, or have an idea for a new feature that you know
 how to implement.
 
-This code is [routinely
-tested](https://travis-ci.org/moble/quaternion) on recent versions of
-both python (2.7 and 3.6) and numpy (>=1.7).  But the test coverage is
-not necessarily as complete as it could be, so bugs may certainly be
+This code is routinely tested on recent versions of both python (2.7,
+3.6, and 3.7) and numpy (>=1.13).  But the test coverage is not
+necessarily as complete as it could be, so bugs may certainly be
 present, especially in the higher-level functions like
 `mean_rotor_...`.
 
@@ -240,7 +244,9 @@ functions for rotation matrices, etc.  Github user Stijn van Drongelen
 (rhymoid) contributed some code that makes compilation work with
 MSVC++.  Github user Jon Long (longjon) has provided some elegant
 contributions to substantially improve several tricky parts of this
-code.
+code.  Rebecca Turner (9999years) and Leo Stein (duetosymmetry) did
+all the work in getting the documentation onto [Read the
+Docs](https://quaternion.readthedocs.io/).
 
 Every change in this code is [automatically
 tested](https://travis-ci.org/moble/quaternion) on
@@ -270,10 +276,9 @@ AST-1333129.
 ###### <sup>1</sup> Euler angles are awful
 
 Euler angles are pretty much [the worst things
-ever](http://moble.github.io/spherical_functions/#euler-angles) and it
+ever](https://moble.github.io/spherical_functions/#euler-angles) and it
 makes me feel bad even supporting them.  Quaternions are faster, more
 accurate, basically free of singularities, more intuitive, and
 generally easier to understand.  You can work entirely without Euler
 angles (I certainly do).  You absolutely never need them.  But if
-you're so old fashioned that you really can't give them up, they are
-supported.
+you really can't give them up, they are mildly supported.
