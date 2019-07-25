@@ -748,13 +748,8 @@ def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False, verbos
         Whether to compare NaN's as equal.  If True, NaN's in `a` will be
         considered equal to NaN's in `b` in the output array.
     verbose : bool
-        If the return value is False,
+        If the return value is False, TODO finish writing this.
 
-    Returns
-    -------
-    allclose : bool
-        Returns True if the two arrays are equal within the given
-        tolerance; False otherwise.
     See Also
     --------
     isclose, numpy.all, numpy.any, numpy.allclose
