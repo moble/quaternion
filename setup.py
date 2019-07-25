@@ -106,7 +106,12 @@ if __name__ == "__main__":
             def finalize_options(self):
                 _build_ext.finalize_options(self)
                 # Prevent numpy from thinking it is still in its setup process:
-                __builtins__.__NUMPY_SETUP__ = False
+                try:
+                    __builtins__.__NUMPY_SETUP__ = False
+                except:
+                    # For python 3
+                    import builtins
+                    builtins.__NUMPY_SETUP__ = False
                 import numpy
                 self.include_dirs.append(numpy.get_include())
                 if numpy.__dict__.get('quaternion') is not None:

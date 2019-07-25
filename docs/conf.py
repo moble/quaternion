@@ -12,21 +12,30 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+
+import sphinx
+
+from recommonmark.parser import CommonMarkParser
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'numpy-quaternion'
-copyright = '2018, Mike Boyle'
-author = 'Mike Boyle'
+try:
+    sys.path.insert(0, os.path.abspath('..'))
+    import _version as quat_version
+except:
+    import quaternion._version as quat_version
+
+project = 'quaternion'
+copyright = '2019, Michael Boyle'
+author = 'Michael Boyle'
 
 # The short X.Y version
-version = ''
+version = quat_version.__version__
 # The full version, including alpha/beta/rc tags
-release = ''
+release = version
 
 
 # -- General configuration ---------------------------------------------------
@@ -40,14 +49,49 @@ release = ''
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
+    'sphinx.ext.autosummary',
+    'numpydoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.todo',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.viewcode',
+    'recommonmark',
 ]
 
-napoleon_google_docstring = False
-napoleon_numpy_docstring = True
-napoleon_include_init_with_doc = True
-# napoleon_include_private_with_doc = False
-# napoleon_include_special_with_doc = False
+autosummary_generate = True
+
+autodoc_docstring_signature = True
+if sphinx.version_info < (1, 8):
+    autodoc_default_flags = ['members', 'undoc-members']
+else:
+    autodoc_default_options = {'members': None,
+                               'undoc-members': None,
+                               'special-members': '__call__'}
+
+# -- Try to auto-generate numba-decorated signatures -----------------
+
+import numba
+import inspect
+
+def process_numba_docstring(app, what, name, obj, options, signature, return_annotation):
+    if type(obj) is not numba.targets.registry.CPUDispatcher:
+        return (signature, return_annotation)
+    else:
+        original = obj.py_func
+        orig_sig = inspect.signature(original)
+
+        if (orig_sig.return_annotation) is inspect._empty:
+            ret_ann = None
+        else:
+            ret_ann = orig_sig.return_annotation.__name__
+
+        return (str(orig_sig), ret_ann)
+
+def setup(app):
+    app.connect('autodoc-process-signature', process_numba_docstring)
+
+# --------------------------------------------------------------------
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -55,8 +99,17 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+if sphinx.version_info < (1, 8):
+    source_parsers = {
+        '.md': CommonMarkParser,
+    }
+    source_suffix = ['.rst', '.md']
+else:
+    source_suffix = {
+        '.rst': 'restructuredtext',
+        '.txt': 'markdown',
+        '.md': 'markdown',
+    }
 
 # The master toctree document.
 master_doc = 'index'
@@ -109,7 +162,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'numpy-quaterniondoc'
+htmlhelp_basename = 'quaterniondoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -136,8 +189,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'numpy-quaternion.tex', 'numpy-quaternion Documentation',
-     'Mike Boyle', 'manual'),
+    (master_doc, 'quaternion.tex', 'quaternion Documentation',
+     'Michael Boyle', 'manual'),
 ]
 
 
@@ -146,7 +199,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'numpy-quaternion', 'numpy-quaternion Documentation',
+    (master_doc, 'quaternion', 'quaternion Documentation',
      [author], 1)
 ]
 
@@ -157,8 +210,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'numpy-quaternion', 'numpy-quaternion Documentation',
-     author, 'numpy-quaternion', 'One line description of project.',
+    (master_doc, 'quaternion', 'quaternion Documentation',
+     author, 'quaternion', 'One line description of project.',
      'Miscellaneous'),
 ]
 
@@ -183,17 +236,12 @@ epub_exclude_files = ['search.html']
 
 # -- Extension configuration -------------------------------------------------
 
-def run_apidoc(_):
-    ignore_paths = []
-    argv = ["-f", "-T", "-e", "-M", "-o", ".", ".."] + ignore_paths
-    try: # Sphinx 1.7+
-        from sphinx.ext import apidoc
-        apidoc.main(argv)
-    except ImportError:  # Sphinx 1.6 (and earlier)
-        from sphinx import apidoc
-        argv.insert(0, apidoc.__file__)
-        apidoc.main(argv)
+# -- Options for intersphinx extension ---------------------------------------
 
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {'https://docs.python.org/': None}
 
-def setup(app):
-    app.connect('builder-inited', run_apidoc)
+# -- Options for todo extension ----------------------------------------------
+
+# If true, `todo` and `todoList` produce output, else they produce nothing.
+todo_include_todos = True
