@@ -725,8 +725,7 @@ def isclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False):
 
 
 def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False, verbose=False):
-    """
-    Returns True if two arrays are element-wise equal within a tolerance.
+    """Returns True if two arrays are element-wise equal within a tolerance.
 
     This function is essentially a wrapper for the `quaternion.isclose`
     function, but returns a single boolean value of True if all elements
@@ -748,7 +747,10 @@ def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False, verbos
         Whether to compare NaN's as equal.  If True, NaN's in `a` will be
         considered equal to NaN's in `b` in the output array.
     verbose : bool
-        If the return value is False, TODO finish writing this.
+        If the return value is False, all the non-close values are printed,
+        iterating through the non-close indices in order, displaying the
+        array values along with the index, with a separate line for each
+        pair of values.
 
     See Also
     --------
@@ -779,5 +781,5 @@ def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False, verbos
         print('Non-close values:')
         for i in np.argwhere(close == False):
             i = tuple(i)
-            print('\n    x[{0}]={1}\n    y[{0}]={2}'.format(i, a[i], b[i]))
+            print('\n    a[{0}]={1}\n    b[{0}]={2}'.format(i, a[i], b[i]))
     return result
