@@ -54,7 +54,6 @@ PyQuaternion_FromQuaternion(quaternion q) {
   return (PyObject*)p;
 }
 
-// TODO: Add list/tuple conversions
 #define PyQuaternion_AsQuaternion(q, o)                                 \
   /* fprintf (stderr, "file %s, line %d., PyQuaternion_AsQuaternion\n", __FILE__, __LINE__); */ \
   if(PyQuaternion_Check(o)) {                                           \
