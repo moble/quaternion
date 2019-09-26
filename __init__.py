@@ -422,9 +422,22 @@ def as_euler_angles(q):
     alpha_beta_gamma = np.empty(q.shape + (3,), dtype=np.float)
     n = np.norm(q)
     q = as_float_array(q)
-    alpha_beta_gamma[..., 0] = np.arctan2(q[..., 3], q[..., 0]) + np.arctan2(-q[..., 1], q[..., 2])
+
+    # alpha_beta_gamma[..., 0] = np.arctan2(q[..., 3], q[..., 0]) + np.arctan2(-q[..., 1], q[..., 2])
+    # alpha_beta_gamma[..., 1] = 2*np.arccos(np.sqrt((q[..., 0]**2 + q[..., 3]**2)/n))
+    # alpha_beta_gamma[..., 2] = np.arctan2(q[..., 3], q[..., 0]) - np.arctan2(-q[..., 1], q[..., 2])
+
+    # np.arctan(q[..., 3]/q[..., 0]) + np.arctan(-q[..., 1]/q[..., 2])
+    # = np.arctan( (q[..., 3]/q[..., 0] + -q[..., 1]/q[..., 2]) / (1 - q[..., 3]/q[..., 0] * -q[..., 1]/q[..., 2]) )
+    # = np.arctan( (q[..., 3]*q[..., 2] - q[..., 1]*q[..., 0]) / (q[..., 0]*q[..., 2] + q[..., 3]*q[..., 1]) )
+    alpha_beta_gamma[..., 0] = np.arctan2(q[..., 2]*q[..., 3] - q[..., 0]*q[..., 1], q[..., 0]*q[..., 2] + q[..., 1]*q[..., 3])
     alpha_beta_gamma[..., 1] = 2*np.arccos(np.sqrt((q[..., 0]**2 + q[..., 3]**2)/n))
-    alpha_beta_gamma[..., 2] = np.arctan2(q[..., 3], q[..., 0]) - np.arctan2(-q[..., 1], q[..., 2])
+    # np.arctan(q[..., 3]/q[..., 0]) - np.arctan(-q[..., 1]/q[..., 2])
+    # = np.arctan(q[..., 3]/q[..., 0]) + np.arctan(q[..., 1]/q[..., 2])
+    # = np.arctan( (q[..., 3]/q[..., 0] + q[..., 1]/q[..., 2]) / (1 - q[..., 3]/q[..., 0] * q[..., 1]/q[..., 2]) )
+    # = np.arctan( (q[..., 2]*q[..., 3] + q[..., 0]*q[..., 1]) / (q[..., 0]*q[..., 2] - q[..., 3]*q[..., 1]) )
+    alpha_beta_gamma[..., 2] = np.arctan2(q[..., 2]*q[..., 3] + q[..., 0]*q[..., 1], q[..., 0]*q[..., 2] - q[..., 3]*q[..., 1])
+
     return alpha_beta_gamma
 
 
