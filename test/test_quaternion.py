@@ -425,6 +425,7 @@ def test_as_spherical_coords(Rs):
                      for i in range(5000)]
     for vartheta, varphi in random_angles:
         vartheta2, varphi2 = quaternion.as_spherical_coords(quaternion.from_spherical_coords(vartheta, varphi))
+        varphi2 = (varphi2 + 2*np.pi) if varphi2 < 0 else varphi2
         assert abs(vartheta - vartheta2) < 1e-12, ((vartheta, varphi), (vartheta2, varphi2))
         assert abs(varphi - varphi2) < 1e-12, ((vartheta, varphi), (vartheta2, varphi2))
     # Now test that arbitrary rotors rotate z to the appropriate location
@@ -582,7 +583,7 @@ def test_quaternion_absolute(Qs):
     for q, a in [(Qs[q_0], 0.0), (Qs[q_1], 1.0), (Qs[x], 1.0), (Qs[y], 1.0), (Qs[z], 1.0),
                  (Qs[Q], np.sqrt(Qs[Q].w ** 2 + Qs[Q].x ** 2 + Qs[Q].y ** 2 + Qs[Q].z ** 2)),
                  (Qs[Qbar], np.sqrt(Qs[Q].w ** 2 + Qs[Q].x ** 2 + Qs[Q].y ** 2 + Qs[Q].z ** 2))]:
-        assert q.abs() == a
+        assert np.allclose(q.abs(), a)
 
 
 def test_quaternion_norm(Qs):
@@ -596,7 +597,7 @@ def test_quaternion_norm(Qs):
     for q, a in [(Qs[q_0], 0.0), (Qs[q_1], 1.0), (Qs[x], 1.0), (Qs[y], 1.0), (Qs[z], 1.0),
                  (Qs[Q], Qs[Q].w ** 2 + Qs[Q].x ** 2 + Qs[Q].y ** 2 + Qs[Q].z ** 2),
                  (Qs[Qbar], Qs[Q].w ** 2 + Qs[Q].x ** 2 + Qs[Q].y ** 2 + Qs[Q].z ** 2)]:
-        assert q.norm() == a
+        assert np.allclose(q.norm(), a)
 
 
 # Unary quaternion returners
