@@ -179,6 +179,7 @@ UNARY_QUATERNION_RETURNER(negative)
 UNARY_QUATERNION_RETURNER(conjugate)
 UNARY_QUATERNION_RETURNER(inverse)
 UNARY_QUATERNION_RETURNER(sqrt)
+UNARY_QUATERNION_RETURNER(square)
 UNARY_QUATERNION_RETURNER(log)
 UNARY_QUATERNION_RETURNER(exp)
 UNARY_QUATERNION_RETURNER(normalized)
@@ -446,8 +447,12 @@ PyMethodDef pyquaternion_methods[] = {
    "Return the complex conjugate of the quaternion"},
   {"inverse", pyquaternion_inverse, METH_NOARGS,
    "Return the inverse of the quaternion"},
+  {"reciprocal", pyquaternion_inverse, METH_NOARGS,
+   "Return the reciprocal of the quaternion"},
   {"sqrt", pyquaternion_sqrt, METH_NOARGS,
    "Return the square-root of the quaternion"},
+  {"square", pyquaternion_square, METH_NOARGS,
+   "Return the square of the quaternion"},
   {"log", pyquaternion_log, METH_NOARGS,
    "Return the logarithm (base e) of the quaternion"},
   {"exp", pyquaternion_exp, METH_NOARGS,
@@ -1109,10 +1114,12 @@ UNARY_UFUNC(norm, npy_double)
 UNARY_UFUNC(absolute, npy_double)
 UNARY_UFUNC(angle, npy_double)
 UNARY_UFUNC(sqrt, quaternion)
+UNARY_UFUNC(square, quaternion)
 UNARY_UFUNC(log, quaternion)
 UNARY_UFUNC(exp, quaternion)
 UNARY_UFUNC(negative, quaternion)
 UNARY_UFUNC(conjugate, quaternion)
+UNARY_GEN_UFUNC(reciprocal, inverse, quaternion)
 UNARY_GEN_UFUNC(invert, inverse, quaternion)
 UNARY_UFUNC(normalized, quaternion)
 UNARY_UFUNC(x_parity_conjugate, quaternion)
@@ -1127,7 +1134,17 @@ UNARY_UFUNC(z_parity_antisymmetric_part, quaternion)
 UNARY_UFUNC(parity_conjugate, quaternion)
 UNARY_UFUNC(parity_symmetric_part, quaternion)
 UNARY_UFUNC(parity_antisymmetric_part, quaternion)
-
+static void
+quaternion_positive_ufunc(char** args, npy_intp* dimensions, npy_intp* steps, void* NPY_UNUSED(data)) {
+  char *ip1 = args[0], *op1 = args[1];
+  npy_intp is1 = steps[0], os1 = steps[1];
+  npy_intp n = dimensions[0];
+  npy_intp i;
+  for(i = 0; i < n; i++, ip1 += is1, op1 += os1) {
+    const quaternion in1 = *(quaternion *)ip1;
+    *((quaternion *)op1) = in1;
+  }
+}
 
 // This is a macro that will be used to define the various basic binary
 // quaternion functions, so that they can be applied quickly to a
@@ -1499,10 +1516,15 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   // quat -> quat
   arg_types[0] = quaternion_descr->type_num;
   arg_types[1] = quaternion_descr->type_num;
-  REGISTER_NEW_UFUNC_GENERAL(sqrt_of_rotor, sqrt, 1, 1,
-                             "Return square-root of rotor.  Assumes input has unit norm.\n");
+  REGISTER_UFUNC(sqrt);
+  REGISTER_UFUNC(square);
   REGISTER_UFUNC(log);
   REGISTER_UFUNC(exp);
+  REGISTER_UFUNC(negative);
+  REGISTER_UFUNC(positive);
+  REGISTER_UFUNC(conjugate);
+  REGISTER_UFUNC(invert);
+  REGISTER_UFUNC(reciprocal);
   REGISTER_NEW_UFUNC(normalized, 1, 1,
                      "Normalize all quaternions in this array\n");
   REGISTER_NEW_UFUNC(x_parity_conjugate, 1, 1,
@@ -1529,9 +1551,6 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
                      "Part invariant under reversal of all vectors (note spinorial character)\n");
   REGISTER_NEW_UFUNC(parity_antisymmetric_part, 1, 1,
                      "Part anti-invariant under reversal of all vectors (note spinorial character)\n");
-  REGISTER_UFUNC(negative);
-  REGISTER_UFUNC(conjugate);
-  REGISTER_UFUNC(invert);
 
   // quat, quat -> bool
   arg_types[0] = quaternion_descr->type_num;

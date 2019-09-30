@@ -233,7 +233,7 @@ def test_as_rotation_matrix(Rs):
         return np.array([(quat * v * quat.inverse()).vec for v in [quaternion.x, quaternion.y, quaternion.z]]).T
 
     def quat_mat_vec(quats):
-        mat_vec = np.array([quaternion.as_float_array(quats * v * np.invert(quats))[..., 1:]
+        mat_vec = np.array([quaternion.as_float_array(quats * v * np.reciprocal(quats))[..., 1:]
                             for v in [quaternion.x, quaternion.y, quaternion.z]])
         return np.transpose(mat_vec, tuple(range(mat_vec.ndim))[1:-1]+(-1, 0))
 
@@ -638,6 +638,14 @@ def test_quaternion_sqrt(Qs):
     assert quaternion.quaternion(0, 0, 0, 1.1*sqrt_dbl_min).sqrt() != quaternion.quaternion(0, 0, 0, 0)
 
 
+def test_quaternion_square(Qs):
+    square_precision = 1.e-15
+    for q in Qs[Qs_finite]:
+        assert np.norm(q*q - q**2) < square_precision
+        a = np.array([q])
+        assert np.norm(a**2 - np.array([q**2])) < square_precision
+
+
 def test_quaternion_log_exp(Qs):
     qlogexp_precision = 4.e-15
     assert (Qs[Q].log() - Qs[Qlog]).abs() < qlogexp_precision
@@ -782,6 +790,10 @@ def test_quaternion_multiply_ufunc(Qs):
 
 
 def test_quaternion_divide(Qs):
+    # Check identity between "inverse" and "reciprocal"
+    for q in Qs[Qs_finitenonzero]:
+        assert q.inverse() == q.reciprocal()
+
     # Check scalar division
     for q in Qs[Qs_finitenonzero]:
         assert allclose(q / q, quaternion.one)
@@ -1251,6 +1263,108 @@ def test_ufuncs(Rs, Qs):
     assert np.allclose(np.abs(~Qs[Qs_finitenonzero]
                               - np.array([q.inverse() for q in Qs[Qs_finitenonzero]])),
                        np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
+
+
+@pytest.mark.parametrize(
+    ("ufunc",),
+    [
+        # Complete list obtained from from https://docs.scipy.org/doc/numpy/reference/ufuncs.html on Sep 30, 2019
+        (np.add,),
+        (np.subtract,),
+        (np.multiply,),
+        (np.divide,),
+        (np.true_divide,),
+        (np.floor_divide,),
+        (np.negative,),
+        (np.positive,),
+        (np.power,),
+        (np.absolute,),
+        (np.conj,),
+        (np.conjugate,),
+        (np.exp,),
+        (np.log,),
+        (np.sqrt,),
+        (np.square,),
+        (np.reciprocal,),
+        (np.invert,),
+        (np.less,),
+        (np.less_equal,),
+        (np.not_equal,),
+        (np.equal,),
+        (np.isfinite,),
+        (np.isinf,),
+        (np.isnan,),
+        (np.copysign,),
+        pytest.param(np.logaddexp, marks=pytest.mark.xfail),
+        pytest.param(np.logaddexp2, marks=pytest.mark.xfail),
+        pytest.param(np.remainder, marks=pytest.mark.xfail),
+        pytest.param(np.mod, marks=pytest.mark.xfail),
+        pytest.param(np.fmod, marks=pytest.mark.xfail),
+        pytest.param(np.divmod, marks=pytest.mark.xfail),
+        pytest.param(np.fabs, marks=pytest.mark.xfail),
+        pytest.param(np.rint, marks=pytest.mark.xfail),
+        pytest.param(np.sign, marks=pytest.mark.xfail),
+        pytest.param(np.heaviside, marks=pytest.mark.xfail),
+        pytest.param(np.exp2, marks=pytest.mark.xfail),
+        pytest.param(np.log2, marks=pytest.mark.xfail),
+        pytest.param(np.log10, marks=pytest.mark.xfail),
+        pytest.param(np.expm1, marks=pytest.mark.xfail),
+        pytest.param(np.log1p, marks=pytest.mark.xfail),
+        pytest.param(np.cbrt, marks=pytest.mark.xfail),
+        pytest.param(np.gcd, marks=pytest.mark.xfail),
+        pytest.param(np.lcm, marks=pytest.mark.xfail),
+        pytest.param(np.sin, marks=pytest.mark.xfail),
+        pytest.param(np.cos, marks=pytest.mark.xfail),
+        pytest.param(np.tan, marks=pytest.mark.xfail),
+        pytest.param(np.arcsin, marks=pytest.mark.xfail),
+        pytest.param(np.arccos, marks=pytest.mark.xfail),
+        pytest.param(np.arctan, marks=pytest.mark.xfail),
+        pytest.param(np.arctan2, marks=pytest.mark.xfail),
+        pytest.param(np.hypot, marks=pytest.mark.xfail),
+        pytest.param(np.sinh, marks=pytest.mark.xfail),
+        pytest.param(np.cosh, marks=pytest.mark.xfail),
+        pytest.param(np.tanh, marks=pytest.mark.xfail),
+        pytest.param(np.arcsinh, marks=pytest.mark.xfail),
+        pytest.param(np.arccosh, marks=pytest.mark.xfail),
+        pytest.param(np.arctanh, marks=pytest.mark.xfail),
+        pytest.param(np.deg2rad, marks=pytest.mark.xfail),
+        pytest.param(np.rad2deg, marks=pytest.mark.xfail),
+        pytest.param(np.bitwise_and, marks=pytest.mark.xfail),
+        pytest.param(np.bitwise_or, marks=pytest.mark.xfail),
+        pytest.param(np.bitwise_xor, marks=pytest.mark.xfail),
+        pytest.param(np.left_shift, marks=pytest.mark.xfail),
+        pytest.param(np.right_shift, marks=pytest.mark.xfail),
+        pytest.param(np.greater, marks=pytest.mark.xfail),
+        pytest.param(np.greater_equal, marks=pytest.mark.xfail),
+        pytest.param(np.logical_and, marks=pytest.mark.xfail),
+        pytest.param(np.logical_or, marks=pytest.mark.xfail),
+        pytest.param(np.logical_xor, marks=pytest.mark.xfail),
+        pytest.param(np.logical_not, marks=pytest.mark.xfail),
+        pytest.param(np.maximum, marks=pytest.mark.xfail),
+        pytest.param(np.minimum, marks=pytest.mark.xfail),
+        pytest.param(np.fmax, marks=pytest.mark.xfail),
+        pytest.param(np.fmin, marks=pytest.mark.xfail),
+        pytest.param(np.isnat, marks=pytest.mark.xfail),
+        pytest.param(np.fabs, marks=pytest.mark.xfail),
+        pytest.param(np.signbit, marks=pytest.mark.xfail),
+        pytest.param(np.nextafter, marks=pytest.mark.xfail),
+        pytest.param(np.spacing, marks=pytest.mark.xfail),
+        pytest.param(np.modf, marks=pytest.mark.xfail),
+        pytest.param(np.ldexp, marks=pytest.mark.xfail),
+        pytest.param(np.frexp, marks=pytest.mark.xfail),
+        pytest.param(np.fmod, marks=pytest.mark.xfail),
+        pytest.param(np.floor, marks=pytest.mark.xfail),
+        pytest.param(np.ceil, marks=pytest.mark.xfail),
+        pytest.param(np.trunc, marks=pytest.mark.xfail),
+    ],
+    ids=lambda uf:uf.__name__
+)
+def test_ufunc_existence(ufunc):
+    qarray = Qs_array[Qs_finitenonzero]
+    if ufunc.nin == 1:
+        result = ufunc(qarray)
+    elif ufunc.nin == 2:
+        result = ufunc(qarray, qarray)
 
 
 def test_numpy_array_conversion(Qs):

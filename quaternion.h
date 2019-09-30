@@ -322,6 +322,9 @@ extern "C" {
     };
     return r;
   }
+  static NPY_INLINE quaternion quaternion_square(quaternion q) {
+    return quaternion_multiply(q, q);
+  }
   static NPY_INLINE void quaternion_inplace_multiply(quaternion* q1a, quaternion q2) {
     quaternion q1 = {q1a->w, q1a->x, q1a->y, q1a->z};
     q1a->w = q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z;
