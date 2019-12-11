@@ -5,7 +5,7 @@ from __future__ import division, print_function, absolute_import
 
 import numpy as np
 
-from .calculus import definite_integral
+from .calculus import fd_definite_integral
 
 
 def mean_rotor_in_chordal_metric(R, t=None):
@@ -24,7 +24,7 @@ def mean_rotor_in_chordal_metric(R, t=None):
     """
     if t is None:
         return np.sum(R).normalized()
-    mean = definite_integral(R, t)
+    mean = fd_definite_integral(R, t)
     return mean.normalized()
 
 
