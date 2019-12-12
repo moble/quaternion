@@ -1472,6 +1472,23 @@ def test_integrate_angular_velocity():
     assert np.max(phi_Delta) < 1e-4, np.max(phi_Delta)
 
 
+def test_mean_rotor_in_chordal_metric():
+    # Test interpolation of some random constant quaternion
+    q = quaternion.quaternion(*np.random.rand(4)).normalized()
+    qs = np.array([q]*10)
+    ts = np.linspace(0.1, 23.4, num=10)
+    for length in range(1, 4):
+        mean1 = quaternion.mean_rotor_in_chordal_metric(qs[:length])
+        assert np.abs(q-mean1) < 1e-15, (q, mean1, length)
+        with pytest.raises(ValueError):
+            quaternion.mean_rotor_in_chordal_metric(qs[:length], ts[:length])
+    for length in range(4, 11):
+        mean1 = quaternion.mean_rotor_in_chordal_metric(qs[:length])
+        assert np.abs(q-mean1) < 1e-15, (q, mean1, length)
+        mean2 = quaternion.mean_rotor_in_chordal_metric(qs[:length], ts[:length])
+        assert np.abs(q-mean2) < 1e-15, (q, mean2, length)
+
+
 def test_numpy_save_and_load():
     import tempfile
     a = quaternion.as_quat_array(np.random.rand(5,3,4))
