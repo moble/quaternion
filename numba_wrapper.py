@@ -6,7 +6,10 @@ from __future__ import division, print_function, absolute_import
 ## Allow the code to function without numba, but discourage it
 try:
     from numba import njit, jit, vectorize, int64, float64, complex128
-    from numba.utils import IS_PY3
+    try:
+        from numba.utils import IS_PY3
+    except ModuleNotFoundError:
+        IS_PY3 = (sys.version_info[:2] >= (3, 0))
     GOT_NUMBA = True
 except ImportError:
     import warnings
