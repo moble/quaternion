@@ -2,18 +2,16 @@
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 from __future__ import division, print_function, absolute_import
+import sys
+
+IS_PY3 = (sys.version_info[:2] >= (3, 0))
 
 ## Allow the code to function without numba, but discourage it
 try:
     from numba import njit, jit, vectorize, int64, float64, complex128
-    try:
-        from numba.utils import IS_PY3
-    except ModuleNotFoundError:
-        IS_PY3 = (sys.version_info[:2] >= (3, 0))
     GOT_NUMBA = True
 except ImportError:
     import warnings
-    import sys
     warning_text = \
         "\n\n" + "!" * 53 + "\n" + \
         "Could not import from numba, which means that some\n" + \
@@ -31,7 +29,6 @@ except ImportError:
     int64 = int
     float64 = float
     complex128 = complex
-    IS_PY3 = (sys.version_info[:2] >= (3, 0))
     GOT_NUMBA = False
 
 if IS_PY3:
