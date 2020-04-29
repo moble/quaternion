@@ -109,9 +109,12 @@ if __name__ == "__main__":
                 try:
                     __builtins__.__NUMPY_SETUP__ = False
                 except:
-                    # For python 3
-                    import builtins
-                    builtins.__NUMPY_SETUP__ = False
+                    try:
+                        # For python 3
+                        import builtins
+                        builtins.__NUMPY_SETUP__ = False
+                    except:
+                        pass
                 import numpy
                 self.include_dirs.append(numpy.get_include())
                 if numpy.__dict__.get('quaternion') is not None:
