@@ -6,6 +6,7 @@
 # Construct the version number from the date and time this python version was created.
 from os import environ
 from sys import platform
+from warnings import warn
 version = None
 on_windows = ('win' in platform.lower() and not 'darwin' in platform.lower())
 if "package_version" in environ:
@@ -114,7 +115,7 @@ if __name__ == "__main__":
                         import builtins
                         builtins.__NUMPY_SETUP__ = False
                     except:
-                        pass
+                        warn("Skipping numpy hack; if installation fails, try installing numpy first")
                 import numpy
                 self.include_dirs.append(numpy.get_include())
                 if numpy.__dict__.get('quaternion') is not None:
