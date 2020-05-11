@@ -42,14 +42,16 @@ def squad(R_in, t_in, t_out):
     of a cubic spline, except that the interpolant is confined to the
     rotor manifold in a natural way.  Alternative methods involving
     interpolation of other coordinates on the rotation group or
-    normalization of interpolated values give bad results.  The
-    results from this method are as natural as any, and are continuous
-    in first and second derivatives.
+    normalization of interpolated values give bad results.  The results
+    from this method are as natural as any, and are continuous in first
+    and second derivatives.
 
-    The input `R_in` rotors are assumed to be reasonably continuous
-    (no sign flips), and the input `t` arrays are assumed to be
-    sorted.  No checking is done for either case, and you may get
-    silently bad results if these conditions are violated.
+    The input `R_in` rotors are assumed to be reasonably continuous (no
+    sign flips), and the input `t` arrays are assumed to be sorted.  No
+    checking is done for either case, and you may get silently bad
+    results if these conditions are violated.  The first dimension of
+    `R_in` must have the same size as `t_in`, but may have additional
+    axes following.
 
     This function simplifies the calling, compared to `squad_evaluate`
     (which takes a set of four quaternions forming the edges of the
@@ -77,6 +79,10 @@ def squad(R_in, t_in, t_out):
     # np.clip(i_in_for_out, 0, len(t_in) - 1, out=i_in_for_out)
     i_in_for_out = t_in.searchsorted(t_out, side='right')-1
 
+    # Compute shapes used to broadcast `t` arrays against `R` arrays
+    t_in_broadcast_shape = t_in.shape + (1,)*len(R_in.shape[1:])
+    t_out_broadcast_shape = t_out.shape + (1,)*len(R_in.shape[1:])
+
     # Now, for each index `i` in `i_in`, we need to compute the
     # interpolation "coefficients" (`A_i`, `B_ip1`).
     #
@@ -88,10 +94,11 @@ def squad(R_in, t_in, t_out):
     # any case, it might be useful to test again.
     #
     A = R_in * np.exp((- np.log((~R_in) * np.roll(R_in, -1))
-                       + np.log((~np.roll(R_in, 1)) * R_in) * ((np.roll(t_in, -1) - t_in) / (t_in - np.roll(t_in, 1)))
+                       + np.log((~np.roll(R_in, 1)) * R_in)
+                       * np.reshape((np.roll(t_in, -1) - t_in) / (t_in - np.roll(t_in, 1)), t_in_broadcast_shape)
                        ) * 0.25)
     B = np.roll(R_in, -1) * np.exp((np.log((~np.roll(R_in, -1)) * np.roll(R_in, -2))
-                                    * ((np.roll(t_in, -1) - t_in) / (np.roll(t_in, -2) - np.roll(t_in, -1)))
+                                    * np.reshape((np.roll(t_in, -1) - t_in) / (np.roll(t_in, -2) - np.roll(t_in, -1)), t_in_broadcast_shape)
                                     - np.log((~R_in) * np.roll(R_in, -1))) * -0.25)
 
     # Correct the first and last A time steps, and last two B time steps.  We extend R_in with the following wrap-around
@@ -147,7 +154,7 @@ def squad(R_in, t_in, t_out):
     R_ip1 = np.array(R_ip1[i_in_for_out])
     t_inp1 = np.roll(t_in, -1)
     t_inp1[-1] = t_in[-1] + (t_in[-1] - t_in[-2])
-    tau = (t_out - t_in[i_in_for_out]) / ((t_inp1 - t_in)[i_in_for_out])
+    tau = np.reshape((t_out - t_in[i_in_for_out]) / ((t_inp1 - t_in)[i_in_for_out]), t_out_broadcast_shape)
     # tau = (t_out - t_in[i_in_for_out]) / ((np.roll(t_in, -1) - t_in)[i_in_for_out])
     R_out = np.squad_vectorized(tau, R_in[i_in_for_out], A[i_in_for_out], B[i_in_for_out], R_ip1)
 
