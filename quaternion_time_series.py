@@ -69,6 +69,10 @@ def squad(R_in, t_in, t_out):
         The times to which R_in should be interpolated
 
     """
+    from functools import partial
+
+    roll = partial(np.roll, axis=0)
+
     if R_in.size == 0 or t_out.size == 0:
         return np.array((), dtype=np.quaternion)
 
@@ -93,13 +97,13 @@ def squad(R_in, t_in, t_out):
     # though the difference is probably totally washed out here.  In
     # any case, it might be useful to test again.
     #
-    A = R_in * np.exp((- np.log((~R_in) * np.roll(R_in, -1))
-                       + np.log((~np.roll(R_in, 1)) * R_in)
-                       * np.reshape((np.roll(t_in, -1) - t_in) / (t_in - np.roll(t_in, 1)), t_in_broadcast_shape)
+    A = R_in * np.exp((- np.log((~R_in) * roll(R_in, -1))
+                       + np.log((~roll(R_in, 1)) * R_in)
+                       * np.reshape((roll(t_in, -1) - t_in) / (t_in - roll(t_in, 1)), t_in_broadcast_shape)
                        ) * 0.25)
-    B = np.roll(R_in, -1) * np.exp((np.log((~np.roll(R_in, -1)) * np.roll(R_in, -2))
-                                    * np.reshape((np.roll(t_in, -1) - t_in) / (np.roll(t_in, -2) - np.roll(t_in, -1)), t_in_broadcast_shape)
-                                    - np.log((~R_in) * np.roll(R_in, -1))) * -0.25)
+    B = roll(R_in, -1) * np.exp((np.log((~roll(R_in, -1)) * roll(R_in, -2))
+                                    * np.reshape((roll(t_in, -1) - t_in) / (roll(t_in, -2) - roll(t_in, -1)), t_in_broadcast_shape)
+                                    - np.log((~R_in) * roll(R_in, -1))) * -0.25)
 
     # Correct the first and last A time steps, and last two B time steps.  We extend R_in with the following wrap-around
     # values:
@@ -147,15 +151,15 @@ def squad(R_in, t_in, t_out):
 
     # Use the coefficients at the corresponding t_out indices to
     # compute the squad interpolant
-    # R_ip1 = np.array(np.roll(R_in, -1)[i_in_for_out])
+    # R_ip1 = np.array(roll(R_in, -1)[i_in_for_out])
     # R_ip1[-1] = R_in[-1]*(~R_in[-2])*R_in[-1]
-    R_ip1 = np.roll(R_in, -1)
+    R_ip1 = roll(R_in, -1)
     R_ip1[-1] = R_in[-1]*(~R_in[-2])*R_in[-1]
     R_ip1 = np.array(R_ip1[i_in_for_out])
-    t_inp1 = np.roll(t_in, -1)
+    t_inp1 = roll(t_in, -1)
     t_inp1[-1] = t_in[-1] + (t_in[-1] - t_in[-2])
     tau = np.reshape((t_out - t_in[i_in_for_out]) / ((t_inp1 - t_in)[i_in_for_out]), t_out_broadcast_shape)
-    # tau = (t_out - t_in[i_in_for_out]) / ((np.roll(t_in, -1) - t_in)[i_in_for_out])
+    # tau = (t_out - t_in[i_in_for_out]) / ((roll(t_in, -1) - t_in)[i_in_for_out])
     R_out = np.squad_vectorized(tau, R_in[i_in_for_out], A[i_in_for_out], B[i_in_for_out], R_ip1)
 
     return R_out

@@ -1140,6 +1140,22 @@ def test_squad(Rs):
         assert np.all(np.abs(R_out_squad - R_out_slerp) < squad_precision)
         # assert False # Test unequal input time steps, and correct squad output [0,-2,-1]
 
+    for i in range(len(ones)):
+        R3 = np.roll(ones, i)[:3]
+        R_in = np.array([[slerp_evaluate(quaternion.one, R, t) for R in R3] for t in t_in])
+        R_out_squad = quaternion.squad(R_in, t_in, t_out)
+        R_out_slerp = np.array([[slerp_evaluate(quaternion.one, R, t) for R in R3] for t in t_out])
+        assert np.all(np.abs(R_out_squad - R_out_slerp) < squad_precision), (
+            R,
+            np.argmax(np.abs(R_out_squad - R_out_slerp)),
+            len(R_out_squad),
+            R_out_squad[np.argmax(np.abs(R_out_squad - R_out_slerp))-2:np.argmax(np.abs(R_out_squad - R_out_slerp))+3],
+            R_out_slerp[np.argmax(np.abs(R_out_squad - R_out_slerp))-2:np.argmax(np.abs(R_out_squad - R_out_slerp))+3],
+        )
+        R_out_squad = quaternion.squad(R_in, t_in, t_out2)
+        R_out_slerp = np.array([[slerp_evaluate(quaternion.one, R, t) for R in R3] for t in t_out2])
+        assert np.all(np.abs(R_out_squad - R_out_slerp) < squad_precision)
+
 
 @pytest.mark.xfail
 def test_arrfuncs():
