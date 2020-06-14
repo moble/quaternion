@@ -4,4 +4,4 @@ numpydoc==0.8.0
 recommonmark==0.5.0
 numpy>=1.13
 scipy
-numba
+numba>=0.49.1

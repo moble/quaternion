@@ -75,7 +75,7 @@ import numba
 import inspect
 
 def process_numba_docstring(app, what, name, obj, options, signature, return_annotation):
-    if type(obj) is not numba.targets.registry.CPUDispatcher:
+    if type(obj) is not numba.core.registry.CPUDispatcher:
         return (signature, return_annotation)
     else:
         original = obj.py_func
