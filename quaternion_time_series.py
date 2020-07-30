@@ -240,6 +240,7 @@ def integrate_angular_velocity(Omega, t0, t1, R0=None, tolerance=1e-12):
     """
     import warnings
     from scipy.integrate import ode
+    from scipy.interpolate import CubicSpline
 
     if R0 is None:
         R0 = quaternion.one
@@ -248,12 +249,9 @@ def integrate_angular_velocity(Omega, t0, t1, R0=None, tolerance=1e-12):
 
     try:
         t_Omega, v = Omega
-        from scipy.interpolate import InterpolatedUnivariateSpline
-        Omega_x = InterpolatedUnivariateSpline(t_Omega, v[:, 0])
-        Omega_y = InterpolatedUnivariateSpline(t_Omega, v[:, 1])
-        Omega_z = InterpolatedUnivariateSpline(t_Omega, v[:, 2])
+        Omega = CubicSpline(t_Omega, v)
         def Omega_func(t, R):
-            return [Omega_x(t), Omega_y(t), Omega_z(t)]
+            return Omega(t)
         Omega_func(t0, R0)
         input_is_tabulated = True
     except (TypeError, ValueError):
@@ -328,27 +326,23 @@ def minimal_rotation(R, t, iterations=2):
         Repeat the minimization to refine the result
 
     """
-    from scipy.interpolate import InterpolatedUnivariateSpline as spline
+    from scipy.interpolate import CubicSpline
     if iterations == 0:
         return R
     R = quaternion.as_float_array(R)
-    Rdot = np.empty_like(R)
-    for i in range(4):
-        Rdot[:, i] = spline(t, R[:, i]).derivative()(t)
+    Rdot = CubicSpline(t, R).derivative()(t)
     R = quaternion.from_float_array(R)
     Rdot = quaternion.from_float_array(Rdot)
     halfgammadot = quaternion.as_float_array(Rdot * quaternion.z * np.conjugate(R))[:, 0]
-    halfgamma = spline(t, halfgammadot).antiderivative()(t)
+    halfgamma = CubicSpline(t, halfgammadot).antiderivative()(t)
     Rgamma = np.exp(quaternion.z * halfgamma)
     return minimal_rotation(R * Rgamma, t, iterations=iterations-1)
 
 
 def angular_velocity(R, t):
-    from scipy.interpolate import InterpolatedUnivariateSpline as spline
+    from scipy.interpolate import CubicSpline
     R = quaternion.as_float_array(R)
-    Rdot = np.empty_like(R)
-    for i in range(4):
-        Rdot[:, i] = spline(t, R[:, i]).derivative()(t)
+    Rdot = CubicSpline(t, R).derivative()(t)
     R = quaternion.from_float_array(R)
     Rdot = quaternion.from_float_array(Rdot)
     return quaternion.as_float_array(2*Rdot/R)[:, 1:]
