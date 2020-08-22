@@ -21,6 +21,7 @@ jobs:
     env:
       CIBW_TEST_REQUIRES: pytest numpy scipy numba
       CIBW_TEST_COMMAND: pytest
+      CIBW_DEPENDENCY_VERSIONS=./constraints.txt
 
     steps:
       - uses: actions/checkout@v2
