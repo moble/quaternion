@@ -9,10 +9,10 @@ homepage = "https://github.com/moble/quaternion"
 build = "build.py"
 
 [tool.poetry.dependencies]
-# python = ">= 3.5"
+python = ">= 3.6"
 numpy = ">= 1.13"
 scipy = ">= 0.18.0"
-numba = {version = ">= 0.50", python = ">=3.6"}
+numba = ">= 0.50"
 importlib-metadata = {version = ">= 1.0", python = "<3.8"}
 # mkdocs = {version = "^1.1.2", optional = true}
 # mktheapidocs = {extras = ["plugin"], version = "^0.2.0", optional = true}
@@ -22,14 +22,8 @@ numpydoc = {version = "0.8.0", optional = true}
 recommonmark = {version = "0.5.0", optional = true}
 
 [tool.poetry.dev-dependencies]
-pytest = [
-    {version = "^6.0", python = "^3.5"},
-    {version = "^4.6", python = "<3.5"}
-]
-pytest-cov = [
-    {version = "^2.10.1", python = "^3.5"},
-    {version = "<2.9.0", python = "<3.5"}
-]
+pytest = "^6.0"
+pytest-cov = "^2.10.1"
 
 [tool.poetry.extras]
 docs = ["sphinx", "sphinx_rtd_theme", "numpydoc", "recommonmark"]
