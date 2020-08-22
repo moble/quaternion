@@ -1,2 +1,46 @@
+[tool.poetry]
+name = "quaternion"
+version = "2021.0.0"
+description = "Add a quaternion dtype to NumPy"
+readme = "README.md"
+license = "MIT"
+authors = ["Michael Boyle <michael.oliver.boyle@gmail.com>"]
+homepage = "https://github.com/moble/quaternion"
+
+[tool.poetry.dependencies]
+numpy = ">= 1.13"
+scipy = ">= 0.18.0"
+numba = [
+    {version = "< 0.49.0", python = "^2.7"},
+    {version = ">= 0.50", python = "^3.4"}
+]
+importlib-metadata = {version = ">= 1.0", python = "<3.8"}
+mkdocs = {version = "^1.1.2", optional = true}
+mktheapidocs = {extras = ["plugin"], version = "^0.2.0", optional = true}
+sphinx = {version = "1.8.4", optional = true}
+sphinx_rtd_theme = {optional = true}
+numpydoc = {version = "0.8.0", optional = true}
+recommonmark = {version = "0.5.0", optional = true}
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.0"
+pytest-cov = "^2.10.1"
+black = "^19.10b0"
+
+[tool.poetry.extras]
+docs = ["sphinx", "sphinx_rtd_theme", "numpydoc", "recommonmark"]
+mkdocs = ["mkdocs", "mktheapidocs"]
+
+[tool.black]
+line-length = 120
+target-version = ['py36']
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+norecursedirs = ".* build dist *.egg-info install ENV"
+junit_family="xunit2"
+addopts = "-v --tb=short --doctest-glob='' --cov --cov-branch --cov-report xml"
+
 [build-system]
-requires = ["setuptools", "wheel", "numpy>=1.13"]
+requires = ["poetry>=1.0.10", "numpy>=1.13"]
+build-backend = "poetry.masonry.api"
