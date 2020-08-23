@@ -3,7 +3,10 @@ from os.path import join
 from sys import platform
 import numpy as np
 
-on_windows = ('win' in platform.lower() and not 'darwin' in platform.lower())
+if 'win' in platform.lower() and not 'darwin' in platform.lower():
+    extra_compile_args = ['/O2']
+else:
+    extra_compile_args = ['-O3', '-w']
 
 extensions = [
     Extension(
@@ -18,7 +21,7 @@ extensions = [
             'quaternion/numpy_quaternion.c'
         ],
         include_dirs=[np.get_include()],
-        extra_compile_args=['/O2' if on_windows else '-O3'],
+        extra_compile_args=extra_compile_args,
     )
 ]
 
