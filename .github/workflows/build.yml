@@ -24,7 +24,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: -1
       # CIBW_TEST_REQUIRES: pytest
       # CIBW_TEST_COMMAND: pytest
-      CIBW_REPAIR_WHEEL_COMMAND_LINUX: "" # ls /tmp/cibuildwheel/built_wheel ; auditwheel repair -w {dest_dir} {wheel}"
+      CIBW_REPAIR_WHEEL_COMMAND_LINUX: "ls /tmp/cibuildwheel/built_wheel ; auditwheel -h ; auditwheel -vvv repair -w {dest_dir} {wheel}"
 
     steps:
       - uses: actions/checkout@v2
