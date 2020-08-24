@@ -23,7 +23,7 @@ jobs:
       CIBW_SKIP: cp27-*
       CIBW_BEFORE_BUILD: python -c "print(('#'*140+'\n')*10)" && pip install "numpy>=1.13"
       CIBW_TEST_REQUIRES: pytest
-      CIBW_TEST_COMMAND: pytest
+      CIBW_TEST_COMMAND: "pytest {project}/test"
 
     steps:
       - uses: actions/checkout@v2
