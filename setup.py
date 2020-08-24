@@ -11,7 +11,7 @@ rotations.  The core of the code is written in C for speed.
 """
 
 from sys import platform
-from distutils.core import Extension
+from setuptools import Extension
 import numpy as np
 
 
