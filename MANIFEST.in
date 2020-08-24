@@ -1,2 +1,2 @@
-include README.txt LICENSE
-include numpy_quaternion.c quaternion.c quaternion.h math_msvc_compatibility.h
+include README.md LICENSE
+include src/numpy_quaternion.c src/quaternion.c src.quaternion.h src/math_msvc_compatibility.h
