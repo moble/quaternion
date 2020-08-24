@@ -55,6 +55,12 @@ setup_metadata = dict(
         # See also :python_version specs below
     ],
     extras_require={
+        ":platform_python_implementation != 'PyPy' or python_version < '3.0'": [
+            "numpy>=1.13",
+        ],
+        ":platform_python_implementation == 'PyPy' and python_version >= '3.0'": [
+            "numpy>=1.13,<=1.19",
+        ],
         ":python_version < '3.8'": [
             "importlib-metadata>=1.0.0",
         ],
