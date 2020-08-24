@@ -18,7 +18,8 @@ jobs:
       matrix:
         os: [ubuntu-18.04, windows-latest, macos-latest]
 
-    # env:
+    env:
+      CIBW_SKIP: pp36-macosx_x86_64
     #   CIBW_TEST_REQUIRES: pytest
     #   CIBW_TEST_COMMAND: pytest
 
