@@ -41,26 +41,26 @@ extensions = [
 ]
 
 setup_metadata = dict(
-    name='numpy-quaternion',  # Uploaded to pypi under this name
-    packages=['quaternion'],  # This is the actual package name, as used in python
-    url='https://github.com/moble/quaternion',
-    author='Michael Boyle',
-    author_email='mob22@cornell.edu',
-    description='Add a quaternion dtype to NumPy',
+    name="numpy-quaternion",  # Uploaded to pypi under this name
+    packages=["quaternion"],  # This is the actual package name, as used in python
+    url="https://github.com/moble/quaternion",
+    author="Michael Boyle",
+    author_email="mob22@cornell.edu",
+    description="Add a quaternion dtype to NumPy",
     long_description=__doc__,
     ext_modules=extensions,
     install_requires=[
-        'numpy>=1.13',
-        'scipy',
+        "numpy>=1.13,<1.19.0",  # Presumably until bugs are fixed on pypy
+        "scipy",
         # See also :python_version specs below
     ],
     extras_require={
-        ':python_version < "3.6"': [
-            'numba<0.49.0',
-            'llvmlite<=0.31',
+        ":python_version < '3.6' and platform_python_implementation != 'PyPy'": [
+            "numba<0.49.0",
+            "llvmlite<=0.31",
         ],
-        ':python_version >= "3.6"': [
-            'numba>=0.49.1',
+        ":python_version >= '3.6' and platform_python_implementation != 'PyPy'": [
+            "numba>=0.49.1",
         ],
         "docs":  [
             "sphinx==1.8.4",
@@ -69,13 +69,13 @@ setup_metadata = dict(
             "recommonmark==0.5.0",
         ],
     },
-    version='2021.0.0-alpha.0',
+    version="2021.0.0-alpha.0",
 )
 
 
 def build(setup_kwargs):
     # For possible poetry support
-    setup_kwargs.update({'ext_modules': extensions})
+    setup_kwargs.update({"ext_modules": extensions})
 
 
 if __name__ == "__main__":
