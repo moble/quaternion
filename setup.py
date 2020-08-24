@@ -60,10 +60,10 @@ setup_metadata = dict(
         ],
         ":python_version < '3.6' and platform_python_implementation != 'PyPy'": [
             "numba<0.49.0",
-            "llvmlite<=0.31",
+            "llvmlite<0.32.0",
         ],
         ":python_version >= '3.6' and platform_python_implementation != 'PyPy'": [
-            "numba>=0.49.1",
+            "numba",
         ],
         "docs":  [
             "sphinx==1.8.4",
