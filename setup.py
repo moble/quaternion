@@ -11,7 +11,7 @@ rotations.  The core of the code is written in C for speed.
 """
 
 from sys import platform
-from setuptools import Extension
+from setuptools import Extension, setup
 import numpy as np
 
 
@@ -50,17 +50,11 @@ setup_metadata = dict(
     long_description=__doc__,
     ext_modules=extensions,
     install_requires=[
-        # "numpy>=1.13",
+        "numpy>=1.13",
         "scipy",
-        # See also :python_version specs below
+        # See also :environment_marker specs below
     ],
     extras_require={
-        ":platform_python_implementation != 'PyPy' or python_version < '3.0'": [
-            "numpy>=1.13",
-        ],
-        ":platform_python_implementation == 'PyPy' and python_version >= '3.0'": [
-            "numpy>=1.13,<=1.19",
-        ],
         ":python_version < '3.8'": [
             "importlib-metadata>=1.0.0",
         ],
@@ -88,5 +82,4 @@ def build(setup_kwargs):
 
 
 if __name__ == "__main__":
-    from setuptools import setup
     setup(**setup_metadata)
