@@ -49,6 +49,11 @@ setup_metadata = dict(
     description='Add a quaternion dtype to NumPy',
     long_description=__doc__,
     ext_modules=extensions,
+    install_requires=[
+        'numpy>=1.13',
+        'scipy',
+        # See also :python_version specs below
+    ],
     extras_require={
         ':python_version < "3.6"': [
             'numba<0.49.0',
@@ -63,8 +68,8 @@ setup_metadata = dict(
             "numpydoc==0.8.0",
             "recommonmark==0.5.0",
         ],
-    }
-    version='2021.0.0-alpha.0'
+    },
+    version='2021.0.0-alpha.0',
 )
 
 
