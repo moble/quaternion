@@ -55,9 +55,6 @@ setup_metadata = dict(
         # See also :environment_marker specs below
     ],
     extras_require={
-        ":python_version < '3.8'": [
-            "importlib-metadata>=1.0.0",
-        ],
         ":python_version < '3.6' and platform_python_implementation != 'PyPy'": [
             "numba<0.49.0",
             "llvmlite<0.32.0",
