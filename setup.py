@@ -50,11 +50,14 @@ setup_metadata = dict(
     long_description=__doc__,
     ext_modules=extensions,
     install_requires=[
-        "numpy>=1.13,<1.19.0",  # Presumably until bugs are fixed on pypy
+        "numpy>=1.13",
         "scipy",
         # See also :python_version specs below
     ],
     extras_require={
+        ":python_version < '3.8'": [
+            "importlib-metadata>=1.0.0",
+        ],
         ":python_version < '3.6' and platform_python_implementation != 'PyPy'": [
             "numba<0.49.0",
             "llvmlite<=0.31",

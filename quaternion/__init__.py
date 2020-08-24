@@ -1,7 +1,13 @@
-# Copyright (c) 2017, Michael Boyle
+# Copyright (c) 2020, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
-from __future__ import division, print_function, absolute_import
+try:
+    import importlib.metadata as importlib_metadata
+except ModuleNotFoundError:  # pragma: no cover
+    import importlib_metadata
+
+__version__ = importlib_metadata.version(__name__)
+
 
 import numpy as np
 
@@ -20,7 +26,8 @@ try:
 except:
     pass
 from .means import mean_rotor_in_chordal_metric, optimal_alignment_in_chordal_metric
-from ._version import __version__
+
+
 
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
