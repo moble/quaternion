@@ -50,7 +50,7 @@ setup_metadata = dict(
     long_description=__doc__,
     ext_modules=extensions,
     install_requires=[
-        "numpy>=1.13",
+        # "numpy>=1.13",
         "scipy",
         # See also :python_version specs below
     ],
