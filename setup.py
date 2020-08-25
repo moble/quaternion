@@ -65,6 +65,7 @@ setup_metadata = dict(
         "docs":  [
             "mkdocs",
             "mktheapidocs[plugin]",
+            "pymdown-extensions",
         ],
     },
     version="2021.0.0-alpha.0",
