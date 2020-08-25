@@ -14,9 +14,8 @@ theme:
   name: 'readthedocs'
 
 extra_javascript:
-  #- https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js
-  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js
 
 markdown_extensions:
-  - mdx_math:
-      enable_dollar_delimiter: true
+  - pymdownx.arithmatex:
+      generic: true

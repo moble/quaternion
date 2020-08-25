@@ -65,7 +65,6 @@ setup_metadata = dict(
         "docs":  [
             "mkdocs",
             "mktheapidocs[plugin]",
-            "python-markdown-math",
         ],
     },
     version="2021.0.0-alpha.0",
