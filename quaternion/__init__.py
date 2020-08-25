@@ -779,8 +779,9 @@ def allclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False, verbos
     close = isclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan)
     result = np.all(close)
     if verbose and not result:
+        a, b = np.atleast_1d(a), np.atleast_1d(b)
+        a, b = np.broadcast_arrays(a, b)
         print('Non-close values:')
-        for i in np.argwhere(close == False):
-            i = tuple(i)
-            print('\n    a[{0}]={1}\n    b[{0}]={2}'.format(i, a[i], b[i]))
+        for i in np.nonzero(close == False):
+            print('    a[{0}]={1}\n    b[{0}]={2}'.format(i, a[i], b[i]))
     return result
