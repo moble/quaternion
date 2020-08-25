@@ -1,7 +1,7 @@
 # Copyright (c) 2020, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
-__version__ = "2021.0.0-alpha.0",
+__version__ = "2021.0.0-alpha.0"
 
 import numpy as np
 
