@@ -895,7 +895,7 @@ def test_quaternion_power(Qs):
         assert allclose(q.exp(), math.e**q, rtol=qpower_precision)
         for s in [0, 0., 1.0, 1, 1.2, 2.3, 3]:
             for t in [0, 0., 1.0, 1, 1.2, 2.3, 3]:
-                assert allclose((s*t)**q, (s**q)*(t**q), rtol=2*qpower_precision)
+                assert allclose((s*t)**q, (s**q)*(t**q), rtol=3*qpower_precision)
         for s in [1.0, 1, 1.2, 2.3, 3]:
             assert allclose(s**q, (q*math.log(s)).exp(), rtol=qpower_precision)
 
