@@ -3,6 +3,7 @@ site_name: quaternion
 repo_url: https://github.com/moble/quaternion
 
 plugins:
+  - search
   - mktheapidocs:
       modules:
         quaternion:
