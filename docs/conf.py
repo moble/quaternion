@@ -22,20 +22,14 @@ from recommonmark.parser import CommonMarkParser
 
 # -- Project information -----------------------------------------------------
 
-try:
-    from importlib.metadata import version
-    quat_version = version('quaternion')
-except:
-    import quaternion.__version__ as quat_version
-
 project = 'quaternion'
-copyright = '2019, Michael Boyle'
+copyright = '2020, Michael Boyle'
 author = 'Michael Boyle'
 
 # The short X.Y version
-version = quat_version.__version__
+version = "2021.0a0"
 # The full version, including alpha/beta/rc tags
-release = version
+release = "2021.0.0-alpha.0"
 
 
 # -- General configuration ---------------------------------------------------
