@@ -23,10 +23,10 @@ from recommonmark.parser import CommonMarkParser
 # -- Project information -----------------------------------------------------
 
 try:
-    sys.path.insert(0, os.path.abspath('..'))
-    import _version as quat_version
+    from importlib.metadata import version
+    quat_version = version('quaternion')
 except:
-    import quaternion._version as quat_version
+    import quaternion.__version__ as quat_version
 
 project = 'quaternion'
 copyright = '2019, Michael Boyle'

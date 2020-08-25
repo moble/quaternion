@@ -1,25 +1,18 @@
 name: build
 
 on: [push, pull_request]
-# Alternatively, to publish when a (published) GitHub Release is created, use the following:
-# on:
-#   push:
-#   pull_request:
-#   release:
-#     types:
-#       - published
 
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]')"
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-18.04, windows-latest, macos-latest]
 
     env:
-      # CIBW_SKIP: pp36-macosx_x86_64
       CIBW_SKIP: cp27-* cp35-* pp27-* pp36-*
       CIBW_BEFORE_BUILD: python -c "print(('#'*140+'\n')*10)" && pip install "numpy>=1.13"
       CIBW_TEST_REQUIRES: pytest pytest-cov
@@ -65,10 +58,8 @@ jobs:
 
       - name: Build sdist
         run: |
-          python -m pip install pep517
-          python -m pep517.build --source .
-          # python -m pip install numpy>=1.13  # Can't rely on pep 517 to get it from pyproject.toml
-          # python setup.py sdist
+          python -m pip install numpy>=1.13  # Can't rely on pep 517 to get it from pyproject.toml
+          python setup.py sdist
 
       - uses: actions/upload-artifact@v2
         with:
