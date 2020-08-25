@@ -1,13 +1,12 @@
 version: 2
 
+mkdocs:
+  configuration: mkdocs.yml
+
 python:
   version: 3.8
-  system_packages: true
   install:
-    - method: pip
+    - method: setuptools
       path: .
       extra_requirements:
         - docs
-
-# The only extra format to build is PDF
-formats: [pdf]

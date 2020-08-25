@@ -63,10 +63,9 @@ setup_metadata = dict(
             "numba",
         ],
         "docs":  [
-            "sphinx==1.8.4",
-            "sphinx_rtd_theme",
-            "numpydoc==0.8.0",
-            "recommonmark==0.5.0",
+            "mkdocs",
+            "mktheapidocs[plugin]",
+            "python-markdown-math",
         ],
     },
     version="2021.0.0-alpha.0",
