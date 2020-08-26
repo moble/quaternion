@@ -68,6 +68,10 @@ setup_metadata = dict(
             "mktheapidocs[plugin]",
             "pymdown-extensions",
         ],
+        "testing": [
+            "pytest",
+            "pytest-cov",
+        ]
     },
     version="2021.0.0-alpha.0",
 )
