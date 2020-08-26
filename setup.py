@@ -43,6 +43,7 @@ extensions = [
 setup_metadata = dict(
     name="numpy-quaternion",  # Uploaded to pypi under this name
     packages=["quaternion"],  # This is the actual package name, as used in python
+    package_dir = {'': 'src'},  # Remove `src/` from the package name
     url="https://github.com/moble/quaternion",
     author="Michael Boyle",
     author_email="mob22@cornell.edu",
