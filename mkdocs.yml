@@ -7,7 +7,7 @@ plugins:
   - mktheapidocs:
       modules:
         quaternion:
-          section: api
+          section: "Package API:"
           source_repo: "https://github.com/moble/quaternion"
 
 theme:

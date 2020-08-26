@@ -71,8 +71,8 @@ python), you can install this package simply as
 conda install -c conda-forge quaternion
 ```
 
-If you prefer to use `pip` (whether or not you use `conda`), you can
-instead do
+If you prefer to use `pip` (which can be run from within a `conda`
+environment), you can instead do
 
 ```sh
 pip install numpy numpy-quaternion
@@ -93,13 +93,11 @@ Finally, there's also the fully manual option of just downloading the
 code, changing to the code directory, and running
 
 ```sh
-python setup.py install
+pip install .
 ```
 
 This should work regardless of the installation method, as long as you
-have a compiler hanging around.  However, note that you will need to
-have at least `numpy` installed *before* this can compile (because
-this package uses a header file provided by `numpy`).
+have a compiler hanging around.
 
 
 ## Basic usage
