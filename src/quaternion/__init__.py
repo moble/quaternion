@@ -2,30 +2,8 @@
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
 __version__ = "2021.0.0-alpha.0"
-
-import numpy as np
-
-from .numpy_quaternion import (quaternion, _eps,
-                               slerp_evaluate, squad_evaluate,
-                               # slerp_vectorized, squad_vectorized,
-                               # slerp, squad,
-                               )
-from .quaternion_time_series import slerp, squad, integrate_angular_velocity, minimal_rotation, angular_velocity
-from .calculus import (
-    derivative, antiderivative, definite_integral, indefinite_integral,
-    fd_derivative, fd_definite_integral, fd_indefinite_integral,
-    spline_derivative, spline_definite_integral, spline_indefinite_integral)
-try:
-    from .calculus import spline
-except:
-    pass
-from .means import mean_rotor_in_chordal_metric, optimal_alignment_in_chordal_metric
-
-
-
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
-
 __all__ = ['quaternion',
            'as_quat_array', 'as_spinor_array',
            'as_float_array', 'from_float_array',
@@ -40,8 +18,24 @@ __all__ = ['quaternion',
            'zero', 'one', 'x', 'y', 'z', 'integrate_angular_velocity',
            'squad', 'slerp', 'derivative', 'definite_integral', 'indefinite_integral']
 
-if 'quaternion' in np.__dict__:
-    raise RuntimeError('The NumPy package already has a quaternion type')
+
+import numpy as np
+
+from .numpy_quaternion import (
+    quaternion, _eps, slerp_evaluate, squad_evaluate,
+    # slerp_vectorized, squad_vectorized, slerp, squad,
+)
+from .quaternion_time_series import slerp, squad, integrate_angular_velocity, minimal_rotation, angular_velocity
+from .calculus import (
+    derivative, antiderivative, definite_integral, indefinite_integral,
+    fd_derivative, fd_definite_integral, fd_indefinite_integral,
+    spline_derivative, spline_definite_integral, spline_indefinite_integral
+)
+try:
+    from .calculus import spline
+except:
+    pass
+from .means import mean_rotor_in_chordal_metric, optimal_alignment_in_chordal_metric
 
 np.quaternion = quaternion
 np.typeDict['quaternion'] = np.dtype(quaternion)
