@@ -7,3 +7,4 @@ addopts = "-v --tb=short --doctest-glob='' --cov=quaternion --cov-branch --cov-r
 [build-system]
 requires = ["setuptools!=50.0", "wheel", "numpy>=1.13"]
 build-backend = "setuptools.build_meta"
+
