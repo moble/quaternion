@@ -329,32 +329,32 @@ def spline_evaluation(f, t, t_out=None, axis=None, spline_degree=3,
 
     Parameters
     ==========
-    f: (..., N, ...) array_like
+    f : (..., N, ...) array_like
         Real or complex function values to be interpolated.
 
-    t: (N,) array_like
+    t : (N,) array_like
         An N-D array of increasing real values. The length of f along the interpolation axis must be
         equal to the length of t.  The number of data points must be larger than the spline degree.
 
-    t_out: None or (M,) array_like [defaults to None]
+    t_out : None or (M,) array_like [defaults to None]
         The new values of `t` on which to evaluate the result.  If None, it is assumed that some
         other feature of the data is needed, like a derivative or antiderivative, which are then
         output using the same `t` values as the input.
 
-    axis: None or int [defaults to None]
+    axis : None or int [defaults to None]
         The axis of `f` with length equal to the length of `t`.  If None, this function searches for
         an axis of equal length in reverse order -- that is, starting from the last axis of `f`.
         Note that this feature is helpful when `f` is one-dimensional or will always satisfy that
         criterion, but is dangerous otherwise.  Caveat emptor.
 
-    spline_degree: int [defaults to 3]
+    spline_degree : int [defaults to 3]
         Degree of the interpolating spline. Must be 1 <= spline_degree <= 5.
 
-    derivative_order: int [defaults to 0]
+    derivative_order : int [defaults to 0]
         The order of the derivative to apply to the data.  Note that this may be negative, in which
         case the corresponding antiderivative is returned.
 
-    definite_integral_bounds: None or (2,) array_like [defaults to None]
+    definite_integral_bounds : None or (2,) array_like [defaults to None]
         If this is not None, the `t_out` and `derivative_order` parameters are ignored, and the
         returned values are just the (first) definite integrals of the splines between these limits,
         along each remaining axis.

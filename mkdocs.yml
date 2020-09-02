@@ -1,0 +1,21 @@
+site_name: quaternion
+
+repo_url: https://github.com/moble/quaternion
+
+plugins:
+  - search
+  - mktheapidocs:
+      modules:
+        quaternion:
+          section: "Package API:"
+          source_repo: "https://github.com/moble/quaternion"
+
+theme:
+  name: 'readthedocs'
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true

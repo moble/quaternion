@@ -1,6 +1,10 @@
-<a href="https://zenodo.org/badge/latestdoi/27896013"><img src="https://zenodo.org/badge/27896013.svg" alt="DOI"></a>
-<a href="https://anaconda.org/conda-forge/quaternion"><img align="right" style="margin: 0px 2px" alt="Available from conda on Linux, MacOS, and Windows" src="https://img.shields.io/conda/pn/conda-forge/quaternion.svg"></a>
- <a href="https://github.com/moble/quaternion/blob/master/LICENSE"><img align="right" style="margin: 0px 2px" alt="MIT license" src="https://img.shields.io/github/license/moble/quaternion.svg"></a>
+[![Test Status](https://github.com/moble/quaternion/workflows/tests/badge.svg)](https://github.com/moble/quaternion/actions)
+[![Documentation Status](https://readthedocs.org/projects/quaternion/badge/?version=latest)](https://quaternion.readthedocs.io/en/latest/?badge=latest)
+[![PyPI Version](https://img.shields.io/pypi/v/numpy-quaternion?color=)](https://pypi.org/project/numpy-quaternion/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/quaternion.svg?color=)](https://anaconda.org/conda-forge/quaternion)
+[![MIT License](https://img.shields.io/github/license/moble/quaternion.svg)](https://github.com/moble/quaternion/blob/master/LICENSE)
+[![DOI](https://zenodo.org/badge/27896013.svg)](https://zenodo.org/badge/latestdoi/27896013)
+
 
 # Quaternions in numpy
 
@@ -12,6 +16,9 @@ with help from Mark Wiebe), but has been rewritten with ideas from
 [rational](https://github.com/numpy/numpy-dtypes/tree/master/npytypes/rational)
 to work with both python 2.x and 3.x (and to fix a few bugs), and
 *greatly* expands the applications of quaternions.
+
+See also the pure-python package
+[quaternionic](https://github.com/moble/quaternionic).
 
 ## Quickstart
 
@@ -75,8 +82,8 @@ python), you can install this package simply as
 conda install -c conda-forge quaternion
 ```
 
-If you prefer to use `pip` (whether or not you use `conda`), you can
-instead do
+If you prefer to use `pip` (which can be run from within a `conda`
+environment), you can instead do
 
 ```sh
 python -m pip install numpy
@@ -103,13 +110,11 @@ Finally, there's also the fully manual option of just downloading the
 code, changing to the code directory, and running
 
 ```sh
-python setup.py install
+pip install .
 ```
 
 This should work regardless of the installation method, as long as you
-have a compiler hanging around.  However, note that you will need to
-have at least `numpy` installed *before* this can compile (because
-this package uses a header file provided by `numpy`).
+have a compiler hanging around.
 
 
 ## Basic usage

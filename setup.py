@@ -15,6 +15,9 @@ from setuptools import Extension, setup
 import numpy as np
 
 
+# Set this first for easier replacement
+version = "2020.9.2.16.39.41"
+
 if "win" in platform.lower() and not "darwin" in platform.lower():
     extra_compile_args = ["/O2"]
 else:
@@ -43,6 +46,7 @@ extensions = [
 setup_metadata = dict(
     name="numpy-quaternion",  # Uploaded to pypi under this name
     packages=["quaternion"],  # This is the actual package name, as used in python
+    package_dir = {'': 'src'},  # Remove `src/` from the package name
     url="https://github.com/moble/quaternion",
     author="Michael Boyle",
     author_email="mob22@cornell.edu",
@@ -63,13 +67,16 @@ setup_metadata = dict(
             "numba",
         ],
         "docs":  [
-            "sphinx==1.8.4",
-            "sphinx_rtd_theme",
-            "numpydoc==0.8.0",
-            "recommonmark==0.5.0",
+            "mkdocs",
+            "mktheapidocs[plugin]",
+            "pymdown-extensions",
         ],
+        "testing": [
+            "pytest",
+            "pytest-cov",
+        ]
     },
-    version="2021.0.0-alpha.0",
+    version=version,
 )
 
 
