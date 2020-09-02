@@ -15,6 +15,9 @@ from setuptools import Extension, setup
 import numpy as np
 
 
+# Set this first for easier replacement
+version = "2021.0.0-alpha.0"
+
 if "win" in platform.lower() and not "darwin" in platform.lower():
     extra_compile_args = ["/O2"]
 else:
@@ -73,7 +76,7 @@ setup_metadata = dict(
             "pytest-cov",
         ]
     },
-    version="2021.0.0-alpha.0",
+    version=version,
 )
 
 
