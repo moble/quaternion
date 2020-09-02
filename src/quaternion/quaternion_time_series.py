@@ -18,17 +18,16 @@ def slerp(R1, R2, t1, t2, t_out):
 
     Parameters
     ----------
-    R1: quaternion
+    R1 : quaternion
         Quaternion at beginning of interpolation
-    R2: quaternion
+    R2 : quaternion
         Quaternion at end of interpolation
-    t1: float
+    t1 : float
         Time corresponding to R1
-    t2: float
+    t2 : float
         Time corresponding to R2
-    t_out: float or array of floats
+    t_out : float or array of floats
         Times to which the rotors should be interpolated
-
 
     """
     tau = (t_out-t1)/(t2-t1)
@@ -61,11 +60,11 @@ def squad(R_in, t_in, t_out):
 
     Parameters
     ----------
-    R_in: array of quaternions
+    R_in : array of quaternions
         A time-series of rotors (unit quaternions) to be interpolated
-    t_in: array of float
+    t_in : array of float
         The times corresponding to R_in
-    t_out: array of float
+    t_out : array of float
         The times to which R_in should be interpolated
 
     """
@@ -215,27 +214,27 @@ def integrate_angular_velocity(Omega, t0, t1, R0=None, tolerance=1e-12):
     """Compute frame with given angular velocity
 
     Parameters
-    ==========
-    Omega: tuple or callable
+    ----------
+    Omega : tuple or callable
         Angular velocity from which to compute frame.  Can be
           1) a 2-tuple of float arrays (t, v) giving the angular velocity vector at a series of times,
           2) a function of time that returns the 3-vector angular velocity, or
           3) a function of time and orientation (t, R) that returns the 3-vector angular velocity
         In case 1, the angular velocity will be interpolated to the required times.  Note that accuracy
         is poor in case 1.
-    t0: float
+    t0 : float
         Initial time
-    t1: float
+    t1 : float
         Final time
-    R0: quaternion, optional
+    R0 : quaternion, optional
         Initial frame orientation.  Defaults to 1 (the identity orientation).
-    tolerance: float, optional
+    tolerance : float, optional
         Absolute tolerance used in integration.  Defaults to 1e-12.
 
     Returns
-    =======
-    t: float array
-    R: quaternion array
+    -------
+    t : float array
+    R : quaternion array
 
     """
     import warnings
@@ -317,12 +316,12 @@ def minimal_rotation(R, t, iterations=2):
     called for.
 
     Parameters
-    ==========
-    R: quaternion array
+    ----------
+    R : quaternion array
         Time series describing rotation
-    t: float array
+    t : float array
         Corresponding times at which R is measured
-    iterations: int [defaults to 2]
+    iterations : int [defaults to 2]
         Repeat the minimization to refine the result
 
     """
