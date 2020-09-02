@@ -1,6 +1,6 @@
 [![Test Status](https://github.com/moble/quaternion/workflows/tests/badge.svg)](https://github.com/moble/quaternion/actions)
 [![Documentation Status](https://readthedocs.org/projects/quaternion/badge/?version=latest)](https://quaternion.readthedocs.io/en/latest/?badge=latest)
-[![PyPI Version](https://img.shields.io/pypi/v/quaternion?color=)](https://pypi.org/project/quaternion/)
+[![PyPI Version](https://img.shields.io/pypi/v/numpy-quaternion?color=)](https://pypi.org/project/numpy-quaternion/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/quaternion.svg?color=)](https://anaconda.org/conda-forge/quaternion)
 [![MIT License](https://img.shields.io/github/license/moble/quaternion.svg)](https://github.com/moble/quaternion/blob/master/LICENSE)
 [![DOI](https://zenodo.org/badge/27896013.svg)](https://zenodo.org/badge/latestdoi/27896013)
