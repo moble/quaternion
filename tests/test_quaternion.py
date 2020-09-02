@@ -246,6 +246,13 @@ def test_as_rotation_matrix(Rs):
         # Test incorrectly normalized rotors:
         assert allclose(quat_mat(R), quaternion.as_rotation_matrix(1.1*R), atol=2*eps)
 
+        for v in [quaternion.x, quaternion.y, quaternion.z]:
+            assert np.allclose(
+                quaternion.as_rotation_matrix(R) @ v.vec,
+                quaternion.as_float_array(R * v * R.conjugate())[..., 1:],
+                rtol=0, atol=2*eps
+            )
+
     Rs0 = Rs.copy()
     Rs0[Rs.shape[0]//2] = quaternion.zero
     with pytest.raises(ZeroDivisionError):
@@ -272,6 +279,17 @@ def test_from_rotation_matrix(Rs):
             rot_mat_eps = 10*eps
         else:
             rot_mat_eps = 5*eps
+
+        for R1 in Rs:
+            rot = quaternion.as_rotation_matrix(R1)
+            R = quaternion.from_rotation_matrix(rot, nonorthogonal=nonorthogonal)
+            for v in [quaternion.x, quaternion.y, quaternion.z]:
+                assert np.allclose(
+                    rot @ v.vec,
+                    quaternion.as_float_array(R * v * R.conjugate())[..., 1:],
+                    rtol=0, atol=rot_mat_eps
+                )
+
         for i, R1 in enumerate(Rs):
             R2 = quaternion.from_rotation_matrix(quaternion.as_rotation_matrix(R1), nonorthogonal=nonorthogonal)
             d = quaternion.rotation_intrinsic_distance(R1, R2)

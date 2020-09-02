@@ -137,14 +137,22 @@ def as_spinor_array(a):
 def as_rotation_matrix(q):
     """Convert input quaternion to 3x3 rotation matrix
 
+    For any quaternion `q`, this function returns a matrix `m` such that, for every
+    vector `v`, we have
+
+        m @ v.vec == q * v * q.conjugate()
+
+    Here, `@` is the standard python matrix multiplication operator and `v.vec` is
+    the 3-vector part of the quaternion `v`.
+
     Parameters
     ----------
-    q: quaternion or array of quaternions
+    q : quaternion or array of quaternions
         The quaternion(s) need not be normalized, but must all be nonzero
 
     Returns
     -------
-    rot: float array
+    m : float array
         Output shape is q.shape+(3,3).  This matrix should multiply (from
         the left) a column vector to produce the rotated column vector.
 
@@ -192,43 +200,52 @@ def as_rotation_matrix(q):
 def from_rotation_matrix(rot, nonorthogonal=True):
     """Convert input 3x3 rotation matrix to unit quaternion
 
-    By default, if scipy.linalg is available, this function uses
-    Bar-Itzhack's algorithm to allow for non-orthogonal matrices.
-    [J. Guidance, Vol. 23, No. 6, p. 1085 <http://dx.doi.org/10.2514/2.4654>]
-    This will almost certainly be quite a bit slower than simpler versions,
-    though it will be more robust to numerical errors in the rotation matrix.
-    Also note that Bar-Itzhack uses some pretty weird conventions.  The last
-    component of the quaternion appears to represent the scalar, and the
-    quaternion itself is conjugated relative to the convention used
-    throughout this module.
+    For any orthogonal matrix `rot`, this function returns a quaternion `q` such
+    that, for every pure-vector quaternion `v`, we have
 
-    If scipy.linalg is not available or if the optional
-    `nonorthogonal` parameter is set to `False`, this function falls
-    back to the possibly faster, but less robust, algorithm of Markley
-    [J. Guidance, Vol. 31, No. 2, p. 440
-    <http://dx.doi.org/10.2514/1.31730>].
+        q * v * q.conjugate() == rot @ v.vec
+
+    Here, `@` is the standard python matrix multiplication operator and `v.vec` is
+    the 3-vector part of the quaternion `v`.  If `rot` is not orthogonal the
+    "closest" orthogonal matrix is used; see Notes below.
 
     Parameters
     ----------
-    rot: (...Nx3x3) float array
-        Each 3x3 matrix represents a rotation by multiplying (from the left)
-        a column vector to produce a rotated column vector.  Note that this
-        input may actually have ndims>3; it is just assumed that the last
-        two dimensions have size 3, representing the matrix.
-    nonorthogonal: bool, optional
-        If scipy.linalg is available, use the more robust algorithm of
-        Bar-Itzhack.  Default value is True.
+    rot : (..., N, 3, 3) float array
+        Each 3x3 matrix represents a rotation by multiplying (from the left) a
+        column vector to produce a rotated column vector.  Note that this input may
+        actually have ndims>3; it is just assumed that the last two dimensions have
+        size 3, representing the matrix.
+    nonorthogonal : bool, optional
+        If scipy.linalg is available, use the more robust algorithm of Bar-Itzhack.
+        Default value is True.
 
     Returns
     -------
-    q: array of quaternions
-        Unit quaternions resulting in rotations corresponding to input
-        rotations.  Output shape is rot.shape[:-2].
+    q : array of quaternions
+        Unit quaternions resulting in rotations corresponding to input rotations.
+        Output shape is rot.shape[:-2].
 
     Raises
     ------
     LinAlgError
         If any of the eigenvalue solutions does not converge
+
+    Notes
+    -----
+    By default, if scipy.linalg is available, this function uses Bar-Itzhack's
+    algorithm to allow for non-orthogonal matrices.  [J. Guidance, Vol. 23, No. 6,
+    p. 1085 <http://dx.doi.org/10.2514/2.4654>] This will almost certainly be quite
+    a bit slower than simpler versions, though it will be more robust to numerical
+    errors in the rotation matrix.  Also note that Bar-Itzhack uses some pretty
+    weird conventions.  The last component of the quaternion appears to represent
+    the scalar, and the quaternion itself is conjugated relative to the convention
+    used throughout this module.
+
+    If scipy.linalg is not available or if the optional `nonorthogonal` parameter
+    is set to `False`, this function falls back to the possibly faster, but less
+    robust, algorithm of Markley [J. Guidance, Vol. 31, No. 2, p. 440
+    <http://dx.doi.org/10.2514/1.31730>].
 
     """
     try:
@@ -336,12 +353,12 @@ def as_rotation_vector(q):
 
     Parameters
     ----------
-    q: quaternion or array of quaternions
+    q : quaternion or array of quaternions
         The quaternion(s) need not be normalized, but must all be nonzero
 
     Returns
     -------
-    rot: float array
+    rot : float array
         Output shape is q.shape+(3,).  Each vector represents the axis of
         the rotation, with norm proportional to the angle of the rotation in
         radians.
@@ -355,13 +372,13 @@ def from_rotation_vector(rot):
 
     Parameters
     ----------
-    rot: (Nx3) float array
+    rot : (Nx3) float array
         Each vector represents the axis of the rotation, with norm
         proportional to the angle of the rotation in radians.
 
     Returns
     -------
-    q: array of quaternions
+    q : array of quaternions
         Unit quaternions resulting in rotations corresponding to input
         rotations.  Output shape is rot.shape[:-1].
 
@@ -397,12 +414,12 @@ def as_euler_angles(q):
 
     Parameters
     ----------
-    q: quaternion or array of quaternions
+    q : quaternion or array of quaternions
         The quaternion(s) need not be normalized, but must all be nonzero
 
     Returns
     -------
-    alpha_beta_gamma: float array
+    alpha_beta_gamma : float array
         Output shape is q.shape+(3,).  These represent the angles (alpha,
         beta, gamma) in radians, where the normalized input quaternion
         represents `exp(alpha*z/2) * exp(beta*y/2) * exp(gamma*z/2)`.
@@ -439,21 +456,21 @@ def from_euler_angles(alpha_beta_gamma, beta=None, gamma=None):
 
     Parameters
     ----------
-    alpha_beta_gamma: float or array of floats
+    alpha_beta_gamma : float or array of floats
         This argument may either contain an array with last dimension of
         size 3, where those three elements describe the (alpha, beta, gamma)
         radian values for each rotation; or it may contain just the alpha
         values, in which case the next two arguments must also be given.
-    beta: None, float, or array of floats
+    beta : None, float, or array of floats
         If this array is given, it must be able to broadcast against the
         first and third arguments.
-    gamma: None, float, or array of floats
+    gamma : None, float, or array of floats
         If this array is given, it must be able to broadcast against the
         first and second arguments.
 
     Returns
     -------
-    R: quaternion array
+    R : quaternion array
         The shape of this array will be the same as the input, except that
         the last dimension will be removed.
 
@@ -491,12 +508,12 @@ def as_spherical_coords(q):
 
     Parameters
     ----------
-    q: quaternion or array of quaternions
+    q : quaternion or array of quaternions
         The quaternion(s) need not be normalized, but must be nonzero
 
     Returns
     -------
-    vartheta_varphi: float array
+    vartheta_varphi : float array
         Output shape is q.shape+(2,).  These represent the angles (vartheta,
         varphi) in radians, where the normalized input quaternion represents
         `exp(varphi*z/2) * exp(vartheta*y/2)`, up to an arbitrary inital
@@ -521,18 +538,18 @@ def from_spherical_coords(theta_phi, phi=None):
 
     Parameters
     ----------
-    theta_phi: float or array of floats
+    theta_phi : float or array of floats
         This argument may either contain an array with last dimension of
         size 2, where those two elements describe the (theta, phi) values in
         radians for each point; or it may contain just the theta values in
         radians, in which case the next argument must also be given.
-    phi: None, float, or array of floats
+    phi : None, float, or array of floats
         If this array is given, it must be able to broadcast against the
         first argument.
 
     Returns
     -------
-    R: quaternion array
+    R : quaternion array
         If the second argument is not given to this function, the shape
         will be the same as the input shape except for the last dimension,
         which will be removed.  If the second argument is given, this
@@ -583,18 +600,18 @@ def rotate_vectors(R, v, axis=-1):
 
 
     Parameters
-    ==========
-    R: quaternion array
+    ----------
+    R : quaternion array
         Quaternions by which to rotate the input vectors
-    v: float array
+    v : float array
         Three-vectors to be rotated.
-    axis: int
+    axis : int
         Axis of the `v` array to use as the vector dimension.  This
         axis of `v` must have length 3.
 
     Returns
-    =======
-    vprime: float array
+    -------
+    vprime : float array
         The rotated vectors.  This array has shape R.shape+v.shape.
 
     """
