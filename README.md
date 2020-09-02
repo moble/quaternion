@@ -1,6 +1,10 @@
-<a href="https://zenodo.org/badge/latestdoi/27896013"><img src="https://zenodo.org/badge/27896013.svg" alt="DOI"></a>
-<a href="https://anaconda.org/conda-forge/quaternion"><img align="right" style="margin: 0px 2px" alt="Available from conda on Linux, MacOS, and Windows" src="https://img.shields.io/conda/pn/conda-forge/quaternion.svg"></a>
- <a href="https://github.com/moble/quaternion/blob/master/LICENSE"><img align="right" style="margin: 0px 2px" alt="MIT license" src="https://img.shields.io/github/license/moble/quaternion.svg"></a>
+[![Test Status](https://github.com/moble/quaternion/workflows/tests/badge.svg)](https://github.com/moble/quaternion/actions)
+[![Documentation Status](https://readthedocs.org/projects/quaternion/badge/?version=latest)](https://quaternion.readthedocs.io/en/latest/?badge=latest)
+[![PyPI Version](https://img.shields.io/pypi/v/quaternion?color=)](https://pypi.org/project/quaternion/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/quaternion.svg?color=)](https://anaconda.org/conda-forge/quaternion)
+[![MIT License](https://img.shields.io/github/license/moble/quaternion.svg)](https://github.com/moble/quaternion/blob/master/LICENSE)
+[![DOI](https://zenodo.org/badge/27896013.svg)](https://zenodo.org/badge/latestdoi/27896013)
+
 
 # Quaternions in numpy
 
