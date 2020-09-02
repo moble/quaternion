@@ -1,6 +1,18 @@
 name: build
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - 'LICENSE'
+      - 'MANIFEST.in'
+      - 'README.md'
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.readthedocs.yml'
+    branches:
+      - master
+      - main
+  pull_request:
 
 jobs:
   build_wheels:
