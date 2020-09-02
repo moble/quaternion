@@ -29,8 +29,12 @@ conda install -c conda-forge quaternion
 or
 
 ```sh
-pip install --user numpy numpy-quaternion
+python -m pip install numpy
+python -m pip install numpy-quaternion
 ```
+
+(Optionally add `--user` after `install` in those last two if you're
+not using a python environment — though you should start.)
 
 
 ## Dependencies
@@ -57,7 +61,7 @@ roughly 4 to 400 times slower without it.
 
 The only drawback of `numba` is that it is nontrivial to install on
 its own.  Fortunately, the best python installer for scientific
-python, [`anaconda`](http://continuum.io/downloads), makes it trivial.
+python, [`anaconda`](https://www.anaconda.com/products/individual), makes it trivial.
 Just install the main `anaconda` package, which installs both `numba`
 and `scipy`.  If you prefer the smaller download size of
 [`miniconda`](http://conda.pydata.org/miniconda.html) (which comes
@@ -82,15 +86,21 @@ If you prefer to use `pip` (which can be run from within a `conda`
 environment), you can instead do
 
 ```sh
-pip install numpy numpy-quaternion
+python -m pip install numpy
+python -m pip install numpy-quaternion
 ```
+
+(See [here](https://snarky.ca/why-you-should-use-python-m-pip/) for a
+veteran python core contributor's explanation of why you should use
+`python -m pip` over `pip` or `pip3`.)
 
 If you refuse to use `conda`, you might want to install inside your
 home directory without root privileges.  (Conda does this by default
 anyway.)  This is done by adding `--user` to the above command:
 
 ```sh
-pip install --user numpy numpy-quaternion
+python -m pip install --user numpy
+python -m pip install --user numpy-quaternion
 ```
 
 Note that pip will attempt to compile the code — which requires a
