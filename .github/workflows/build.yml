@@ -1,4 +1,4 @@
-name: build
+name: tests
 
 on:
   push:
@@ -9,10 +9,8 @@ on:
       - 'docs/**'
       - 'mkdocs.yml'
       - '.readthedocs.yml'
-    branches:
-      - master
-      - main
   pull_request:
+    types: [opened, reopened, ready_for_review, review_requested]
 
 jobs:
   build_wheels:
