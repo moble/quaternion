@@ -17,6 +17,9 @@ with help from Mark Wiebe), but has been rewritten with ideas from
 to work with both python 2.x and 3.x (and to fix a few bugs), and
 *greatly* expands the applications of quaternions.
 
+See also the pure-python package
+[quaternionic](https://github.com/moble/quaternionic).
+
 ## Quickstart
 
 ```sh
