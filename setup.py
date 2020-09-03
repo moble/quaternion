@@ -16,7 +16,7 @@ import numpy as np
 
 
 # Set this first for easier replacement
-version = "2020.9.2.20.23.42"
+version = "2020.9.2.20.44.19"
 
 if "win" in platform.lower() and not "darwin" in platform.lower():
     extra_compile_args = ["/O2"]
