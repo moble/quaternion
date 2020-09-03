@@ -40,8 +40,9 @@ not using a python environment — though you should start.)
 ## Dependencies
 
 The basic requirements for this code are reasonably current versions
-of `python` and `numpy`.  In particular, `python` versions 2.7, 3.6,
-and 3.7 are routinely tested.  Also, any `numpy` version [greater than
+of `python` and `numpy`.  In particular, `python` versions 3.6, 3.7,
+and 3.8 are routinely tested — though 2.7 should also work.  Also, any
+`numpy` version [greater than
 1.13.0](https://github.com/moble/quaternion/issues/114) should work,
 but the tests are run on the most recent release at the time of the
 test.
@@ -56,16 +57,18 @@ Fortran codes for optimization (among other things) need for finding
 mean and optimal rotors.  `Numba` uses [LLVM](http://llvm.org/) to
 compile python code to machine code, accelerating many numerical
 functions by factors of anywhere from 2 to 2000.  It is *possible* to
-run all the code without `numba`, but these particular functions are
-roughly 4 to 400 times slower without it.
+run all the code without `numba`, but these particular functions can
+be anywhere from 4 to 400 times slower without it.
 
-The only drawback of `numba` is that it is nontrivial to install on
-its own.  Fortunately, the best python installer for scientific
-python, [`anaconda`](https://www.anaconda.com/products/individual), makes it trivial.
-Just install the main `anaconda` package, which installs both `numba`
-and `scipy`.  If you prefer the smaller download size of
-[`miniconda`](http://conda.pydata.org/miniconda.html) (which comes
-with minimal extras), you'll also have to run this command:
+Both `scipy` and `numba` can be installed with `pip` or `conda`.
+However, because `conda` is specifically geared toward scientific
+python, it is generally more robust for these more complicated
+packages.  In fact, the main
+[`anaconda`](https://www.anaconda.com/products/individual) package
+comes with both `numba` and `scipy`.  If you prefer the smaller
+download size of [`miniconda`](http://conda.pydata.org/miniconda.html)
+(which comes with minimal extras), you'll also have to run this
+command:
 
 ```sh
 conda install numpy scipy numba
