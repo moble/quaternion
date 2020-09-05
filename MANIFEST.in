@@ -1,2 +1,3 @@
 include README.md LICENSE
 include src/numpy_quaternion.c src/quaternion.c src/quaternion.h src/math_msvc_compatibility.h
+recursive-include tests *
