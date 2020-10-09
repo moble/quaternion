@@ -8,6 +8,54 @@ import quaternion
 from quaternion.numba_wrapper import njit
 
 
+def unflip_rotors(q, axis=-1, inplace=False):
+    """Flip signs of quaternions along axis to ensure continuity
+
+    Quaternions form a "double cover" of the rotation group, meaning that if `q`
+    represents a rotation, then `-q` represents the same rotation.  This is clear
+    from the way a quaternion is used to rotate a vector `v`: the rotated vector is
+    `q * v * q.conjugate()`, which is precisely the same as the vector resulting
+    from `(-q) * v * (-q).conjugate()`.  Some ways of constructing quaternions
+    (such as converting from rotation matrices or other representations) can result
+    in unexpected sign choices.  For many applications, this will not be a problem.
+    But if, for example, the quaternions need to be interpolated or differentiated,
+    the results may be surprising.  This function flips the signs of successive
+    quaternions (along some chosen axis, if relevant), so that successive
+    quaternions are as close as possible while still representing the same
+    rotations.
+
+    Parameters
+    ----------
+    q : array_like
+        Quaternion array to modify
+    axis : int, optional
+        Axis along which successive quaternions will be compared.  Default value is
+        the last axis of the quaternion array.
+    inplace : bool, optional
+        If True, modify the data in place without creating a copy; if False (the
+        default), a new array is created and returned.
+
+    Returns
+    -------
+    q_out : array_like
+        An array of precisely the same shape as the input array, differing only by
+        factors of precisely -1 in some elements.
+
+    """
+    q = np.asarray(q, dtype=np.quaternion)
+    ndim = q.ndim
+    if abs(axis) > ndim:
+        raise ValueError(f"Requested axis {axis} is outside the input array's shape {q.shape}")
+    f = quaternion.as_float_array(q)
+    flip = np.linalg.norm(np.diff(f, axis=(axis % ndim)), axis=-1) > 1.4142135623730950488016887242097
+    factors = np.insert(-2 * np.mod(np.cumsum(flip, axis=axis, dtype=int), 2) + 1, 0, 1, axis=axis)
+    if inplace:
+        f *= factors[..., np.newaxis]
+    else:
+        f = factors[..., np.newaxis] * f
+    return quaternion.as_quat_array(f)
+
+
 def slerp(R1, R2, t1, t2, t_out):
     """Spherical linear interpolation of rotors
 
