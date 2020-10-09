@@ -3,8 +3,6 @@ name: tests
 on:
   push:
     paths-ignore:
-      - 'LICENSE'
-      - 'MANIFEST.in'
       - 'README.md'
       - 'docs/**'
       - 'mkdocs.yml'
