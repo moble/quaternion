@@ -316,7 +316,7 @@ def fd_indefinite_integral(f, t):
 
 def fd_definite_integral(f, t):
     Sfdt = np.zeros_like(f)
-    Sfdt[1:, ...] = (f[1:, ...] + f[:-1, ...]) * ((t[1:] - t[:-1]) / 2.0)
+    Sfdt[1:, ...] = (f[1:, ...] + f[:-1, ...]) * ((t[1:] - t[:-1]) / 2.0).reshape((-1,) + (1,)*(f.ndim-1))
     return np.sum(Sfdt)
 
 
