@@ -1,16 +1,6 @@
 name: tests
 
-on:
-  push:
-    paths-ignore:
-      - 'LICENSE'
-      - 'MANIFEST.in'
-      - 'README.md'
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - '.readthedocs.yml'
-  pull_request:
-    types: [opened, reopened, ready_for_review, review_requested]
+on: [push]
 
 jobs:
   build_wheels:
