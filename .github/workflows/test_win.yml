@@ -1,0 +1,29 @@
+name: testwin
+
+on: [push]
+
+jobs:
+
+  build:
+    name: ${{ matrix.os }} python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        python-version: [3.6, 3.7, 3.8, 3.9]
+
+    steps:
+      - name: Set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install with pip
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy
+          python -m pip install numpy-quaternion
+          python -c 'import numpy as np; import quaternion'
+          echo 'That worked'
+          python -c 'import os; import numpy as np; import quaternion; print(quaternion.__file__); print(os.listdir(os.path.dirname(quaternion.__file__)))'
