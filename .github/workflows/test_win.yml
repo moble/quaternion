@@ -5,7 +5,7 @@ on: [push]
 jobs:
 
   pip:
-    name: Conda on ${{ matrix.architecture }} for python ${{ matrix.python-version }}
+    name: Pip on ${{ matrix.architecture }} for python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
