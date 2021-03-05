@@ -1,7 +1,7 @@
 # Copyright (c) 2020, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
-__version__ = "2020.11.2.17.0.49"
+__version__ = "2021.2.5.19.30.10"
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 __all__ = ['quaternion',
@@ -11,7 +11,7 @@ __all__ = ['quaternion',
            'as_rotation_vector', 'from_rotation_vector',
            'as_euler_angles', 'from_euler_angles',
            'as_spherical_coords', 'from_spherical_coords',
-           'rotate_vectors', 'allclose',
+           'rotate_vectors', 'rotate_vectors_each', 'allclose',
            'rotor_intrinsic_distance', 'rotor_chordal_distance',
            'rotation_intrinsic_distance', 'rotation_chordal_distance',
            'slerp_evaluate', 'squad_evaluate',
@@ -628,6 +628,49 @@ def rotate_vectors(R, v, axis=-1):
     mv_axes[axis] = m_axes[-2]
     mv_axes = m_axes[:-2] + mv_axes
     v_axes[axis] = m_axes[-1]
+    return np.einsum(m, m_axes, v, v_axes, mv_axes)
+
+
+def rotate_vectors_each(R, v, axis=-1):
+    """Rotate vectors by given quaternions
+
+    Compared to rotate_vectors, this function rotates the n-th vector
+    only by the n-th quaternion instead of all possible combinations.
+    Therefore, the quaternions R must have the same shape as the vectors
+    without their vector dimension (length 3).
+
+    Parameters
+    ----------
+    R : quaternion array
+        Quaternions by which to rotate the input vectors
+    v : float array
+        Three-vectors to be rotated.
+    axis : int
+        Axis of the `v` array to use as the vector dimension.  This
+        axis of `v` must have length 3.
+
+    Returns
+    -------
+    vprime : float array
+        The rotated vectors.  This array has shape v.shape.
+
+    """
+    R = np.asarray(R, dtype=np.quaternion)
+    v = np.asarray(v, dtype=float)
+    if v.ndim < 1 or 3 not in v.shape:
+        raise ValueError("Input `v` does not have at least one dimension of length 3")
+    if v.shape[axis] != 3:
+        raise ValueError("Input `v` axis {0} has length {1}, not 3.".format(axis, v.shape[axis]))
+    v_mod_shape = tuple(np.delete(v.shape, axis))
+    if R.shape != v_mod_shape:
+        raise ValueError("Input `R` without the axis dimension and `v` have to be of same shape "
+                         "(R: {:}, v: {:})".format(R.shape, v_mod_shape))
+    m = as_rotation_matrix(R)
+    m_axes = list(range(m.ndim))
+    v_axes = list(range(len(v_mod_shape)))
+    v_axes.insert(axis if axis >= 0 else v.ndim + 1 + axis, m_axes[-1])
+    mv_axes = list(v_axes)
+    mv_axes[axis] = m_axes[-2]
     return np.einsum(m, m_axes, v, v_axes, mv_axes)
 
 
