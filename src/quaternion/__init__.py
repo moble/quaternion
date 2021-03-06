@@ -1,12 +1,13 @@
 # Copyright (c) 2020, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
-__version__ = "2020.11.2.17.0.49"
+__version__ = "2021.3.6.15.24.2"
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 __all__ = ['quaternion',
            'as_quat_array', 'as_spinor_array',
            'as_float_array', 'from_float_array',
+           'as_vector_part', 'from_vector_part',
            'as_rotation_matrix', 'from_rotation_matrix',
            'as_rotation_vector', 'from_rotation_vector',
            'as_euler_angles', 'from_euler_angles',
@@ -119,6 +120,66 @@ def from_float_array(a):
     return as_quat_array(a)
 
 
+def from_vector_part(v, vector_axis=-1):
+    """Create a quaternion array from an array of the vector parts.
+
+    Essentially, this just inserts a 0 in front of each vector part, and
+    re-interprets the result as a quaternion.
+
+    Parameters
+    ----------
+    v : array_like
+        Array of vector parts of quaternions.  When interpreted as a numpy array,
+        if the dtype is `quaternion`, the array is returned immediately, and the
+        following argument is ignored.  Otherwise, it it must be a float array with
+        dimension `vector_axis` of size 3 or 4.
+    vector_axis : int, optional
+        The axis to interpret as containing the vector components.  The default is
+        -1.
+
+    Returns
+    -------
+    q : array of quaternions
+        Quaternions with vector parts corresponding to input vectors.
+
+    """
+    v = np.asarray(v)
+    if v.dtype != np.quaternion:
+        input_shape = v.shape
+        if vector_axis != -1:
+            v = np.moveaxis(v, vector_axis, -1)
+        if v.shape[-1] == 3:
+            v = from_float_array(np.insert(v, 0, 0.0, axis=-1))
+        elif v.shape[-1] == 4:
+            v = v.copy()
+            v[..., 0] = 0.0
+            v = from_float_array(v)
+        else:
+            raise ValueError(
+                "Vector input has shape {0}, which cannot be interpreted as quaternions ".format(input_shape)
+                + "with vector axis {0}".format(vector_axis)
+            )
+    return v
+
+
+def as_vector_part(q):
+    """Create an array of vector parts from an array of quaternions.
+
+    Parameters
+    ----------
+    q : quaternion array_like
+        Array of quaternions.
+
+    Returns
+    -------
+    v : array
+        Float array of shape `q.shape + (3,)`
+
+    """
+    q = np.asarray(q, dtype=np.quaternion)
+    return as_float_array(q)[..., 1:]
+
+
 def as_spinor_array(a):
     """View a quaternion array as spinors in two-complex representation
 
@@ -131,7 +192,7 @@ def as_spinor_array(a):
     assert a.dtype == np.dtype(np.quaternion)
     # I'm not sure why it has to be so complicated, but all of these steps
     # appear to be necessary in this case.
-    return a.view(np.float).reshape(a.shape + (4,))[..., [0, 3, 2, 1]].ravel().view(np.complex).reshape(a.shape + (2,))
+    return a.view(np.float64).reshape(a.shape + (4,))[..., [0, 3, 2, 1]].ravel().view(np.complex).reshape(a.shape + (2,))
 
 
 def as_rotation_matrix(q):
@@ -285,7 +346,7 @@ def from_rotation_matrix(rot, nonorthogonal=True):
             q.components[1:] = -eigvecs[:-1].flatten()
             return q
         else:
-            q = np.empty(shape+(4,), dtype=np.float)
+            q = np.empty(shape+(4,), dtype=np.float64)
             for flat_index in range(reduce(mul, shape)):
                 multi_index = np.unravel_index(flat_index, shape)
                 eigvals, eigvecs = linalg.eigh(K3[multi_index], eigvals=(3, 3))
@@ -431,7 +492,7 @@ def as_euler_angles(q):
         been using quaternions like a sensible person.
 
     """
-    alpha_beta_gamma = np.empty(q.shape + (3,), dtype=np.float)
+    alpha_beta_gamma = np.empty(q.shape + (3,), dtype=np.float64)
     n = np.norm(q)
     q = as_float_array(q)
     alpha_beta_gamma[..., 0] = np.arctan2(q[..., 3], q[..., 0]) + np.arctan2(-q[..., 1], q[..., 2])
@@ -581,23 +642,13 @@ def from_spherical_coords(theta_phi, phi=None):
 def rotate_vectors(R, v, axis=-1):
     """Rotate vectors by given quaternions
 
-    For simplicity, this function simply converts the input
-    quaternion(s) to a matrix, and rotates the input vector(s) by the
-    usual matrix multiplication.  However, it should be noted that if
-    each input quaternion is only used to rotate a single vector, it
-    is more efficient (in terms of operation counts) to use the
-    formula
+    This function is for the case where each quaternion (possibly the only input
+    quaternion) is used to rotate multiple vectors.  If each quaternion is only
+    rotating a single vector, it is more efficient to use the standard formula
 
-      v' = v + 2 * r x (s * v + r x v) / m
+        vprime = R * v * R.conjugate()
 
-    where x represents the cross product, s and r are the scalar and
-    vector parts of the quaternion, respectively, and m is the sum of
-    the squares of the components of the quaternion.  If you are
-    looping over a very large number of quaternions, and just rotating
-    a single vector each time, you might want to implement that
-    alternative algorithm using numba (or something that doesn't use
-    python).
-
+    (Note that `from_vector_part` and `as_vector_part` may be helpful.)
 
     Parameters
     ----------
@@ -613,6 +664,24 @@ def rotate_vectors(R, v, axis=-1):
     -------
     vprime : float array
         The rotated vectors.  This array has shape R.shape+v.shape.
+
+    Notes
+    -----
+    For simplicity, this function converts the input quaternion(s) to matrix form,
+    and rotates the input vector(s) by the usual matrix multiplication.  As noted
+    above, if each input quaternion is only used to rotate a single vector, this is
+    not the most efficient approach.  The simple formula shown above is faster than
+    this function, though it should be noted that the most efficient approach (in
+    terms of operation counts) is to use the formula
+
+      v' = v + 2 * r x (s * v + r x v) / m
+
+    where x represents the cross product, s and r are the scalar and vector parts
+    of the quaternion, respectively, and m is the sum of the squares of the
+    components of the quaternion.  If you are looping over a very large number of
+    quaternions, and just rotating a single vector each time, you might want to
+    implement that alternative algorithm using numba (or something that doesn't use
+    python).
 
     """
     R = np.asarray(R, dtype=np.quaternion)

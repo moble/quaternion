@@ -200,14 +200,14 @@ def test_isclose():
 
 @pytest.mark.parametrize("q", make_Qs())
 def test_bad_conversions(q):
-    with pytest.raises(TypeError):
+    with pytest.raises((TypeError, ValueError)):
         s = int(q)
-    with pytest.raises(TypeError):
+    with pytest.raises((TypeError, ValueError)):
         s = float(q)
-    with pytest.raises(TypeError):
+    with pytest.raises((TypeError, ValueError)):
         a = np.zeros(3, dtype=int)
         a[0] = q
-    with pytest.raises(TypeError):
+    with pytest.raises((TypeError, ValueError)):
         a = np.zeros(3)
         a[0] = q
 
@@ -226,6 +226,34 @@ def test_as_float_quat(Qs):
     assert np.array_equal(quaternion.as_float_array(quaternion.as_quat_array(a)),
                           a.astype(float))
     assert quaternion.as_float_array(quaternion.x).ndim == 1
+
+
+def test_vector_conversions():
+    from quaternion import from_vector_part, as_vector_part
+    v = np.random.rand(3)
+    q = from_vector_part(v, vector_axis=-1)
+    assert q.dtype == np.quaternion
+    assert q.shape == v.shape[:-1]
+    v2 = as_vector_part(q)
+    assert np.array_equal(v, v2)
+    v = np.random.rand(7, 3)
+    q = from_vector_part(v, vector_axis=-1)
+    assert q.dtype == np.quaternion
+    assert q.shape == v.shape[:-1]
+    v2 = as_vector_part(q)
+    assert np.array_equal(v, v2)
+    v = np.random.rand(18, 7, 3)
+    q = from_vector_part(v, vector_axis=-1)
+    assert q.dtype == np.quaternion
+    assert q.shape == v.shape[:-1]
+    v2 = as_vector_part(q)
+    assert np.array_equal(v, v2)
+    v = np.random.rand(18, 3, 7)
+    q = from_vector_part(v, vector_axis=1)
+    assert q.dtype == np.quaternion
+    assert q.shape == v.shape[:1] + v.shape[2:]
+    v2 = as_vector_part(q)
+    assert np.array_equal(v, np.moveaxis(v2, -1, 1))
 
 
 def test_as_rotation_matrix(Rs):

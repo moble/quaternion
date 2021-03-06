@@ -14,7 +14,7 @@ jobs:
 
     env:
       CIBW_SKIP: cp27-* cp35-* pp*
-      CIBW_BEFORE_BUILD: python -c "print(('#'*140+'\n')*10)" && pip install "numpy>=1.13"
+      CIBW_BEFORE_BUILD: python -c "print(('#'*130+'\n')*10)" && pip install "numpy>=1.13"
       CIBW_TEST_REQUIRES: pytest pytest-cov
       CIBW_TEST_COMMAND: "pytest {project}/tests"
 
