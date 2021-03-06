@@ -1,7 +1,7 @@
 # Copyright (c) 2020, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
-__version__ = "2021.3.6.15.7.24"
+__version__ = "2021.3.6.15.10.57"
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 __all__ = ['quaternion',
@@ -176,7 +176,7 @@ def as_vector_part(q):
         Float array of shape `q.shape + (3,)`
 
     """
-    q = np.asarray(q, dtype=quaternion.quaternion)
+    q = np.asarray(q, dtype=np.quaternion)
     return as_float_array(q)[..., 1:]
 
 
