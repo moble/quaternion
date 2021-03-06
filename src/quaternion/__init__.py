@@ -1,12 +1,13 @@
 # Copyright (c) 2020, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
 
-__version__ = "2021.3.6.14.56.53"
+__version__ = "2021.3.6.15.7.2"
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 __all__ = ['quaternion',
            'as_quat_array', 'as_spinor_array',
            'as_float_array', 'from_float_array',
+           'as_vector_part', 'from_vector_part',
            'as_rotation_matrix', 'from_rotation_matrix',
            'as_rotation_vector', 'from_rotation_vector',
            'as_euler_angles', 'from_euler_angles',
@@ -161,7 +162,7 @@ def from_vector_part(v, vector_axis=-1):
     return v
 
 
-def to_vector_part(q):
+def as_vector_part(q):
     """Create an array of vector parts from an array of quaternions.
 
     Parameters
@@ -191,7 +192,7 @@ def as_spinor_array(a):
     assert a.dtype == np.dtype(np.quaternion)
     # I'm not sure why it has to be so complicated, but all of these steps
     # appear to be necessary in this case.
-    return a.view(np.float).reshape(a.shape + (4,))[..., [0, 3, 2, 1]].ravel().view(np.complex).reshape(a.shape + (2,))
+    return a.view(np.float64).reshape(a.shape + (4,))[..., [0, 3, 2, 1]].ravel().view(np.complex).reshape(a.shape + (2,))
 
 
 def as_rotation_matrix(q):
@@ -345,7 +346,7 @@ def from_rotation_matrix(rot, nonorthogonal=True):
             q.components[1:] = -eigvecs[:-1].flatten()
             return q
         else:
-            q = np.empty(shape+(4,), dtype=np.float)
+            q = np.empty(shape+(4,), dtype=np.float64)
             for flat_index in range(reduce(mul, shape)):
                 multi_index = np.unravel_index(flat_index, shape)
                 eigvals, eigvecs = linalg.eigh(K3[multi_index], eigvals=(3, 3))
@@ -491,7 +492,7 @@ def as_euler_angles(q):
         been using quaternions like a sensible person.
 
     """
-    alpha_beta_gamma = np.empty(q.shape + (3,), dtype=np.float)
+    alpha_beta_gamma = np.empty(q.shape + (3,), dtype=np.float64)
     n = np.norm(q)
     q = as_float_array(q)
     alpha_beta_gamma[..., 0] = np.arctan2(q[..., 3], q[..., 0]) + np.arctan2(-q[..., 1], q[..., 2])
@@ -647,7 +648,7 @@ def rotate_vectors(R, v, axis=-1):
 
         vprime = R * v * R.conjugate()
 
-    (Note that `from_vector_part` and `to_vector_part` may be helpful.)
+    (Note that `from_vector_part` and `as_vector_part` may be helpful.)
 
     Parameters
     ----------
