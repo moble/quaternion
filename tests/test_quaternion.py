@@ -228,6 +228,34 @@ def test_as_float_quat(Qs):
     assert quaternion.as_float_array(quaternion.x).ndim == 1
 
 
+def test_vector_conversions():
+    from quaternion import from_vector_part, to_vector_part
+    v = np.random.rand(3)
+    q = from_vector_part(v, vector_axis=-1)
+    assert q.dtype == np.quaternion
+    assert q.shape == v.shape[:-1]
+    v2 = to_vector_part(q)
+    assert np.array_equal(v, v2)
+    v = np.random.rand(7, 3)
+    q = from_vector_part(v, vector_axis=-1)
+    assert q.dtype == np.quaternion
+    assert q.shape == v.shape[:-1]
+    v2 = to_vector_part(q)
+    assert np.array_equal(v, v2)
+    v = np.random.rand(18, 7, 3)
+    q = from_vector_part(v, vector_axis=-1)
+    assert q.dtype == np.quaternion
+    assert q.shape == v.shape[:-1]
+    v2 = to_vector_part(q)
+    assert np.array_equal(v, v2)
+    v = np.random.rand(18, 3, 7)
+    q = from_vector_part(v, vector_axis=1)
+    assert q.dtype == np.quaternion
+    assert q.shape == v.shape[:1] + v.shape[2:]
+    v2 = to_vector_part(q)
+    assert np.array_equal(v, np.moveaxis(v2, -1, 1))
+
+
 def test_as_rotation_matrix(Rs):
     def quat_mat(quat):
         return np.array([(quat * v * quat.inverse()).vec for v in [quaternion.x, quaternion.y, quaternion.z]]).T
