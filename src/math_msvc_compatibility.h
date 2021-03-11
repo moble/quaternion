@@ -1,5 +1,5 @@
 // Copyright (c) 2017, Michael Boyle
-// See LICENSE file for details: <https://github.com/moble/quaternion/blob/master/LICENSE>
+// See LICENSE file for details: <https://github.com/moble/quaternion/blob/main/LICENSE>
 
 #ifndef __MATH_MSVC_COMPATIBILITY_H__
 #define __MATH_MSVC_COMPATIBILITY_H__

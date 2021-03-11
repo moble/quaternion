@@ -8,7 +8,7 @@ plugins:
       modules:
         quaternion:
           section: "Package API:"
-          source_repo: "https://github.com/moble/quaternion/blob/master/src"
+          source_repo: "https://github.com/moble/quaternion/blob/main/src"
 
 theme:
   name: 'readthedocs'
