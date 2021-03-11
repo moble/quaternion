@@ -1457,7 +1457,7 @@ def test_numpy_array_conversion(Qs):
     Q = Qs[Qs_nonnan][:12]  # Select first 3x4=12 non-nan elements in Qs
     assert Q.dtype == np.dtype(np.quaternion)
     q = quaternion.as_float_array(Q)  # View as array of floats
-    assert q.dtype == np.dtype(np.float)
+    assert q.dtype == np.dtype(np.float64)
     assert q.shape == (12, 4)  # This is the expected shape
     for j in range(12):
         for k in range(4):  # Check each component individually
@@ -1465,7 +1465,7 @@ def test_numpy_array_conversion(Qs):
     assert np.array_equal(quaternion.as_quat_array(q), Q)  # Check that we can go backwards
     # Next, see how that works if I flatten the q array
     q = q.flatten()
-    assert q.dtype == np.dtype(np.float)
+    assert q.dtype == np.dtype(np.float64)
     assert q.shape == (48,)
     for j in range(48):
         assert q[j] == Q[j // 4].components[j % 4]
