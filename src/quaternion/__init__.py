@@ -26,11 +26,13 @@ from .numpy_quaternion import (
     quaternion, _eps, slerp_evaluate, squad_evaluate,
     # slerp_vectorized, squad_vectorized, slerp, squad,
 )
-from .quaternion_time_series import slerp, squad, integrate_angular_velocity, minimal_rotation, angular_velocity
+from .quaternion_time_series import (
+    unflip_rotors, slerp, squad, integrate_angular_velocity, minimal_rotation, angular_velocity,
+)
 from .calculus import (
     derivative, antiderivative, definite_integral, indefinite_integral,
     fd_derivative, fd_definite_integral, fd_indefinite_integral,
-    spline_derivative, spline_definite_integral, spline_indefinite_integral
+    spline_derivative, spline_definite_integral, spline_indefinite_integral,
 )
 try:
     from .calculus import spline

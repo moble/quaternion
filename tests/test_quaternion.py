@@ -1103,6 +1103,25 @@ def test_metrics(Rs):
         assert (abs(distance_dict[func] - left_distances) < metric_precision).all()
 
 
+def test_unflip_rotors(Rs):
+    unflip_precision = 4e-16
+    f = 2 * np.random.rand(17, 1_000, 4) - 1
+    q = quaternion.as_quat_array(f)
+    q = q / abs(q)
+    ndim = q.ndim
+    axis = -1
+    inplace = False
+    q_out = quaternion.unflip_rotors(q, axis=axis, inplace=inplace)
+    diff = np.linalg.norm(np.diff(quaternion.as_float_array(q_out), axis=(axis % ndim)), axis=-1)
+    assert np.sum(diff > 1.4142135623730950488016887242097) == 0
+    q_in = np.vstack((Rs, -Rs))
+    q_out = quaternion.unflip_rotors(q_in, axis=0, inplace=False)
+    assert np.array_equal(q_out[1], Rs)
+    q_in = np.vstack((Rs, -Rs))
+    quaternion.unflip_rotors(q_in, axis=0, inplace=True)
+    assert np.array_equal(q_in[1], Rs)
+
+
 def test_slerp(Rs):
     from quaternion import slerp_evaluate, slerp, allclose
     slerp_precision = 4.e-15
