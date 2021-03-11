@@ -69,7 +69,7 @@ jobs:
   upload_pypi:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
-    if: "github.ref == 'refs/heads/master' && !contains(github.event.head_commit.message, '[no release]')"
+    if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[no release]')"
     # # upload to PyPI on every tag starting with 'v'
     # if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     # # publish when a GitHub Release is created
