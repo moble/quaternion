@@ -16,7 +16,7 @@ import numpy as np
 
 
 # Set this first for easier replacement
-version = "2020.10.9.15.24.29"
+version = "2021.3.6.15.24.2"
 
 if "win" in platform.lower() and not "darwin" in platform.lower():
     extra_compile_args = ["/O2"]
@@ -55,15 +55,17 @@ setup_metadata = dict(
     ext_modules=extensions,
     install_requires=[
         "numpy>=1.13",
-        "scipy",
-        # See also :environment_marker specs below
+        # See also extras and :environment_marker specs below
     ],
     extras_require={
-        ":python_version < '3.6' and platform_python_implementation != 'PyPy'": [
+        "scipy": [
+            "scipy",
+        ],
+        "numba:python_version < '3.6' and platform_python_implementation != 'PyPy'": [
             "numba<0.49.0",
             "llvmlite<0.32.0",
         ],
-        ":python_version >= '3.6' and platform_python_implementation != 'PyPy'": [
+        "numba:python_version >= '3.6' and platform_python_implementation != 'PyPy'": [
             "numba",
         ],
         "docs":  [
