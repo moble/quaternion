@@ -1496,6 +1496,27 @@ def test_numpy_array_conversion(Qs):
     assert np.array_equal(quaternion.as_quat_array(q[:, 3:7]), Q)
 
 
+def test_not_implemented():
+    Q = quaternion.quaternion(1.1, 2.2, 3.3, 4.4)
+    class B:
+        pass
+    b = B()
+    with pytest.raises(TypeError):
+        b * Q
+    with pytest.raises(TypeError):
+        Q * b
+    class A:
+        def __init__(self, data: float):
+            self._data = data
+        def __rmul__(self, other):
+            return other * self._data
+        def __mul__(self, other):
+            return self._data * other
+    a = A(1.2)
+    assert a * Q == 1.2 * Q
+    assert Q * a == Q * 1.2
+
+
 @pytest.mark.skipif(not has_scipy, reason="Scipy is not installed")
 def test_integrate_angular_velocity():
     import math
