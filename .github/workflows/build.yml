@@ -48,18 +48,28 @@ jobs:
   build_sdist:
     name: Build source distribution
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
     steps:
       - uses: actions/checkout@v2
 
       - uses: actions/setup-python@v2
         name: Install Python
         with:
-          python-version: '3.7'
+          python-version: 3.8
 
       - name: Build sdist
         run: |
           python -m pip install numpy>=1.13  # Can't rely on pep 517 to get it from pyproject.toml
           python setup.py sdist
+
+      - name: Get version
+        id: get_version
+        run: |
+          # Note: This requires numpy, so it must run after the build step
+          export new_version=$(python -c 'import setup; print(setup.version)')
+          echo "Found version ${new_version}"
+          echo "::set-output name=version::${version}"
 
       - uses: actions/upload-artifact@v2
         with:
@@ -80,6 +90,33 @@ jobs:
         with:
           name: artifact
           path: dist
+
+      - name: Get latest version
+        run: |
+          export new_version=${{needs.build_sdist.outputs.version}}
+          echo "new_version: '${new_version}'"
+          echo "new_version=${new_version}" >> $GITHUB_ENV
+
+      - name: Tag and push new version
+        shell: bash
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag -a "v${new_version}" -m "Version ${new_version}"
+          git status
+          git push --follow-tags  # Will not trigger new workflow because it uses GITHUB_TOKEN
+
+      - name: Create release
+        if: "!contains(github.event.head_commit.message, '[no release]')"
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.new_version }}
+          name: Release v${{ env.new_version }}
+          draft: false
+          prerelease: false
 
       - uses: pypa/gh-action-pypi-publish@master
         with:
