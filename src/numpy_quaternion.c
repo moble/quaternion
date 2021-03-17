@@ -315,8 +315,7 @@ pyquaternion_##fake_name(PyObject* a, PyObject* b) {                    \
     PyArray_ScalarAsCtype(b, &val32);                                  \
     return PyQuaternion_FromQuaternion(quaternion_##name##_scalar(p, val32)); \
   }                                                                    \
-  PyErr_SetString(PyExc_TypeError, "Binary operation involving quaternion and \\neither float nor quaternion."); \
-  return NULL;                                                          \
+  Py_RETURN_NOTIMPLEMENTED; \
 }
 #define QQ_QS_SQ_BINARY_QUATERNION_RETURNER(name) QQ_QS_SQ_BINARY_QUATERNION_RETURNER_FULL(name, name)
 QQ_QS_SQ_BINARY_QUATERNION_RETURNER(add)
@@ -350,8 +349,7 @@ QQ_QS_SQ_BINARY_QUATERNION_RETURNER(power)
       Py_INCREF(a);                                                     \
       return a;                                                         \
     }                                                                   \
-    PyErr_SetString(PyExc_TypeError, "Binary in-place operation involving quaternion and neither float nor quaternion."); \
-    return NULL;                                                        \
+    Py_RETURN_NOTIMPLEMENTED; \
   }
 #define QQ_QS_SQ_BINARY_QUATERNION_INPLACE(name) QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(name, name)
 QQ_QS_SQ_BINARY_QUATERNION_INPLACE(add)
