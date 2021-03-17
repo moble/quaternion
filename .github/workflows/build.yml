@@ -86,6 +86,9 @@ jobs:
     # if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
+      - uses: actions/checkout@v2
+        # Needed for the git actions
+
       - uses: actions/download-artifact@v2
         with:
           name: artifact

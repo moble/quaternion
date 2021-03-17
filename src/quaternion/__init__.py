@@ -1,7 +1,7 @@
 # Copyright (c) 2020, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/main/LICENSE>
 
-__version__ = "2021.3.17.15.26.45"
+__version__ = "2021.3.17.16.10.20"
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 __all__ = ['quaternion',
