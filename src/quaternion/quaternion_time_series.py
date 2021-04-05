@@ -45,7 +45,7 @@ def unflip_rotors(q, axis=-1, inplace=False):
     q = np.asarray(q, dtype=np.quaternion)
     ndim = q.ndim
     if abs(axis) > ndim:
-        raise ValueError(f"Requested axis {axis} is outside the input array's shape {q.shape}")
+        raise ValueError("Requested axis {0} is outside the input array's shape {1}".format(axis, q.shape))
     f = quaternion.as_float_array(q)
     flip = np.linalg.norm(np.diff(f, axis=(axis % ndim)), axis=-1) > 1.4142135623730950488016887242097
     factors = np.insert(-2 * np.mod(np.cumsum(flip, axis=axis, dtype=int), 2) + 1, 0, 1, axis=axis)
