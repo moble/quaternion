@@ -28,6 +28,13 @@ static NPY_INLINE int PyInt_Check(PyObject *op) {
 #define PyUString_FromString PyString_FromString
 #endif
 
+// This macro was introduced in python 3.4.2
+#ifndef Py_RETURN_NOTIMPLEMENTED
+/* Macro for returning Py_NotImplemented from a function */
+#define Py_RETURN_NOTIMPLEMENTED \
+    return Py_INCREF(Py_NotImplemented), Py_NotImplemented
+#endif
+
 
 // The basic python object holding a quaternion
 typedef struct {
