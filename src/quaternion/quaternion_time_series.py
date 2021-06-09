@@ -82,16 +82,16 @@ def slerp(R1, R2, t1, t2, t_out):
     return np.slerp_vectorized(R1, R2, tau)
 
 
-def squad(R_in, t_in, t_out):
+def squad(R_in, t_in, t_out, unflip_input_rotors=False):
     """Spherical "quadrangular" interpolation of rotors with a cubic spline
 
-    This is the best way to interpolate rotations.  It uses the analog
-    of a cubic spline, except that the interpolant is confined to the
-    rotor manifold in a natural way.  Alternative methods involving
-    interpolation of other coordinates on the rotation group or
-    normalization of interpolated values give bad results.  The results
-    from this method are as natural as any, and are continuous in first
-    and second derivatives.
+    This is typically the best way to interpolate rotation timeseries.
+    It uses the analog of a cubic spline, except that the interpolant
+    is confined to the rotor manifold in a natural way.  Alternative
+    methods involving interpolation of other coordinates on the
+    rotation group or normalization of interpolated values give bad
+    results.  The results from this method are continuous in first and
+    second derivatives.
 
     The input `R_in` rotors are assumed to be reasonably continuous (no
     sign flips), and the input `t` arrays are assumed to be sorted.  No
@@ -114,6 +114,10 @@ def squad(R_in, t_in, t_out):
         The times corresponding to R_in
     t_out : array of float
         The times to which R_in should be interpolated
+    unflip_input_rotors : bool, optional
+        If True, this function calls `unflip_rotors` on the input, to
+        ensure that the rotors are more continuous than not.  Defaults
+        to False.
 
     """
     from functools import partial
@@ -122,6 +126,9 @@ def squad(R_in, t_in, t_out):
 
     if R_in.size == 0 or t_out.size == 0:
         return np.array((), dtype=np.quaternion)
+
+    if unflip_input_rotors:
+        R_in = unflip_rotors(R_in, axis=0)
 
     # This list contains an index for each `t_out` such that
     # t_in[i-1] <= t_out < t_in[i]
