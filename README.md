@@ -145,19 +145,30 @@ array([quaternion(1.69392, -0.78956, -1.18434, -1.57912),
        quaternion(138.909, -25.6861, -29.9671, -34.2481)], dtype=quaternion)
 ```
 
+Note that this package represents a quaternion as a scalar, followed
+by the `x` component of the vector part, followed by `y`, followed by
+`z`.  These components can be accessed directly:
+```python
+>>> q1.w, q1.x, q1.y, q1.z
+(1.0, 2.0, 3.0, 4.0)
+```
+However, this only works on an individual `quaternion`; for arrays it
+is better to use "vectorized" operations like `as_float_array`.
+
 The following ufuncs are implemented (which means they run fast on
 numpy arrays):
-
 ```python
 add, subtract, multiply, divide, log, exp, power, negative, conjugate,
 copysign, equal, not_equal, less, less_equal, isnan, isinf, isfinite, absolute
 ```
 
-Quaternion components are stored as doubles.  Numpy arrays with
-`dtype=quaternion` can be accessed as arrays of doubles without any
-(slow, memory-consuming) copying of data; rather, a `view` of the
-exact same memory space can be created within a microsecond,
-regardless of the shape or size of the quaternion array.
+Quaternion components are stored as double-precision floating point
+numbers — `float`s, in python language, or `float64` in more precise
+numpy language.  Numpy arrays with `dtype=quaternion` can be accessed
+as arrays of doubles without any (slow, memory-consuming) copying of
+data; rather, a `view` of the exact same memory space can be created
+within a microsecond, regardless of the shape or size of the
+quaternion array.
 
 Comparison operations follow the same lexicographic ordering as
 tuples.

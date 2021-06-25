@@ -1,7 +1,7 @@
 # Copyright (c) 2020, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/main/LICENSE>
 
-__version__ = "2021.6.9.13.34.11"
+__version__ = "2021.6.25.13.18.38"
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 __all__ = ['quaternion',
@@ -62,7 +62,9 @@ def as_float_array(a):
     copied; the returned quantity is just a "view" of the original.
 
     The output view has one more dimension (of size 4) than the input
-    array, but is otherwise the same shape.
+    array, but is otherwise the same shape.  The components along
+    that last dimension represent the scalar and vector components of
+    each quaternion in that order: `w`, `x`, `y`, `z`.
 
     """
     return np.asarray(a, dtype=np.quaternion).view((np.double, 4))
@@ -74,7 +76,9 @@ def as_quat_array(a):
     The input array must have a final dimension whose size is
     divisible by four (or better yet *is* 4), because successive
     indices in that last dimension will be considered successive
-    components of the output quaternion.
+    components of the output quaternion.  Each set of 4 components
+    will be interpreted as the scalar and vector components of a
+    quaternion in that order: `w`, `x`, `y`, `z`.
 
     This function is usually fast (of order 1 microsecond) because no
     data is copied; the returned quantity is just a "view" of the
