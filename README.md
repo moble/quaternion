@@ -140,7 +140,7 @@ quaternion(-60, 12, 30, 24)
 >>> a = np.array([q1, q2])
 >>> a
 array([quaternion(1, 2, 3, 4), quaternion(5, 6, 7, 8)], dtype=quaternion)
->>> exp(a)
+>>> np.exp(a)
 array([quaternion(1.69392, -0.78956, -1.18434, -1.57912),
        quaternion(138.909, -25.6861, -29.9671, -34.2481)], dtype=quaternion)
 ```
