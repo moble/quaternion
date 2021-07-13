@@ -90,8 +90,9 @@ def squad(R_in, t_in, t_out, unflip_input_rotors=False):
     is confined to the rotor manifold in a natural way.  Alternative
     methods involving interpolation of other coordinates on the
     rotation group or normalization of interpolated values give bad
-    results.  The results from this method are continuous in first and
-    second derivatives.
+    results.  The results from this method are continuous in value and
+    first derivative everywhere, including around the sampling
+    locations.
 
     The input `R_in` rotors are assumed to be reasonably continuous (no
     sign flips), and the input `t` arrays are assumed to be sorted.  No
