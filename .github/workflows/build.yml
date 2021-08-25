@@ -19,7 +19,7 @@ jobs:
             archs: aarch64
 
     env:
-      CIBW_SKIP: cp27-* cp35-* pp*
+      CIBW_SKIP: cp27-* cp35-* cp310-* pp*
       CIBW_ARCHS: ${{matrix.archs}}
       CIBW_BEFORE_BUILD: python -c "print(('#'*130+'\n')*10)" && pip install "numpy>=1.13"
       CIBW_TEST_REQUIRES: pytest pytest-cov
