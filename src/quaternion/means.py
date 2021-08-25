@@ -36,10 +36,38 @@ def optimal_alignment_in_chordal_metric(Ra, Rb, t=None):
 
     This function simply encapsulates the mean rotor of Ra/Rb.
 
-    As in the `mean_rotor_in_chordal_metric` function, the `t`
-    argument is optional.  If it is present, the times are used to
-    weight the corresponding integral.  If it is not present, a simple
-    sum is used instead (which may be slightly faster).
+    As in the `mean_rotor_in_chordal_metric` function, the `t` argument is
+    optional.  If it is present, the times are used to weight the corresponding
+    integral.  If it is not present, a simple sum is used instead (which may be
+    slightly faster).
+
+    Notes
+    =====
+    The idea here is to find Rd such that
+
+        ∫ |Rd*Rb - Ra|^2 dt
+
+    is minimized.  [Note that the integrand is the distance in the chordal metric.]
+    We can ensure that this quantity is minimized by multiplying Rd by an
+    exponential, differentiating with respect to the argument of the exponential,
+    and setting that argument to 0.  This derivative should be 0 at the minimum.
+    We have
+
+        ∂ᵢ ∫ |exp[vᵢ]*Rd*Rb-Ra|^2 dt  →  2 ⟨ eᵢ * Rd * ∫ Rb*R̄a dt ⟩₀
+
+    where → denotes taking vᵢ→0, the symbol ⟨⟩₀ denotes taking the scalar part, and
+    eᵢ is the unit quaternionic vector in the `i` direction.  The only way for this
+    quantity to be zero for each choice of `i` is if
+
+        Rd * ∫ Rb*R̄a dt
+
+    is itself a pure scalar.  This, in turn, can only happen if either (1) the
+    integral is 0 or (2) if Rd is proportional to the conjugate of the integral:
+
+        Rd ∝ ∫ Ra*R̄b dt
+
+    Now, since we want Rd to be a rotor, we simply define it to be the normalized
+    integral.
 
     """
     return mean_rotor_in_chordal_metric(Ra / Rb, t)
