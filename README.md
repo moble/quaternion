@@ -34,14 +34,14 @@ python -m pip install numpy-quaternion
 ```
 
 (Optionally add `--user` after `install` in those last two if you're
-not using a python environment — though you should start.)
+not using a python environment — though you should start.)
 
 
 ## Dependencies
 
 The basic requirements for this code are reasonably current versions
 of `python` and `numpy`.  In particular, `python` versions 3.6 through
-3.9 are routinely tested.  Python 2.7 *might* still work, but even
+3.10 are routinely tested.  Python 2.7 *might* still work, but even
 numpy no longer supports this version, so your mileage may vary.
 Also, any `numpy` version [greater than
 1.13.0](https://github.com/moble/quaternion/issues/114) should work,
