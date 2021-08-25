@@ -796,10 +796,10 @@ pyquaternion_hash(PyObject *o)
 {
   quaternion q = ((PyQuaternion *)o)->obval;
   long value = 0x456789;
-  value = (10000004 * value) ^ _newpy_HashDouble(q.w);
-  value = (10000004 * value) ^ _newpy_HashDouble(q.x);
-  value = (10000004 * value) ^ _newpy_HashDouble(q.y);
-  value = (10000004 * value) ^ _newpy_HashDouble(q.z);
+  value = (10000004 * value) ^ _newpy_HashDouble(o, q.w);
+  value = (10000004 * value) ^ _newpy_HashDouble(o, q.x);
+  value = (10000004 * value) ^ _newpy_HashDouble(o, q.y);
+  value = (10000004 * value) ^ _newpy_HashDouble(o, q.z);
   if (value == -1)
     value = -2;
   return value;
