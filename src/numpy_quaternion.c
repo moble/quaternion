@@ -774,15 +774,32 @@ pyquaternion_richcompare(PyObject* a, PyObject* b, int op)
 }
 
 
+// This definition is stolen from numpy/core/src/common/npy_pycompat.h.  See commit at
+// https://github.com/numpy/numpy/commit/ad2a73c18dcff95d844c382c94ab7f73b5571cf3
+/*
+ * In Python 3.10a7 (or b1), python started using the identity for the hash
+ * when a value is NaN.  See https://bugs.python.org/issue43475
+ */
+#if PY_VERSION_HEX > 0x030a00a6
+#define _newpy_HashDouble _Py_HashDouble
+#else
+static NPY_INLINE Py_hash_t
+_newpy_HashDouble(PyObject *NPY_UNUSED(ignored), double val)
+{
+    return _Py_HashDouble(val);
+}
+#endif
+
+
 static long
 pyquaternion_hash(PyObject *o)
 {
   quaternion q = ((PyQuaternion *)o)->obval;
   long value = 0x456789;
-  value = (10000004 * value) ^ _Py_HashDouble(q.w);
-  value = (10000004 * value) ^ _Py_HashDouble(q.x);
-  value = (10000004 * value) ^ _Py_HashDouble(q.y);
-  value = (10000004 * value) ^ _Py_HashDouble(q.z);
+  value = (10000004 * value) ^ _newpy_HashDouble(q.w);
+  value = (10000004 * value) ^ _newpy_HashDouble(q.x);
+  value = (10000004 * value) ^ _newpy_HashDouble(q.y);
+  value = (10000004 * value) ^ _newpy_HashDouble(q.z);
   if (value == -1)
     value = -2;
   return value;
