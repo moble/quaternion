@@ -783,6 +783,9 @@ pyquaternion_richcompare(PyObject* a, PyObject* b, int op)
 #if PY_VERSION_HEX > 0x030a00a6
 #define _newpy_HashDouble _Py_HashDouble
 #else
+#if PY_VERSION_HEX < 0x030200a1
+#define Py_hash_t long
+#endif
 static NPY_INLINE Py_hash_t
 _newpy_HashDouble(PyObject *NPY_UNUSED(ignored), double val)
 {
