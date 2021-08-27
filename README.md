@@ -29,12 +29,11 @@ conda install -c conda-forge quaternion
 or
 
 ```sh
-python -m pip install numpy
-python -m pip install numpy-quaternion
+python -m pip install --upgrade --force-reinstall numpy-quaternion
 ```
 
-(Optionally add `--user` after `install` in those last two if you're
-not using a python environment — though you should start.)
+Optionally add `--user` after `install` in the second command if
+you're not using a python environment — though you should start.
 
 
 ## Dependencies
@@ -90,21 +89,21 @@ If you prefer to use `pip` (which can be run from within a `conda`
 environment), you can instead do
 
 ```sh
-python -m pip install numpy
-python -m pip install numpy-quaternion
+python -m pip install --upgrade --force-reinstall numpy-quaternion
 ```
 
 (See [here](https://snarky.ca/why-you-should-use-python-m-pip/) for a
-veteran python core contributor's explanation of why you should use
-`python -m pip` over `pip` or `pip3`.)
+veteran python core contributor's explanation of why you should always
+use `python -m pip` instead of just `pip` or `pip3`.)  The `--upgrade
+--force-reinstall` options are not always necessary, but will ensure
+that pip will update numpy if it has to.
 
 If you refuse to use `conda`, you might want to install inside your
 home directory without root privileges.  (Conda does this by default
 anyway.)  This is done by adding `--user` to the above command:
 
 ```sh
-python -m pip install --user numpy
-python -m pip install --user numpy-quaternion
+python -m pip install --user --upgrade --force-reinstall numpy-quaternion
 ```
 
 Note that pip will attempt to compile the code — which requires a
@@ -114,7 +113,7 @@ Finally, there's also the fully manual option of just downloading the
 code, changing to the code directory, and running
 
 ```sh
-pip install .
+python -m pip install .
 ```
 
 This should work regardless of the installation method, as long as you
