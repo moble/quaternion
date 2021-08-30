@@ -85,8 +85,7 @@ python), you can install this package simply as
 conda install -c conda-forge quaternion
 ```
 
-If you prefer to use `pip` (which can be run from within a `conda`
-environment), you can instead do
+If you prefer to use `pip`, you can instead do
 
 ```sh
 python -m pip install --upgrade --force-reinstall numpy-quaternion
@@ -113,7 +112,7 @@ Finally, there's also the fully manual option of just downloading the
 code, changing to the code directory, and running
 
 ```sh
-python -m pip install .
+python -m pip install --upgrade --force-reinstall .
 ```
 
 This should work regardless of the installation method, as long as you
