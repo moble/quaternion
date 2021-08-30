@@ -3,7 +3,7 @@
 # Copyright (c) 2021, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/main/LICENSE>
 
-__version__ = "2021.8.30.10.8.27"
+__version__ = "2021.8.30.10.28.26"
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 __all__ = ['quaternion',
@@ -43,7 +43,7 @@ except:
 from .means import mean_rotor_in_chordal_metric, optimal_alignment_in_chordal_metric
 
 np.quaternion = quaternion
-np.typeDict['quaternion'] = np.dtype(quaternion)
+np.sctypeDict['quaternion'] = np.dtype(quaternion)
 
 zero = np.quaternion(0, 0, 0, 0)
 one = np.quaternion(1, 0, 0, 0)
