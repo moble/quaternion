@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """\
 This package creates a quaternion type in python, and further enables numpy to
@@ -16,7 +17,7 @@ import numpy as np
 
 
 # Set this first for easier replacement
-version = "2021.8.27.16.41.17"
+version = "2021.8.30.10.8.27"
 
 if "win" in platform.lower() and not "darwin" in platform.lower():
     extra_compile_args = ["/O2"]

@@ -1,4 +1,6 @@
-# Copyright (c) 2017, Michael Boyle
+# -*- coding: utf-8 -*-
+
+# Copyright (c) 2021, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/main/LICENSE>
 
 from __future__ import division, print_function, absolute_import
