@@ -75,5 +75,66 @@ def optimal_alignment_in_chordal_metric(Ra, Rb, t=None):
     return mean_rotor_in_chordal_metric(Ra / Rb, t)
 
 
+def optimal_alignment_in_Euclidean_metric(a⃗, b⃗, t=None):
+    """Return rotor R such that R*b⃗*R̄ is as close to a⃗ as possible
+
+    As in the `optimal_alignment_in_chordal_metric` function, the `t` argument is
+    optional.  If it is present, the times are used to weight the corresponding
+    integral.  If it is not present, a simple sum is used instead (which may be
+    slightly faster).
+
+    The task of finding `R` is called "Wahba's problem"
+    <https://en.wikipedia.org/wiki/Wahba%27s_problem>, and has a simple solution
+    using eigenvectors.  In their book "Fundamentals of Spacecraft Attitude
+    Determination and Control" (2014), Markley and Crassidis say that "Davenport’s
+    method remains the best method for solving Wahba’s problem".  This constructs a
+    simple matrix from a sum over the input vectors, and extracts the optimal rotor
+    as the dominant eigenvector (the one with the largest eigenvalue).
+
+    """
+    import numpy as np
+    from scipy.linalg import eigh
+    from scipy.interpolate import InterpolatedUnivariateSpline as spline
+    from . import quaternion
+
+    a⃗ = np.asarray(a⃗, dtype=float)
+    b⃗ = np.asarray(b⃗, dtype=float)
+    if a⃗.shape != b⃗.shape:
+        raise ValueError(f"Input vectors must have same shape; a⃗.shape={a⃗.shape}, b⃗.shape={b⃗.shape}")
+    if a⃗.shape[-1] != 3:
+        raise ValueError(f"Final dimension of a⃗ and b⃗ must have size 3; it is {a⃗.shape[-1]}")
+    if t is not None:
+        if a⃗.ndim != 2:
+            raise ValueError(f"If t is not None, a⃗ and b⃗ must have exactly 2 dimensions; they have {a⃗.ndim}")
+        t = np.asarray(t, dtype=float)
+        if a⃗.shape[0] != len(t):
+            raise ValueError(f"Input time must have same length as first dimension of vectors; len(t)={len(t)}")
+
+    # This constructs the matrix given by Eq. (5.11) of Markley and Crassidis
+    S = np.empty((3, 3))
+    for i in range(3):
+        for j in range(3):
+            if t is None:
+                S[i, j] = np.sum(a⃗[..., i] * b⃗[..., j])
+            else:
+                S[i, j] = spline(t, a⃗[:, i] * b⃗[:, j]).integral(t[0], t[-1])
+
+    # This is Eq. (5.17) from Markley and Crassidis, modified to suit our
+    # conventions by flipping the sign of ``z``, and moving the final dimension
+    # to the first dimension.
+    M = [
+            [S[0,0]+S[1,1]+S[2,2],      S[2,1]-S[1,2],         S[0,2]-S[2,0],           S[1,0]-S[0,1],    ],
+            [    S[2,1]-S[1,2],      S[0,0]-S[1,1]-S[2,2],     S[0,1]+S[1,0],           S[0,2]+S[2,0],    ],
+            [    S[0,2]-S[2,0],         S[0,1]+S[1,0],      -S[0,0]+S[1,1]-S[2,2],      S[1,2]+S[2,1],    ],
+            [    S[1,0]-S[0,1],         S[0,2]+S[2,0],         S[1,2]+S[2,1],       -S[0,0]-S[1,1]+S[2,2],],
+    ]
+
+    # This extracts the dominant eigenvector, and interprets it as a rotor.  In
+    # particular, note that the *last* eigenvector output by `eigh` (the 3rd)
+    # has the largest eigenvalue.
+    eigenvector = eigh(M, subset_by_index=(3, 3))[1][:, 0]
+    return quaternion(*eigenvector)
+
+
 def mean_rotor_in_intrinsic_metric(R, t=None):
     raise NotImplementedError()

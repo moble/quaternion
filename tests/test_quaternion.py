@@ -1592,6 +1592,32 @@ def test_mean_rotor_in_chordal_metric():
         assert np.abs(q-mean2) < 1e-15, (q, mean2, length)
 
 
+@pytest.mark.skipif(not has_scipy, reason="Scipy is not installed")
+def test_optimal_alignment_in_Euclidean_metric():
+    N = 10
+    a⃗ = np.random.normal(size=(N, 3))
+    R = quaternion.quaternion(*np.random.normal(size=(4))).normalized()
+
+    # Test the exact result
+    b⃗ = quaternion.rotate_vectors(R, a⃗)
+    Rprm = quaternion.optimal_alignment_in_Euclidean_metric(a⃗, b⃗)
+    assert quaternion.rotation_intrinsic_distance(R, np.conjugate(Rprm)) < 25*eps
+    assert np.max(np.abs(a⃗ - quaternion.rotate_vectors(Rprm, b⃗))) < 40*eps
+
+    # Uniform time steps
+    t = np.linspace(-1.2, 3.4, num=N)
+    Rprmprm = quaternion.optimal_alignment_in_Euclidean_metric(a⃗, b⃗, t)
+    assert quaternion.rotation_intrinsic_distance(R, np.conjugate(Rprmprm)) < 25*eps
+    assert np.max(np.abs(a⃗ - quaternion.rotate_vectors(Rprmprm, b⃗))) < 40*eps
+
+    # Perturb b⃗ slightly
+    δ = np.sqrt(eps)
+    b⃗prmprmprm = [b⃗[i] + (2*(np.random.rand(3) - 0.5) * δ/np.sqrt(3)) for i in range(N)]
+    Rprmprmprm = quaternion.optimal_alignment_in_Euclidean_metric(a⃗, b⃗prmprmprm)
+    assert quaternion.rotation_intrinsic_distance(R, np.conjugate(Rprmprmprm)) < 25*δ
+    assert np.max(np.abs(a⃗ - quaternion.rotate_vectors(Rprmprmprm, b⃗prmprmprm))) < 40*δ
+
+
 def test_numpy_save_and_load():
     import tempfile
     a = quaternion.as_quat_array(np.random.rand(5,3,4))
