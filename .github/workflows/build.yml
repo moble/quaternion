@@ -22,7 +22,7 @@ jobs:
         archs: ["auto"]
         include:
           - os: ubuntu-latest
-            cibw_archs: "aarch64"
+            archs: "aarch64"
 
     env:
       CIBW_SKIP: cp27-* cp35-* pp*
