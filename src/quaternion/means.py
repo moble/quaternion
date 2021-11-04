@@ -75,7 +75,7 @@ def optimal_alignment_in_chordal_metric(Ra, Rb, t=None):
     return mean_rotor_in_chordal_metric(Ra / Rb, t)
 
 
-def optimal_alignment_in_Euclidean_metric(a⃗, b⃗, t=None):
+def optimal_alignment_in_Euclidean_metric(avec, bvec, t=None):
     """Return rotor R such that R*b⃗*R̄ is as close to a⃗ as possible
 
     As in the `optimal_alignment_in_chordal_metric` function, the `t` argument is
@@ -97,27 +97,27 @@ def optimal_alignment_in_Euclidean_metric(a⃗, b⃗, t=None):
     from scipy.interpolate import InterpolatedUnivariateSpline as spline
     from . import quaternion
 
-    a⃗ = np.asarray(a⃗, dtype=float)
-    b⃗ = np.asarray(b⃗, dtype=float)
-    if a⃗.shape != b⃗.shape:
-        raise ValueError(f"Input vectors must have same shape; a⃗.shape={a⃗.shape}, b⃗.shape={b⃗.shape}")
-    if a⃗.shape[-1] != 3:
-        raise ValueError(f"Final dimension of a⃗ and b⃗ must have size 3; it is {a⃗.shape[-1]}")
+    avec = np.asarray(avec, dtype=float)
+    bvec = np.asarray(bvec, dtype=float)
+    if avec.shape != bvec.shape:
+        raise ValueError("Input vectors must have same shape; avec.shape={!r}, bvec.shape={!r}".format(avec.shape, bvec.shape))
+    if avec.shape[-1] != 3:
+        raise ValueError("Final dimension of avec and bvec must have size 3; it is {!r}".format(avec.shape[-1]))
     if t is not None:
-        if a⃗.ndim != 2:
-            raise ValueError(f"If t is not None, a⃗ and b⃗ must have exactly 2 dimensions; they have {a⃗.ndim}")
+        if avec.ndim != 2:
+            raise ValueError("If t is not None, avec and bvec must have exactly 2 dimensions; they have {!r}".format(avec.ndim))
         t = np.asarray(t, dtype=float)
-        if a⃗.shape[0] != len(t):
-            raise ValueError(f"Input time must have same length as first dimension of vectors; len(t)={len(t)}")
+        if avec.shape[0] != len(t):
+            raise ValueError("Input time must have same length as first dimension of vectors; len(t)={!r}".format(len(t)))
 
     # This constructs the matrix given by Eq. (5.11) of Markley and Crassidis
     S = np.empty((3, 3))
     for i in range(3):
         for j in range(3):
             if t is None:
-                S[i, j] = np.sum(a⃗[..., i] * b⃗[..., j])
+                S[i, j] = np.sum(avec[..., i] * bvec[..., j])
             else:
-                S[i, j] = spline(t, a⃗[:, i] * b⃗[:, j]).integral(t[0], t[-1])
+                S[i, j] = spline(t, avec[:, i] * bvec[:, j]).integral(t[0], t[-1])
 
     # This is Eq. (5.17) from Markley and Crassidis, modified to suit our
     # conventions by flipping the sign of ``z``, and moving the final dimension
