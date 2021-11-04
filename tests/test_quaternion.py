@@ -189,14 +189,14 @@ def test_isclose():
 
     np.random.seed(1234)
     a = quaternion.as_quat_array(np.random.random((3, 5, 4)))
-    assert quaternion.allclose(1e10 * a, 1.00001e10 * a, rtol=1.e-5, atol=2.e-8, verbose=True) == True
+    assert quaternion.allclose(1e10 * a, 1.00001e10 * a, rtol=1.e-5, atol=2.e-8) == True
     assert quaternion.allclose(1e-7 * a, 1e-8 * a, rtol=1.e-5, atol=2.e-8) == False
-    assert quaternion.allclose(1e10 * a, 1.00001e10 * a, rtol=1.e-5, atol=2.e-8, verbose=True) == True
-    assert quaternion.allclose(1e-8 * a, 1e-9 * a, rtol=1.e-5, atol=2.e-8, verbose=True) == True
+    assert quaternion.allclose(1e10 * a, 1.00001e10 * a, rtol=1.e-5, atol=2.e-8) == True
+    assert quaternion.allclose(1e-8 * a, 1e-9 * a, rtol=1.e-5, atol=2.e-8) == True
     assert quaternion.allclose(1e10 * a, 1.0001e10 * a, rtol=1.e-5, atol=2.e-8) == False
-    assert quaternion.allclose(1e-8 * a, 1e-9 * a, rtol=1.e-5, atol=2.e-8, verbose=True) == True
+    assert quaternion.allclose(1e-8 * a, 1e-9 * a, rtol=1.e-5, atol=2.e-8) == True
     assert quaternion.allclose(np.nan * a, np.nan * a) == False
-    assert quaternion.allclose(np.nan * a, np.nan * a, equal_nan=True, verbose=True) == True
+    assert quaternion.allclose(np.nan * a, np.nan * a, equal_nan=True) == True
 
 
 @pytest.mark.parametrize("q", make_Qs())
@@ -276,7 +276,7 @@ def test_as_rotation_matrix(Rs):
         assert allclose(quat_mat(R), quaternion.as_rotation_matrix(1.1*R), atol=2*eps)
 
         for v in [quaternion.x, quaternion.y, quaternion.z]:
-            assert np.allclose(
+            assert allclose(
                 quaternion.as_rotation_matrix(R) @ v.vec,
                 quaternion.as_float_array(R * v * R.conjugate())[..., 1:],
                 rtol=0, atol=2*eps
@@ -313,7 +313,7 @@ def test_from_rotation_matrix(Rs):
             rot = quaternion.as_rotation_matrix(R1)
             R = quaternion.from_rotation_matrix(rot, nonorthogonal=nonorthogonal)
             for v in [quaternion.x, quaternion.y, quaternion.z]:
-                assert np.allclose(
+                assert allclose(
                     rot @ v.vec,
                     quaternion.as_float_array(R * v * R.conjugate())[..., 1:],
                     rtol=0, atol=rot_mat_eps
@@ -367,7 +367,7 @@ def test_rotate_vectors(Rs):
     vecs = np.random.rand(3)
     quats = quaternion.z
     vecsprime = quaternion.rotate_vectors(quats, vecs)
-    assert np.allclose(vecsprime,
+    assert allclose(vecsprime,
                        (quats * quaternion.quaternion(*vecs) * quats.inverse()).vec,
                        rtol=0.0, atol=0.0)
     assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
@@ -376,44 +376,44 @@ def test_rotate_vectors(Rs):
     quats = quaternion.z
     vecsprime = quaternion.rotate_vectors(quats, vecs)
     for i, vec in enumerate(vecs):
-        assert np.allclose(vecsprime[i],
-                           (quats * quaternion.quaternion(*vec) * quats.inverse()).vec,
-                           rtol=0.0, atol=0.0)
+        assert allclose(vecsprime[i],
+                        (quats * quaternion.quaternion(*vec) * quats.inverse()).vec,
+                        rtol=0.0, atol=0.0)
     assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
     # Test (1)*(5) inner axis
     vecs = np.random.rand(3, 5)
     quats = quaternion.z
     vecsprime = quaternion.rotate_vectors(quats, vecs, axis=-2)
     for i, vec in enumerate(vecs.T):
-        assert np.allclose(vecsprime[:, i],
-                           (quats * quaternion.quaternion(*vec) * quats.inverse()).vec,
-                           rtol=0.0, atol=0.0)
+        assert allclose(vecsprime[:, i],
+                        (quats * quaternion.quaternion(*vec) * quats.inverse()).vec,
+                        rtol=0.0, atol=0.0)
     assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
     # Test (N)*(1)
     vecs = np.random.rand(3)
     quats = Rs
     vecsprime = quaternion.rotate_vectors(quats, vecs)
-    assert np.allclose(vecsprime,
-                       [vprime.vec for vprime in quats * quaternion.quaternion(*vecs) * ~quats],
-                       rtol=1e-15, atol=1e-15)
+    assert allclose(vecsprime,
+                    [vprime.vec for vprime in quats * quaternion.quaternion(*vecs) * ~quats],
+                    rtol=1e-15, atol=1e-15)
     assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
     # Test (N)*(5)
     vecs = np.random.rand(5, 3)
     quats = Rs
     vecsprime = quaternion.rotate_vectors(quats, vecs)
     for i, vec in enumerate(vecs):
-        assert np.allclose(vecsprime[:, i],
-                           [vprime.vec for vprime in quats * quaternion.quaternion(*vec) * ~quats],
-                           rtol=1e-15, atol=1e-15)
+        assert allclose(vecsprime[:, i],
+                        [vprime.vec for vprime in quats * quaternion.quaternion(*vec) * ~quats],
+                        rtol=1e-15, atol=1e-15)
     assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
     # Test (N)*(5) inner axis
     vecs = np.random.rand(3, 5)
     quats = Rs
     vecsprime = quaternion.rotate_vectors(quats, vecs, axis=-2)
     for i, vec in enumerate(vecs.T):
-        assert np.allclose(vecsprime[:, :, i],
-                           [vprime.vec for vprime in quats * quaternion.quaternion(*vec) * ~quats],
-                           rtol=1e-15, atol=1e-15)
+        assert allclose(vecsprime[:, :, i],
+                        [vprime.vec for vprime in quats * quaternion.quaternion(*vec) * ~quats],
+                        rtol=1e-15, atol=1e-15)
     assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
 
 
@@ -1143,28 +1143,41 @@ def test_slerp(Rs):
     # Test simple increases in each dimension
     for Q2 in ones[1:]:
         for t in np.linspace(0.0, 1.0, num=100, endpoint=True):
-            assert quaternion.rotation_chordal_distance(slerp_evaluate(quaternion.one, Q2, t),
-                                                        (np.cos(np.pi * t / 2) * quaternion.one + np.sin(
-                                                            np.pi * t / 2) * Q2)) < slerp_precision
+            assert quaternion.rotation_chordal_distance(
+                slerp_evaluate(quaternion.one, Q2, t),
+                (np.cos(np.pi * t / 2) * quaternion.one + np.sin(np.pi * t / 2) * Q2)
+            ) < slerp_precision
         t = np.linspace(0.0, 1.0, num=100, endpoint=True)
-        assert allclose(slerp(quaternion.one, Q2, 0.0, 1.0, t),
-                        np.cos(np.pi * t / 2) * quaternion.one + np.sin(np.pi * t / 2) * Q2, verbose=True)
-        assert allclose(slerp(quaternion.one, Q2, -10.0, 20.0, 30 * t - 10.0),
-                        np.cos(np.pi * t / 2) * quaternion.one + np.sin(np.pi * t / 2) * Q2, verbose=True)
+        assert allclose(
+            slerp(quaternion.one, Q2, 0.0, 1.0, t),
+            np.cos(np.pi * t / 2) * quaternion.one + np.sin(np.pi * t / 2) * Q2,
+            rtol=slerp_precision
+        )
+        assert allclose(
+            slerp(quaternion.one, Q2, -10.0, 20.0, 30 * t - 10.0),
+            np.cos(np.pi * t / 2) * quaternion.one + np.sin(np.pi * t / 2) * Q2,
+            rtol=slerp_precision
+        )
         t = 1.5 * t - 0.125
-        assert allclose(slerp(quaternion.one, Q2, 0.0, 1.0, t),
-                        np.cos(np.pi * t / 2) * quaternion.one + np.sin(np.pi * t / 2) * Q2, verbose=True)
-    # Test that (slerp of rotated rotors) is (rotated slerp of rotors)
+        assert allclose(
+            slerp(quaternion.one, Q2, 0.0, 1.0, t),
+            np.cos(np.pi * t / 2) * quaternion.one + np.sin(np.pi * t / 2) * Q2,
+            rtol=slerp_precision
+        )
+    # Test that slerp(rotate(rotors)) equals rotate(slerp(rotors))
     for R in Rs:
         for Q2 in ones[1:]:
             for t in np.linspace(0.0, 1.0, num=100, endpoint=True):
-                assert quaternion.rotation_chordal_distance(R * slerp_evaluate(quaternion.one, Q2, t),
-                                                            slerp_evaluate(R * quaternion.one, R * Q2,
-                                                                             t)) < slerp_precision
+                assert quaternion.rotation_chordal_distance(
+                    R * slerp_evaluate(quaternion.one, Q2, t),
+                    slerp_evaluate(R * quaternion.one, R * Q2, t)
+                ) < slerp_precision
             t = np.linspace(0.0, 1.0, num=100, endpoint=True)
-            assert allclose(R * slerp(quaternion.one, Q2, 0.0, 1.0, t),
-                            slerp(R * quaternion.one, R * Q2, 0.0, 1.0, t),
-                            verbose=True)
+            assert allclose(
+                R * slerp(quaternion.one, Q2, 0.0, 1.0, t),
+                slerp(R * quaternion.one, R * Q2, 0.0, 1.0, t),
+                rtol=slerp_precision
+            )
 
 
 @pytest.mark.skipif(os.environ.get('FAST'), reason="Takes ~2 seconds")
@@ -1306,48 +1319,48 @@ def test_casts():
 
 def test_ufuncs(Rs, Qs):
     np.random.seed(1234)
-    assert np.allclose(np.abs(Rs), np.ones(Rs.shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(np.abs(np.log(Rs) - np.array([r.log() for r in Rs])), np.zeros(Rs.shape), atol=1.e-14,
-                       rtol=1.e-15)
-    assert np.allclose(np.abs(np.exp(Rs) - np.array([r.exp() for r in Rs])), np.zeros(Rs.shape), atol=1.e-14,
-                       rtol=1.e-15)
-    assert np.allclose(np.abs(Rs - Rs), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(np.abs(Rs + (-Rs)), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(np.abs(np.conjugate(Rs) - np.array([r.conjugate() for r in Rs])), np.zeros(Rs.shape),
-                       atol=1.e-14, rtol=1.e-15)
+    assert allclose(np.abs(Rs), np.ones(Rs.shape), atol=1.e-14, rtol=1.e-15)
+    assert allclose(np.abs(np.log(Rs) - np.array([r.log() for r in Rs])), np.zeros(Rs.shape), atol=1.e-14,
+                    rtol=1.e-15)
+    assert allclose(np.abs(np.exp(Rs) - np.array([r.exp() for r in Rs])), np.zeros(Rs.shape), atol=1.e-14,
+                    rtol=1.e-15)
+    assert allclose(np.abs(Rs - Rs), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+    assert allclose(np.abs(Rs + (-Rs)), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+    assert allclose(np.abs(np.conjugate(Rs) - np.array([r.conjugate() for r in Rs])), np.zeros(Rs.shape),
+                    atol=1.e-14, rtol=1.e-15)
     assert np.all(Rs == Rs)
     assert np.all(Rs <= Rs)
     for i in range(10):
         x = np.random.uniform(-10, 10)
-        assert np.allclose(np.abs(Rs * x - np.array([r * x for r in Rs])), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
-        # assert np.allclose( np.abs( x*Rs - np.array([r*x for r in Rs]) ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+        assert allclose(np.abs(Rs * x - np.array([r * x for r in Rs])), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+        # assert allclose( np.abs( x*Rs - np.array([r*x for r in Rs]) ), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
         strict_assert(False)
-        assert np.allclose(np.abs(Rs / x - np.array([r / x for r in Rs])), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
-        assert np.allclose(np.abs(Rs ** x - np.array([r ** x for r in Rs])), np.zeros(Rs.shape), atol=1.e-14,
-                           rtol=1.e-15)
-    assert np.allclose(
+        assert allclose(np.abs(Rs / x - np.array([r / x for r in Rs])), np.zeros(Rs.shape), atol=1.e-14, rtol=1.e-15)
+        assert allclose(np.abs(Rs ** x - np.array([r ** x for r in Rs])), np.zeros(Rs.shape), atol=1.e-14,
+                        rtol=1.e-15)
+    assert allclose(
         np.abs(Qs[Qs_finite] + Qs[Qs_finite] - np.array([q1 + q2 for q1, q2 in zip(Qs[Qs_finite], Qs[Qs_finite])])),
         np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(
+    assert allclose(
         np.abs(Qs[Qs_finite] - Qs[Qs_finite] - np.array([q1 - q2 for q1, q2 in zip(Qs[Qs_finite], Qs[Qs_finite])])),
         np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(
+    assert allclose(
         np.abs(Qs[Qs_finite] * Qs[Qs_finite] - np.array([q1 * q2 for q1, q2 in zip(Qs[Qs_finite], Qs[Qs_finite])])),
         np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
     for Q in Qs[Qs_finite]:
-        assert np.allclose(np.abs(Qs[Qs_finite] * Q - np.array([q1 * Q for q1 in Qs[Qs_finite]])),
+        assert allclose(np.abs(Qs[Qs_finite] * Q - np.array([q1 * Q for q1 in Qs[Qs_finite]])),
                            np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
-        # assert np.allclose( np.abs( Q*Qs[Qs_finite] - np.array([Q*q1 for q1 in Qs[Qs_finite]]) ),
+        # assert allclose( np.abs( Q*Qs[Qs_finite] - np.array([Q*q1 for q1 in Qs[Qs_finite]]) ),
         # np.zeros(Qs[Qs_finite].shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(np.abs(Qs[Qs_finitenonzero] / Qs[Qs_finitenonzero]
-                              - np.array([q1 / q2 for q1, q2 in zip(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero])])),
-                       np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(np.abs(Qs[Qs_finitenonzero] ** Qs[Qs_finitenonzero]
-                              - np.array([q1 ** q2 for q1, q2 in zip(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero])])),
-                       np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
-    assert np.allclose(np.abs(~Qs[Qs_finitenonzero]
-                              - np.array([q.inverse() for q in Qs[Qs_finitenonzero]])),
-                       np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
+    assert allclose(np.abs(Qs[Qs_finitenonzero] / Qs[Qs_finitenonzero]
+                           - np.array([q1 / q2 for q1, q2 in zip(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero])])),
+                    np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
+    assert allclose(np.abs(Qs[Qs_finitenonzero] ** Qs[Qs_finitenonzero]
+                           - np.array([q1 ** q2 for q1, q2 in zip(Qs[Qs_finitenonzero], Qs[Qs_finitenonzero])])),
+                    np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
+    assert allclose(np.abs(~Qs[Qs_finitenonzero]
+                           - np.array([q.inverse() for q in Qs[Qs_finitenonzero]])),
+                    np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
 
 
 @pytest.mark.parametrize(
