@@ -1,11 +1,11 @@
 ## These options mostly follow the ones used in
 ## https://github.com/matplotlib/matplotlib/blob/main/.github/workflows/cibuildwheel.yml, though I
-## try to be a little less complicated
+## try to be a little less complicated.
 
 
 name: tests
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build_wheels:
