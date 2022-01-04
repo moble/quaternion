@@ -679,10 +679,8 @@ def rotate_vectors(R, v, axis=-1):
 
     Notes
     -----
-    For simplicity, this function converts the input quaternion(s) to matrix form,
-    and rotates the input vector(s) by the usual matrix multiplication.  As noted
-    above, if each input quaternion is only used to rotate a single vector, this is
-    not the most efficient approach.  The simple formula shown above is faster than
+    As noted above, if each input quaternion is only used to rotate a single vector,
+    this is not the most efficient approach.  The simple formula shown above is faster than
     this function, though it should be noted that the most efficient approach (in
     terms of operation counts) is to use the formula
 
@@ -694,7 +692,6 @@ def rotate_vectors(R, v, axis=-1):
     quaternions, and just rotating a single vector each time, you might want to
     implement that alternative algorithm using numba (or something that doesn't use
     python).
-
     """
     R = np.asarray(R, dtype=np.quaternion)
     v = np.asarray(v, dtype=float)
@@ -702,14 +699,9 @@ def rotate_vectors(R, v, axis=-1):
         raise ValueError("Input `v` does not have at least one dimension of length 3")
     if v.shape[axis] != 3:
         raise ValueError("Input `v` axis {0} has length {1}, not 3.".format(axis, v.shape[axis]))
-    m = as_rotation_matrix(R)
-    m_axes = list(range(m.ndim))
-    v_axes = list(range(m.ndim, m.ndim+v.ndim))
-    mv_axes = list(v_axes)
-    mv_axes[axis] = m_axes[-2]
-    mv_axes = m_axes[:-2] + mv_axes
-    v_axes[axis] = m_axes[-1]
-    return np.einsum(m, m_axes, v, v_axes, mv_axes)
+    q_v = from_vector_part(v, vector_axis=axis)
+    rotvec = as_vector_part((np.outer(R, q_v).T*R.conj()).T).squeeze()
+    return np.moveaxis(rotvec, -1, axis)
 
 
 def isclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False):
