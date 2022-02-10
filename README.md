@@ -39,13 +39,15 @@ you're not using a python environment — though you should start.
 ## Dependencies
 
 The basic requirements for this code are reasonably current versions
-of `python` and `numpy`.  In particular, `python` versions 3.8
-through 3.10 are routinely tested.  Earlier versions, including
-Python 2.7, *might* still work, but even numpy no longer supports
-this version, so your mileage may vary.  Also, any `numpy` version
-[greater than 1.13.0](https://github.com/moble/quaternion/issues/114)
-should work, but the tests are run on the most recent release at the
-time of the test.
+of `python` and `numpy`.  In particular, `python` versions 3.8 through
+3.10 are routinely tested.  Earlier `python` versions, including 2.7,
+will work with older versions of this package; they *might* still work
+with more recent versions of this package, but even numpy no longer
+supports `python` previous to 3.8, so your mileage may vary.  Also,
+any `numpy` version [greater than
+1.13.0](https://github.com/moble/quaternion/issues/114) should work,
+but the tests are run on the most recent release at the time of the
+test.
 
 However, certain advanced functions in this package (including
 `squad`, `mean_rotor_in_intrinsic_metric`,
