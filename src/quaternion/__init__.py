@@ -3,7 +3,7 @@
 # Copyright (c) 2021, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/main/LICENSE>
 
-__version__ = "2022.2.9.12.46.0"
+__version__ = "2022.2.9.19.55.57"
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 __all__ = ['quaternion',
@@ -703,13 +703,12 @@ def rotate_vectors(R, v, axis=-1):
     if v.shape[axis] != 3:
         raise ValueError("Input `v` axis {0} has length {1}, not 3.".format(axis, v.shape[axis]))
     m = as_rotation_matrix(R)
-    m_axes = list(range(m.ndim))
-    v_axes = list(range(m.ndim, m.ndim+v.ndim))
-    mv_axes = list(v_axes)
-    mv_axes[axis] = m_axes[-2]
-    mv_axes = m_axes[:-2] + mv_axes
-    v_axes[axis] = m_axes[-1]
-    return np.einsum(m, m_axes, v, v_axes, mv_axes)
+    tensordot_axis = m.ndim-2
+    final_axis = tensordot_axis + (axis % v.ndim)
+    return np.moveaxis(
+        np.tensordot(m, v, axes=(-1, axis)),
+        tensordot_axis, final_axis
+    )
 
 
 def isclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False):

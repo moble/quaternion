@@ -416,6 +416,20 @@ def test_rotate_vectors(Rs):
                         rtol=1e-15, atol=1e-15)
     assert quats.shape + vecs.shape == vecsprime.shape, ("Out of shape!", quats.shape, vecs.shape, vecsprime.shape)
 
+    for Rshape in [(1,), (10,), (100,), (1000,), (5, 7), (5, 7, 23)]:
+        R = np.random.normal(size=Rshape+(4,))
+        R = quaternion.from_float_array(R / np.linalg.norm(R, axis=-1)[..., np.newaxis])
+        for vshape in [(1,), (2,), (3,), (4,), (20,), (200,), (2000,), (11, 13), (11, 13, 29)]:
+            v = np.random.normal(size=vshape+(3,))
+            Rprime = quaternion.rotate_vectors(R, v)
+            expected_shape = Rshape + vshape + (3,)
+            assert Rprime.shape == expected_shape
+        for vshape, axis in [((7, 3, 5), 1), ((7, 3, 5), -2), ((7, 3, 5, 11), 1), ((7, 3, 5, 11), -3)]:
+            v = np.random.normal(size=vshape)
+            Rprime = quaternion.rotate_vectors(R, v, axis=axis)
+            expected_shape = Rshape + vshape
+            assert Rprime.shape == expected_shape
+
 
 def test_allclose(Qs):
     for q in Qs[Qs_nonnan]:
