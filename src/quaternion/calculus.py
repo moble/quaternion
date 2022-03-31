@@ -466,15 +466,15 @@ try:
     indefinite_integral = spline_indefinite_integral
     definite_integral = spline_definite_integral
 except ImportError:
-    import warnings
-    warning_text = (
-        "\n\n" + "!" * 57 + "\n" +
-        "Could not import from scipy, which means that derivatives\n" +
-        "and integrals will use less accurate finite-differencing\n" +
-        "techniques.  You may want to install scipy." +
-        "\n" + "!" * 57 + "\n"
-    )
-    warnings.warn(warning_text)
+    # import warnings
+    # warning_text = (
+    #     "\n\n" + "!" * 57 + "\n" +
+    #     "Could not import from scipy, which means that derivatives\n" +
+    #     "and integrals will use less accurate finite-differencing\n" +
+    #     "techniques.  You may want to install scipy." +
+    #     "\n" + "!" * 57 + "\n"
+    # )
+    # warnings.warn(warning_text)
     derivative = fd_derivative
     antiderivative = fd_indefinite_integral
     indefinite_integral = fd_indefinite_integral
