@@ -8,12 +8,54 @@ name: tests
 on: [push]
 
 jobs:
+
+  get_new_version:
+    name: Get new version number
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.10'
+
+      - name: Install tomli
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip tomli
+
+      - name: Install poetry
+        shell: bash
+        run: |
+          curl -fsS -o get-poetry.py https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py
+          python get-poetry.py -y
+
+      - name: Bump version
+        id: get_version
+        shell: bash
+        env:
+          github_event_head_commit_message: ${{ github.event.head_commit.message }}
+        run: |
+          export version_bump_rule=$(python .github/scripts/parse_bump_rule.py)
+          echo "version_bump_rule: '${version_bump_rule}'"
+          $HOME/.poetry/bin/poetry version "${version_bump_rule}"
+          export new_version=$(python .github/scripts/parse_version.py pyproject.toml)
+          echo "new_version: '${new_version}'"
+          echo "::set-output name=version::${new_version}"
+
+
   build_wheels:
+    needs: get_new_version
     name: Build wheels on ${{ matrix.os }} for ${{matrix.archs}}
 
     runs-on: ${{ matrix.os }}
 
-    if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]')"
+    if: >-
+        !contains(github.event.head_commit.message, '[skip ci]')
+        && !contains(github.event.head_commit.message, '[skip tests]')
 
     strategy:
       fail-fast: false
@@ -49,6 +91,13 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: Update versions
+        shell: bash
+        run: |
+          export new_version=${{needs.get_new_version.outputs.version}}
+          echo "Updating version to '${new_version}'"
+          python .github/scripts/update_versions.py
+
       - name: Install cibuildwheel
         run: |
           python -m pip install --upgrade pip
@@ -64,6 +113,7 @@ jobs:
 
 
   build_sdist:
+    needs: get_new_version
     name: Build source distribution
     runs-on: ubuntu-latest
     outputs:
@@ -76,18 +126,17 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: Update versions
+        shell: bash
+        run: |
+          export new_version=${{needs.get_new_version.outputs.version}}
+          echo "Updating version to '${new_version}'"
+          python .github/scripts/update_versions.py
+
       - name: Build sdist
         run: |
           python -m pip install oldest-supported-numpy
           python setup.py sdist
-
-      - name: Get version
-        id: get_version
-        run: |
-          # Note: This requires numpy, so it must run after the build step
-          export new_version=$(python -c 'import setup; print(setup.version)')
-          echo "Found version ${new_version}"
-          echo "::set-output name=version::${new_version}"
 
       - uses: actions/upload-artifact@v2
         with:
@@ -97,32 +146,39 @@ jobs:
   upload_pypi:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
-    if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[no release]')"
-    # # upload to PyPI on every tag starting with 'v'
-    # if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
-    # # publish when a GitHub Release is created
-    # if: github.event_name == 'release' && github.event.action == 'published'
+    if: >-
+        github.ref == 'refs/heads/main'
+        && !contains(github.event.head_commit.message, '[no release]')
+        && (success() || contains(github.event.head_commit.message, '[skip tests]'))
 
     steps:
-      - uses: actions/checkout@v2
-        # Needed for the git actions
+      - name: Check out code
+        uses: actions/checkout@v2
 
       - uses: actions/download-artifact@v2
         with:
           name: artifact
           path: dist
 
-      - name: Get latest version
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.10'
+
+      - name: Update versions
+        shell: bash
         run: |
-          export new_version=${{needs.build_sdist.outputs.version}}
-          echo "new_version: '${new_version}'"
+          export new_version=${{needs.get_new_version.outputs.version}}
+          echo "Updating version to '${new_version}'"
           echo "new_version=${new_version}" >> $GITHUB_ENV
+          python .github/scripts/update_versions.py
 
       - name: Tag and push new version
         shell: bash
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
+          git commit -m "Update version for new release" pyproject.toml setup.py src/quaternion/__init__.py
           git tag -a "v${new_version}" -m "Version ${new_version}"
           git status
           git push --follow-tags  # Will not trigger new workflow because it uses GITHUB_TOKEN
