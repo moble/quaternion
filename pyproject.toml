@@ -1,3 +1,12 @@
+[tool.poetry]
+name = "quaternion"
+version = "2022.3.0"
+description = "Add a quaternion dtype to NumPy"
+readme = "README.md"
+license = "MIT"
+authors = ["Michael Boyle <mob22@cornell.edu>"]
+homepage = "https://github.com/moble/quaternion"
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 norecursedirs = ".* build dist *.egg-info install ENV"

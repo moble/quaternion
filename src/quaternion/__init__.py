@@ -3,7 +3,7 @@
 # Copyright (c) 2021, Michael Boyle
 # See LICENSE file for details: <https://github.com/moble/quaternion/blob/main/LICENSE>
 
-__version__ = "2022.2.10.14.20.39"
+__version__ = "2022.3.0"
 __doc_title__ = "Quaternion dtype for NumPy"
 __doc__ = "Adds a quaternion dtype to NumPy."
 __all__ = ['quaternion',
@@ -204,7 +204,7 @@ def as_spinor_array(a):
     assert a.dtype == np.dtype(np.quaternion)
     # I'm not sure why it has to be so complicated, but all of these steps
     # appear to be necessary in this case.
-    return a.view(np.float64).reshape(a.shape + (4,))[..., [0, 3, 2, 1]].ravel().view(np.complex).reshape(a.shape + (2,))
+    return a.view(np.float64).reshape(a.shape + (4,))[..., [0, 3, 2, 1]].ravel().view(np.complex128).reshape(a.shape + (2,))
 
 
 def as_rotation_matrix(q):

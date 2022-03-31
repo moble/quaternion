@@ -13,14 +13,14 @@ try:
     from numba import njit, jit, vectorize, int64, float64, complex128
     GOT_NUMBA = True
 except ImportError:
-    import warnings
-    warning_text = \
-        "\n\n" + "!" * 53 + "\n" + \
-        "Could not import from numba, which means that some\n" + \
-        "parts of this code may run MUCH more slowly.  You\n" + \
-        "may wish to install numba." + \
-        "\n" + "!" * 53 + "\n"
-    warnings.warn(warning_text)
+    # import warnings
+    # warning_text = \
+    #     "\n\n" + "!" * 53 + "\n" + \
+    #     "Could not import from numba, which means that some\n" + \
+    #     "parts of this code may run MUCH more slowly.  You\n" + \
+    #     "may wish to install numba." + \
+    #     "\n" + "!" * 53 + "\n"
+    # warnings.warn(warning_text)
     def _identity_decorator_outer(*args, **kwargs):
         def _identity_decorator_inner(fn):
             return fn
