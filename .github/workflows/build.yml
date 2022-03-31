@@ -145,6 +145,7 @@ jobs:
 
   upload_pypi:
     needs: [build_wheels, build_sdist]
+    name: Tag and release
     runs-on: ubuntu-latest
     if: >-
         github.ref == 'refs/heads/main'
