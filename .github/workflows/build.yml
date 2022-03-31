@@ -82,7 +82,8 @@ jobs:
         with:
           platforms: arm64
 
-      - uses: actions/checkout@v2
+      - name: "Check out code"
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
@@ -116,10 +117,14 @@ jobs:
     needs: get_new_version
     name: Build source distribution
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.get_version.outputs.version }}
+
+    if: >-
+        !contains(github.event.head_commit.message, '[skip ci]')
+        && !contains(github.event.head_commit.message, '[skip tests]')
+
     steps:
-      - uses: actions/checkout@v2
+      - name: 'Check out code'
+        uses: actions/checkout@v2
 
       - uses: actions/setup-python@v2
         name: Install Python
@@ -144,7 +149,7 @@ jobs:
 
 
   upload_pypi:
-    needs: [build_wheels, build_sdist]
+    needs: [get_new_version, build_wheels, build_sdist]
     name: Tag and release
     runs-on: ubuntu-latest
     if: >-
@@ -171,12 +176,12 @@ jobs:
         run: |
           export new_version=${{needs.get_new_version.outputs.version}}
           echo "Updating version to '${new_version}'"
-          echo "new_version=${new_version}" >> $GITHUB_ENV
           python .github/scripts/update_versions.py
 
       - name: Tag and push new version
         shell: bash
         run: |
+          export new_version=${{needs.get_new_version.outputs.version}}
           git config user.name github-actions
           git config user.email github-actions@github.com
           git commit -m "Update version for new release" pyproject.toml setup.py src/quaternion/__init__.py
@@ -191,13 +196,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ env.new_version }}
-          name: Release v${{ env.new_version }}
+          tag_name: v${{ needs.get_new_version.outputs.version }}
+          name: Release v${{ needs.get_new_version.outputs.version }}
           draft: false
           prerelease: false
 
-      - uses: pypa/gh-action-pypi-publish@master
+      - name: Send to PyPI
+        uses: pypa/gh-action-pypi-publish@master
         with:
           user: __token__
           password: ${{ secrets.PYPI_PASSWORD }}
-          # To test: repository_url: https://test.pypi.org/legacy/
