@@ -8,7 +8,7 @@ def update(version):
     replacement = r'\1 = "' + version + '"'
     with fileinput.input(files=("setup.py", "src/quaternion/__init__.py"), inplace=True) as f:
         for line in f:
-            print(pattern.sub(replacement, line))
+            print(pattern.sub(replacement, line), end="")
 
 version = os.environ["new_version"]
 
