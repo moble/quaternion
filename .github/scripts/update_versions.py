@@ -4,6 +4,8 @@ import fileinput
 
 
 def update(version):
+    if not version:
+        raise ValueError("Can't replace version with empty string")
     files = ("pyproject.toml", "setup.py", "src/quaternion/__init__.py")
     pattern = re.compile('^(__version__|version) *= *".*?"')
     replacement = r'\1 = "' + version + '"'
