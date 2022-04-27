@@ -397,6 +397,31 @@ def minimal_rotation(R, t, iterations=2):
 
 
 def angular_velocity(R, t):
+    """Approximate angular velocity of a rotating frame
+
+    Parameters
+    ----------
+    R : array_like
+        Quaternion-valued function of time evaluated at a set of times.  This
+        represents the quaternion that rotates the standard (x,y,z) frame into the
+        moving frame at each instant.
+    t : array_like
+        Times at which `R` is evaluated.
+
+    Returns
+    -------
+    Omega : array_like
+        The angular velocity (three-vector) as a function of time `t`.  A vector
+        that is fixed in the moving frame rotates with this angular velocity with
+        respect to the inertial frame.
+
+    Notes
+    -----
+    The angular velocity at each instant is given by 2 * (dR/dt) / R.  This
+    function approximates the input `R` using a cubic spline, and differentiates it
+    as such.
+
+    """
     from scipy.interpolate import CubicSpline
     R = quaternion.as_float_array(R)
     Rdot = CubicSpline(t, R).derivative()(t)
