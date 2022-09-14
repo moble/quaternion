@@ -227,10 +227,17 @@ array([[ 0.93138726,  0.46972279,  0.18706385,  0.86605021],
 It is also possible to convert a quaternion to or from a 3x3 array of
 floats representing a rotation matrix, or an array of N quaternions to
 or from an Nx3x3 array of floats representing N rotation matrices,
-using `as_rotation_matrix` and `from_rotation_matrix`.  Similar
-conversions are possible for rotation vectors using
+using the functions `as_rotation_matrix` and `from_rotation_matrix`.  Similar
+conversions are possible for rotation vectors using the functions
 `as_rotation_vector` and `from_rotation_vector`, and for spherical
 coordinates using `as_spherical_coords` and `from_spherical_coords`.
+Here's an example:
+
+```python
+>>> M = quaternion.as_rotation_matrix(q)
+>>> q = quaternion.from_rotation_matrix(M)
+```
+
 Finally, it is possible to derive the Euler angles from a quaternion
 using `as_euler_angles`, or create a quaternion from Euler angles
 using `from_euler_angles` — though be aware that Euler angles are
