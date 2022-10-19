@@ -940,6 +940,7 @@ QUATERNION_copyswapn(quaternion *dst, npy_intp dstride,
                      quaternion *src, npy_intp sstride,
                      npy_intp n, int swap, void *NPY_UNUSED(arr))
 {
+  assert(PyGILState_Check());
   PyArray_Descr *descr;
   descr = PyArray_DescrFromType(NPY_DOUBLE);
   descr->f->copyswapn(&dst->w, dstride, &src->w, sstride, n, swap, NULL);
