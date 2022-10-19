@@ -941,8 +941,9 @@ QUATERNION_copyswapn(quaternion *dst, npy_intp dstride,
                      npy_intp n, int swap, void *NPY_UNUSED(arr))
 {
   if (!PyGILState_Check()) {
-    fprintf(stderr, "PyGILState_Check() failed in QUATERNION_copyswapn()\n");
-    fflush(stderr);
+    fprintf(stdout, "\nPyGILState_Check() failed in QUATERNION_copyswapn()\n");
+    fprintf(stdout, "Calling exit(1)\n\n");
+    fflush(stdout);
     exit(1);
   }
   PyArray_Descr *descr;
