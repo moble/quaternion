@@ -353,7 +353,7 @@ def from_rotation_matrix(rot, nonorthogonal=True):
 
         if not shape:
             q = zero.copy()
-            eigvals, eigvecs = linalg.eigh(K3.T, eigvals=(3, 3))
+            eigvals, eigvecs = linalg.eigh(K3.T, subset_by_index=(3, 3))
             q.components[0] = eigvecs[-1]
             q.components[1:] = -eigvecs[:-1].flatten()
             return q
@@ -361,7 +361,7 @@ def from_rotation_matrix(rot, nonorthogonal=True):
             q = np.empty(shape+(4,), dtype=np.float64)
             for flat_index in range(reduce(mul, shape)):
                 multi_index = np.unravel_index(flat_index, shape)
-                eigvals, eigvecs = linalg.eigh(K3[multi_index], eigvals=(3, 3))
+                eigvals, eigvecs = linalg.eigh(K3[multi_index], subset_by_index=(3, 3))
                 q[multi_index+(0,)] = eigvecs[-1]
                 q[multi_index+(slice(1,None),)] = -eigvecs[:-1].flatten()
             return as_quat_array(q)
