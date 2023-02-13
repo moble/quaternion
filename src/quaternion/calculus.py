@@ -306,7 +306,7 @@ def _derivative_3d(f, t, dfdt):
     return
 
 
-@jit
+@njit
 def fd_indefinite_integral(f, t):
     Sfdt = np.empty_like(f)
     Sfdt[0] = 0.0
