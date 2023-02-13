@@ -971,6 +971,16 @@ static int QUATERNION_setitem(PyObject* item, quaternion* qp, void* NPY_UNUSED(a
     if(element == NULL) { return -1; } /* Not a sequence, or other failure */
     qp->z = PyFloat_AsDouble(element);
     Py_DECREF(element);
+  } else if(PyFloat_Check(item)) {
+    qp->w = PyFloat_AS_DOUBLE(item);
+    qp->x = 0.0;
+    qp->y = 0.0;
+    qp->z = 0.0;
+  } else if(PyLong_Check(item)) {
+    qp->w = PyLong_AsDouble(item);
+    qp->x = 0.0;
+    qp->y = 0.0;
+    qp->z = 0.0;
   } else {
     PyErr_SetString(PyExc_TypeError,
                     "Unknown input to QUATERNION_setitem");
