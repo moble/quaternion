@@ -189,8 +189,8 @@ extern "C" {
     return r;
   }
   static NPY_INLINE quaternion quaternion_inverse(quaternion q) {
-    double norm = quaternion_norm(q);
-    quaternion r = {q.w/norm, -q.x/norm, -q.y/norm, -q.z/norm};
+    double abs = quaternion_absolute(q);
+    quaternion r = {q.w/abs, -q.x/abs, -q.y/abs, -q.z/abs};
     return r;
   }
 
