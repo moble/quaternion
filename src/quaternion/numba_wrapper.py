@@ -21,9 +21,9 @@ except ImportError:
     #     "may wish to install numba." + \
     #     "\n" + "!" * 53 + "\n"
     # warnings.warn(warning_text)
-    def _identity_decorator_outer(*args, **kwargs):
-        def _identity_decorator_inner(fn):
-            return fn
+    def _identity_decorator_outer(fn):
+        def _identity_decorator_inner(*args, **kwargs):
+            return fn(*args, **kwargs)
         return _identity_decorator_inner
     njit = _identity_decorator_outer
     jit = _identity_decorator_outer
