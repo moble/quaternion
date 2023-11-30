@@ -7,12 +7,12 @@ license = "MIT"
 authors = ["Michael Boyle <mob22@cornell.edu>"]
 homepage = "https://github.com/moble/quaternion"
 
+[build-system]
+requires = ["setuptools!=50.0", "wheel", "oldest-supported-numpy"]
+build-backend = "setuptools.build_meta"
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 norecursedirs = ".* build dist *.egg-info install ENV"
 junit_family="xunit2"
 addopts = "-v --tb=short --doctest-glob='' --cov=quaternion --cov-branch --cov-report xml"
-
-[build-system]
-requires = ["setuptools!=50.0", "wheel", "oldest-supported-numpy"]
-build-backend = "setuptools.build_meta"
