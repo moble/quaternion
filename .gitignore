@@ -64,3 +64,4 @@ _version.py
 pip_manylinux1_cache
 .envs
 notes
+poetry.lock
