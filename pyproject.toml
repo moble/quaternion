@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quaternion"
-version = "2022.4.3"
+version = "2022.4.4"
 description = "Add a quaternion dtype to NumPy"
 readme = "README.md"
 license = "MIT"
