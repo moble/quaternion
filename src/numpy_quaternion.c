@@ -359,13 +359,13 @@ QQ_QS_SQ_BINARY_QUATERNION_RETURNER(power)
     Py_RETURN_NOTIMPLEMENTED; \
   }
 #define QQ_QS_SQ_BINARY_QUATERNION_INPLACE(name) QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(name, name)
-QQ_QS_SQ_BINARY_QUATERNION_INPLACE(add)
-QQ_QS_SQ_BINARY_QUATERNION_INPLACE(subtract)
-QQ_QS_SQ_BINARY_QUATERNION_INPLACE(multiply)
-QQ_QS_SQ_BINARY_QUATERNION_INPLACE(divide)
+/* QQ_QS_SQ_BINARY_QUATERNION_INPLACE(add) */
+/* QQ_QS_SQ_BINARY_QUATERNION_INPLACE(subtract) */
+/* QQ_QS_SQ_BINARY_QUATERNION_INPLACE(multiply) */
+/* QQ_QS_SQ_BINARY_QUATERNION_INPLACE(divide) */
 /* QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(true_divide, divide) */
 /* QQ_QS_SQ_BINARY_QUATERNION_INPLACE_FULL(floor_divide, divide) */
-QQ_QS_SQ_BINARY_QUATERNION_INPLACE(power)
+/* QQ_QS_SQ_BINARY_QUATERNION_INPLACE(power) */
 
 static PyObject *
 pyquaternion__reduce(PyQuaternion* self)
@@ -516,7 +516,7 @@ PyMethodDef pyquaternion_methods[] = {
 };
 
 static PyObject* pyquaternion_num_power(PyObject* a, PyObject* b, PyObject *c) { (void) c; return pyquaternion_power(a,b); }
-static PyObject* pyquaternion_num_inplace_power(PyObject* a, PyObject* b, PyObject *c) { (void) c; return pyquaternion_inplace_power(a,b); }
+/* static PyObject* pyquaternion_num_inplace_power(PyObject* a, PyObject* b, PyObject *c) { (void) c; return pyquaternion_inplace_power(a,b); } */
 static PyObject* pyquaternion_num_negative(PyObject* a) { return pyquaternion_negative(a,NULL); }
 static PyObject* pyquaternion_num_positive(PyObject* a) { return pyquaternion_positive(a,NULL); }
 static PyObject* pyquaternion_num_absolute(PyObject* a) { return pyquaternion_absolute(a,NULL); }
@@ -572,14 +572,14 @@ static PyNumberMethods pyquaternion_as_number = {
   pyquaternion_convert_oct,       // nb_oct
   pyquaternion_convert_hex,       // nb_hex
   #endif
-  pyquaternion_inplace_add,       // nb_inplace_add
-  pyquaternion_inplace_subtract,  // nb_inplace_subtract
-  pyquaternion_inplace_multiply,  // nb_inplace_multiply
+  0,                              // nb_inplace_add
+  0,                              // nb_inplace_subtract
+  0,                              // nb_inplace_multiply
   #if PY_MAJOR_VERSION < 3
-  pyquaternion_inplace_divide,    // nb_inplace_divide
+  0,                              // nb_inplace_divide
   #endif
   0,                              // nb_inplace_remainder
-  pyquaternion_num_inplace_power, // nb_inplace_power
+  0,                              // nb_inplace_power
   0,                              // nb_inplace_lshift
   0,                              // nb_inplace_rshift
   0,                              // nb_inplace_and
@@ -587,8 +587,8 @@ static PyNumberMethods pyquaternion_as_number = {
   0,                              // nb_inplace_or
   pyquaternion_divide,            // nb_floor_divide
   pyquaternion_divide,            // nb_true_divide
-  pyquaternion_inplace_divide,    // nb_inplace_floor_divide
-  pyquaternion_inplace_divide,    // nb_inplace_true_divide
+  0,                              // nb_inplace_floor_divide
+  0,                              // nb_inplace_true_divide
   0,                              // nb_index
   #if PY_MAJOR_VERSION >= 3
   #if PY_MINOR_VERSION >= 5
