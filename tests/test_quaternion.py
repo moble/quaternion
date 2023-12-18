@@ -776,6 +776,25 @@ def test_quaternion_add(Qs):
             assert (s + q == quaternion.quaternion(q.w + s, q.x, q.y, q.z))
 
 
+def test_quaternion_inplace_add(Qs):
+    for qo in Qs[Qs_finite]:
+        for po in Qs[Qs_finite]:
+            q = qo.copy()  # copy to prevent mutating original
+            p = po.copy()  # copy to prevent mutating original
+            q2 = q
+            q2 += p
+            assert q2 == quaternion.quaternion(qo.w + p.w, qo.x + p.x, qo.y + p.y, qo.z + p.z)
+            # Ensure value of object q has not changed
+            assert q == qo
+    for qo in Qs[Qs_nonnan]:
+        for s in [-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]:
+            q = qo.copy()  # Make copy to prevent mutating original
+            q2 = q
+            q2 += s
+            assert (q2 == quaternion.quaternion(qo.w + s, qo.x, qo.y, qo.z))
+            assert (q == qo)
+
+
 def test_quaternion_add_ufunc(Qs):
     ufunc_binary_utility(Qs[Qs_finite], Qs[Qs_finite], operator.add)
 
@@ -788,6 +807,25 @@ def test_quaternion_subtract(Qs):
         for s in [-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]:
             assert (q - s == quaternion.quaternion(q.w - s, q.x, q.y, q.z))
             assert (s - q == quaternion.quaternion(s - q.w, -q.x, -q.y, -q.z))
+
+
+def test_quaternion_inplace_subtract(Qs):
+    for qo in Qs[Qs_finite]:
+        for po in Qs[Qs_finite]:
+            q = qo.copy()  # copy to prevent mutating original
+            p = po.copy()  # copy to prevent mutating original
+            q2 = q
+            q2 -= p
+            assert q2 == quaternion.quaternion(qo.w - p.w, qo.x - p.x, qo.y - p.y, qo.z - p.z)
+            # Ensure value of object q has not changed
+            assert q == qo
+    for qo in Qs[Qs_nonnan]:
+        for s in [-3, -2.3, -1.2, -1.0, 0.0, 0, 1.0, 1, 1.2, 2.3, 3]:
+            q = qo.copy()  # Make copy to prevent mutating original
+            q2 = q
+            q2 -= s
+            assert (q2 == quaternion.quaternion(qo.w - s, qo.x, qo.y, qo.z))
+            assert (q == qo)
 
 
 def test_quaternion_subtract_ufunc(Qs):
