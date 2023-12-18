@@ -12,9 +12,9 @@ This Python module adds a quaternion dtype to NumPy.
 
 The code was originally based on [code by Martin
 Ling](https://github.com/martinling/numpy_quaternion) (which he wrote
-with help from Mark Wiebe), but has been rewritten with ideas from
+with help from Mark Wiebe), but was rewritten with ideas from
 [rational](https://github.com/numpy/numpy-dtypes/tree/master/npytypes/rational)
-to work with both python 2.x and 3.x (and to fix a few bugs), and
+to work with newer python versions (and to fix a few bugs), and
 *greatly* expands the applications of quaternions.
 
 See also the pure-python package
@@ -40,7 +40,7 @@ you're not using a python environment — though you should start.
 
 The basic requirements for this code are reasonably current versions
 of `python` and `numpy`.  In particular, `python` versions 3.8 through
-3.10 are routinely tested.  Earlier `python` versions, including 2.7,
+3.11 are routinely tested.  Earlier `python` versions, including 2.7,
 will work with older versions of this package; they *might* still work
 with more recent versions of this package, but even numpy no longer
 supports `python` previous to 3.8, so your mileage may vary.  Also,
@@ -256,7 +256,7 @@ code is going wrong, or have an idea for a new feature that you know
 how to implement.
 
 This code is routinely tested on recent versions of both python (3.8
-though 3.10) and numpy (>=1.13).  But the test coverage is not
+though 3.11) and numpy (>=1.13).  But the test coverage is not
 necessarily as complete as it could be, so bugs may certainly be
 present, especially in the higher-level functions like
 `mean_rotor_...`.
