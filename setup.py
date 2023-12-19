@@ -1,24 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""\
-This package creates a quaternion type in python, and further enables numpy to
-create and manipulate arrays of quaternions.  The usual algebraic operations
-(addition and multiplication) are available, along with numerous properties
-like norm and various types of distance measures between two quaternions.
-There are also additional functions like "squad" and "slerp" interpolation, and
-conversions to and from axis-angle, matrix, and Euler-angle representations of
-rotations.  The core of the code is written in C for speed.
-"""
-
 from sys import platform
 from setuptools import Extension, setup
+from pathlib import Path
 import numpy as np
 
 
 # Set this first for easier replacement
 version = "2023.0.1"
 
+# read the contents of the README file into the PyPI description
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
+# Set appropriate optimization flags
 if "win" in platform.lower() and not "darwin" in platform.lower():
     extra_compile_args = ["/O2"]
 else:
@@ -52,7 +48,8 @@ setup_metadata = dict(
     author="Michael Boyle",
     author_email="mob22@cornell.edu",
     description="Add a quaternion dtype to NumPy",
-    long_description=__doc__,
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     ext_modules=extensions,
     install_requires=[
         "numpy>=1.13",
