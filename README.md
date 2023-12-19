@@ -279,18 +279,18 @@ all the work in getting the documentation onto [Read the
 Docs](https://quaternion.readthedocs.io/).
 
 Every change in this code is [automatically
-tested](https://travis-ci.org/moble/quaternion) on
-[Travis-CI](https://travis-ci.org/).  This service integrates
-beautifully with github, detecting each commit and automatically
-re-running the tests.  The code is downloaded and installed fresh each
-time, and then tested, on each of the five different versions of
-python.  This ensures that no change I make to the code breaks either
-installation or any of the features that I have written tests for.
-Travis-CI also automatically builds the `conda` and `pip` versions of
-the code hosted on
-[anaconda.org](https://anaconda.org/moble/quaternion) and
-[pypi](https://pypi.python.org/pypi/numpy-quaternion) respectively.
-These are all free services for open-source projects like this one.
+tested](https://github.com/moble/quaternion/actions) on Github
+Actions.  The code is downloaded and installed fresh each time, and
+then tested, on each of the different supported versions of python, on
+each of the supported platforms.  This ensures that no change I make
+to the code breaks either installation or any of the features that I
+have written tests for.  Github Actions also automatically builds the
+`pip` versions of the code hosted on
+[pypi](https://pypi.python.org/pypi/numpy-quaternion).  Conda-forge
+also uses Github Actions to build [the conda/mamba
+version](https://github.com/conda-forge/quaternion-feedstock) hosted
+on [anaconda.org](https://anaconda.org/conda-forge/quaternion).  These
+are all free services for open-source projects like this one.
 
 The work of creating this code was supported in part by the Sherman
 Fairchild Foundation and by NSF Grants No. PHY-1306125 and
