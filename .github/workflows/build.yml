@@ -163,8 +163,20 @@ jobs:
         && !contains(github.event.head_commit.message, '[no release]')
         && (success() || contains(github.event.head_commit.message, '[skip tests]'))
     environment: release
-    permissions:
-      id-token: write
+    permissions: write-all
+      # actions: write
+      # checks: write
+      # contents: write
+      # deployments: write
+      # id-token: write
+      # issues: write
+      # discussions: write
+      # packages: write
+      # pages: write
+      # pull-requests: write
+      # repository-projects: write
+      # security-events: write
+      # statuses: write
 
     steps:
       - name: Check out code
