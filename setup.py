@@ -8,7 +8,7 @@ import numpy as np
 
 
 # Set this first for easier replacement
-version = "2023.0.1"
+version = "2023.0.2"
 
 # read the contents of the README file into the PyPI description
 this_directory = Path(__file__).parent
