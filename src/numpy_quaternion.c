@@ -3,16 +3,6 @@
 
 #define NPY_NO_DEPRECATED_API NPY_API_VERSION
 
-/* // Numpy 1.19 changed UFuncGenericFunction to use const `dimensions` and `steps` pointers. */
-/* // Supposedly, this should only generate warnings, but this is now the cause of errors */
-/* // in CI, so I'm fixing it for real.  The API version at which this change was made is at */
-/* // https://github.com/numpy/numpy/blob/e75214c1bc34903e6fe0f643dae8ada02529c0d5/numpy/core/meson.build#L41C3-L41C13 */
-/* #if C_API_VERSION >= 0x0000000d */
-/* #define NPY_INTP_CONST npy_intp const */
-/* #else */
-/* #define NPY_INTP_CONST npy_intp */
-/* #endif */
-
 #include <Python.h>
 #include <numpy/arrayobject.h>
 #include <numpy/npy_math.h>
@@ -20,6 +10,17 @@
 #include "structmember.h"
 
 #include "quaternion.h"
+
+// Numpy 1.19 changed UFuncGenericFunction to use const `dimensions` and `steps` pointers.
+// Supposedly, this should only generate warnings, but this now causes errors in CI, so
+// I'm fixing it for real.  The API version at which this change was made is set at
+// https://github.com/numpy/numpy/blob/e75214c1bc34903e6fe0f643dae8ada02529c0d5/numpy/core/meson.build#L41C3-L41C13
+// Note that `C_API_VERSION` gets translated to `NPY_API_VERSION` later in that file.
+#if NPY_API_VERSION < 0x0000000d
+typedef npy_intp NPY_INTP_CONST;
+#else
+typedef npy_intp const NPY_INTP_CONST;
+#endif
 
 // The following definitions, along with `#define NPY_PY3K 1`, can
 // also be found in the header <numpy/npy_3kcompat.h>.
@@ -1139,8 +1140,8 @@ static void register_cast_function(int sourceType, int destType, PyArray_VectorU
 // numpy array of quaternions.
 #define UNARY_GEN_UFUNC(ufunc_name, func_name, ret_type)        \
   static void                                                           \
-  quaternion_##ufunc_name##_ufunc(char** args, npy_intp const * dimensions,    \
-                                  npy_intp const * steps, void* NPY_UNUSED(data)) { \
+  quaternion_##ufunc_name##_ufunc(char** args, NPY_INTP_CONST * dimensions,    \
+                                  NPY_INTP_CONST * steps, void* NPY_UNUSED(data)) { \
     /* fprintf (stderr, "file %s, line %d, quaternion_%s_ufunc.\n", __FILE__, __LINE__, #ufunc_name); */ \
     char *ip1 = args[0], *op1 = args[1];                                \
     npy_intp is1 = steps[0], os1 = steps[1];                            \
@@ -1180,7 +1181,7 @@ UNARY_UFUNC(parity_conjugate, quaternion)
 UNARY_UFUNC(parity_symmetric_part, quaternion)
 UNARY_UFUNC(parity_antisymmetric_part, quaternion)
 static void
-quaternion_positive_ufunc(char** args, npy_intp const * dimensions, npy_intp const * steps, void* NPY_UNUSED(data)) {
+quaternion_positive_ufunc(char** args, NPY_INTP_CONST * dimensions, NPY_INTP_CONST * steps, void* NPY_UNUSED(data)) {
   char *ip1 = args[0], *op1 = args[1];
   npy_intp is1 = steps[0], os1 = steps[1];
   npy_intp n = dimensions[0];
@@ -1196,8 +1197,8 @@ quaternion_positive_ufunc(char** args, npy_intp const * dimensions, npy_intp con
 // numpy array of quaternions.
 #define BINARY_GEN_UFUNC(ufunc_name, func_name, arg_type1, arg_type2, ret_type) \
   static void                                                           \
-  quaternion_##ufunc_name##_ufunc(char** args, npy_intp const * dimensions,    \
-                                  npy_intp const * steps, void* NPY_UNUSED(data)) { \
+  quaternion_##ufunc_name##_ufunc(char** args, NPY_INTP_CONST * dimensions,    \
+                                  NPY_INTP_CONST * steps, void* NPY_UNUSED(data)) { \
     /* fprintf (stderr, "file %s, line %d, quaternion_%s_ufunc.\n", __FILE__, __LINE__, #ufunc_name); */ \
     char *ip1 = args[0], *ip2 = args[1], *op1 = args[2];                \
     npy_intp is1 = steps[0], is2 = steps[1], os1 = steps[2];            \
