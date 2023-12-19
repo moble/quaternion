@@ -1283,7 +1283,7 @@ pyquaternion_squad_evaluate(PyObject *NPY_UNUSED(self), PyObject *args)
 // was pieced together from examples given on the page
 // <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
 static void
-slerp_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* NPY_UNUSED(data))
+slerp_loop(char **args, NPY_INTP_CONST * dimensions, NPY_INTP_CONST * steps, void* NPY_UNUSED(data))
 {
   npy_intp i;
   double tau_i;
@@ -1319,7 +1319,7 @@ slerp_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* NPY_UNUSED(
 // was pieced together from examples given on the page
 // <https://docs.scipy.org/doc/numpy/user/c-info.ufunc-tutorial.html>
 static void
-squad_loop(char **args, npy_intp *dimensions, npy_intp* steps, void* NPY_UNUSED(data))
+squad_loop(char **args, NPY_INTP_CONST * dimensions, NPY_INTP_CONST * steps, void* NPY_UNUSED(data))
 {
   npy_intp i;
   double tau_i;
