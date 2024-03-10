@@ -354,7 +354,7 @@ def from_rotation_matrix(rot, nonorthogonal=True):
         if not shape:
             q = zero.copy()
             eigvals, eigvecs = linalg.eigh(K3.T, subset_by_index=(3, 3))
-            q.components[0] = eigvecs[-1]
+            q.components[0] = eigvecs[-1, 0]
             q.components[1:] = -eigvecs[:-1].flatten()
             return q
         else:
