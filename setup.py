@@ -8,7 +8,7 @@ import numpy as np
 
 
 # Set this first for easier replacement
-version = "2023.0.4"
+version = "2023.1.0"
 
 # read the contents of the README file into the PyPI description
 this_directory = Path(__file__).parent
@@ -30,7 +30,8 @@ extensions = [
         depends=[
             "src/quaternion.c",
             "src/quaternion.h",
-            "src/numpy_quaternion.c"
+            "src/numpy_quaternion.c",
+            "src/npy_2_compat.h"
         ],
         include_dirs=[
             np.get_include(),
@@ -51,31 +52,31 @@ setup_metadata = dict(
     long_description=long_description,
     long_description_content_type="text/markdown",
     ext_modules=extensions,
-    install_requires=[
-        "numpy>=1.13, < 2.0",
-        # See also extras and :environment_marker specs below
-    ],
-    extras_require={
-        "scipy": [
-            "scipy",
-        ],
-        "numba:python_version < '3.6' and platform_python_implementation != 'PyPy'": [
-            "numba<0.49.0",
-            "llvmlite<0.32.0",
-        ],
-        "numba:python_version >= '3.6' and platform_python_implementation != 'PyPy'": [
-            "numba",
-        ],
-        "docs":  [
-            "mkdocs",
-            "mktheapidocs[plugin]",
-            "pymdown-extensions",
-        ],
-        "testing": [
-            "pytest",
-            "pytest-cov",
-        ]
-    },
+    # install_requires=[
+    #     "numpy>=1.13",
+    #     # See also extras and :environment_marker specs below
+    # ],
+    # extras_require={
+    #     "scipy": [
+    #         "scipy",
+    #     ],
+    #     "numba:python_version < '3.6' and platform_python_implementation != 'PyPy'": [
+    #         "numba<0.49.0",
+    #         "llvmlite<0.32.0",
+    #     ],
+    #     "numba:python_version >= '3.6' and platform_python_implementation != 'PyPy'": [
+    #         "numba",
+    #     ],
+    #     "docs":  [
+    #         "mkdocs",
+    #         "mktheapidocs[plugin]",
+    #         "pymdown-extensions",
+    #     ],
+    #     "testing": [
+    #         "pytest",
+    #         "pytest-cov",
+    #     ]
+    # },
     version=version,
 )
 
