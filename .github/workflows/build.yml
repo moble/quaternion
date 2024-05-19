@@ -12,6 +12,14 @@ on:
     tags: '*'
   pull_request:
 
+concurrency:
+  group: test-${{ github.head_ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUNBUFFERED: "1"
+  FORCE_COLOR: "1"
+    
 jobs:
 
   get_new_version:
@@ -25,18 +33,10 @@ jobs:
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
-      - name: Install tomli
-        shell: bash
-        run: |
-          python -m pip install --upgrade pip tomli
-
-      - name: Install poetry
-        shell: bash
-        run: |
-          curl -sSL https://install.python-poetry.org | POETRY_HOME="$HOME/.poetry" python -
-          echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+      - name: Install Hatch
+        run: pip install --upgrade hatch
 
       - name: Bump version
         id: get_version
@@ -46,11 +46,10 @@ jobs:
         run: |
           export version_bump_rule=$(python .github/scripts/parse_bump_rule.py)
           echo "version_bump_rule: '${version_bump_rule}'"
-          poetry version "${version_bump_rule}"
-          export new_version=$(python .github/scripts/parse_version.py pyproject.toml)
+          hatch version "${version_bump_rule}"
+          export new_version=$(hatch version)
           echo "new_version: '${new_version}'"
-          # echo "::set-output name=version::${new_version}"
-          echo "version=${new_version}" >> $GITHUB_OUTPUT
+          echo "new_version=${new_version}" >> $GITHUB_ENV  # Save env variable for later steps
 
 
   build_wheels:
@@ -190,7 +189,7 @@ jobs:
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Update versions
         shell: bash
@@ -222,5 +221,13 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Send to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Publish to PyPI
+        if: "!contains(github.event.head_commit.message, '[no pypi]')"
+        env:
+          # 1) Get key from https://pypi.org/manage/account/token/
+          # 2) Copy it to Github > repo > Settings > Secrets
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.PYPI_TOKEN }}
+        shell: bash
+        run: |
+          hatch publish
