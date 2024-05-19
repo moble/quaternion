@@ -23,7 +23,7 @@ from recommonmark.parser import CommonMarkParser
 # -- Project information -----------------------------------------------------
 
 project = 'quaternion'
-copyright = '2020, Michael Boyle'
+copyright = '2024, Michael Boyle'
 author = 'Michael Boyle'
 
 # The short X.Y version
