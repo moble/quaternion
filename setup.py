@@ -52,7 +52,7 @@ setup_metadata = dict(
     long_description_content_type="text/markdown",
     ext_modules=extensions,
     install_requires=[
-        "numpy>=1.13",
+        "numpy>=1.13, < 2.0",
         # See also extras and :environment_marker specs below
     ],
     extras_require={
