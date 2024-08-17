@@ -22,6 +22,12 @@ typedef npy_intp NPY_INTP_CONST;
 typedef npy_intp const NPY_INTP_CONST;
 #endif
 
+#if NPY_ABI_VERSION < 0x02000000
+#define PyArray_DescrProto PyArray_Descr
+#define PyDataType_ELSIZE(d) ((d)->elsize)
+#define PyDataType_GetArrFuncs(d) ((d)->f)
+#endif
+
 // The following definitions, along with `#define NPY_PY3K 1`, can
 // also be found in the header <numpy/npy_3kcompat.h>.
 #if PY_MAJOR_VERSION >= 3
@@ -59,6 +65,7 @@ static PyTypeObject PyQuaternion_Type;
 // built-in numpy data type.  We will describe its features below.
 PyArray_Descr* quaternion_descr;
 
+PyArray_DescrProto quaternion_proto = {PyObject_HEAD_INIT(NULL)};
 
 static NPY_INLINE int
 PyQuaternion_Check(PyObject* object) {
@@ -260,7 +267,7 @@ pyquaternion_##fake_name##_array_operator(PyObject* a, PyObject* b) {   \
   }                                                                     \
   iternext = NpyIter_GetIterNext(iter, NULL);                           \
   innerstride = NpyIter_GetInnerStrideArray(iter)[0];                   \
-  itemsize = NpyIter_GetDescrArray(iter)[1]->elsize;                    \
+  itemsize = PyDataType_ELSIZE(NpyIter_GetDescrArray(iter)[1]);         \
   innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);                     \
   dataptrarray = NpyIter_GetDataPtrArray(iter);                         \
   if(PyArray_EquivTypes(PyArray_DESCR((PyArrayObject*) b), quaternion_descr)) { \
@@ -927,10 +934,10 @@ QUATERNION_nonzero (char *ip, PyArrayObject *ap)
   else {
     PyArray_Descr *descr;
     descr = PyArray_DescrFromType(NPY_DOUBLE);
-    descr->f->copyswap(&q.w, ip, !PyArray_ISNOTSWAPPED(ap), NULL);
-    descr->f->copyswap(&q.x, ip+8, !PyArray_ISNOTSWAPPED(ap), NULL);
-    descr->f->copyswap(&q.y, ip+16, !PyArray_ISNOTSWAPPED(ap), NULL);
-    descr->f->copyswap(&q.z, ip+24, !PyArray_ISNOTSWAPPED(ap), NULL);
+    PyDataType_GetArrFuncs(descr)->copyswap(&q.w, ip, !PyArray_ISNOTSWAPPED(ap), NULL);
+    PyDataType_GetArrFuncs(descr)->copyswap(&q.x, ip+8, !PyArray_ISNOTSWAPPED(ap), NULL);
+    PyDataType_GetArrFuncs(descr)->copyswap(&q.y, ip+16, !PyArray_ISNOTSWAPPED(ap), NULL);
+    PyDataType_GetArrFuncs(descr)->copyswap(&q.z, ip+24, !PyArray_ISNOTSWAPPED(ap), NULL);
     Py_DECREF(descr);
   }
   return (npy_bool) !quaternion_equal(q, zero);
@@ -942,7 +949,7 @@ QUATERNION_copyswap(quaternion *dst, quaternion *src,
 {
   PyArray_Descr *descr;
   descr = PyArray_DescrFromType(NPY_DOUBLE);
-  descr->f->copyswapn(dst, sizeof(double), src, sizeof(double), 4, swap, NULL);
+  PyDataType_GetArrFuncs(descr)->copyswapn(dst, sizeof(double), src, sizeof(double), 4, swap, NULL);
   Py_DECREF(descr);
 }
 
@@ -953,10 +960,10 @@ QUATERNION_copyswapn(quaternion *dst, npy_intp dstride,
 {
   PyArray_Descr *descr;
   descr = PyArray_DescrFromType(NPY_DOUBLE);
-  descr->f->copyswapn(&dst->w, dstride, &src->w, sstride, n, swap, NULL);
-  descr->f->copyswapn(&dst->x, dstride, &src->x, sstride, n, swap, NULL);
-  descr->f->copyswapn(&dst->y, dstride, &src->y, sstride, n, swap, NULL);
-  descr->f->copyswapn(&dst->z, dstride, &src->z, sstride, n, swap, NULL);
+  PyDataType_GetArrFuncs(descr)->copyswapn(&dst->w, dstride, &src->w, sstride, n, swap, NULL);
+  PyDataType_GetArrFuncs(descr)->copyswapn(&dst->x, dstride, &src->x, sstride, n, swap, NULL);
+  PyDataType_GetArrFuncs(descr)->copyswapn(&dst->y, dstride, &src->y, sstride, n, swap, NULL);
+  PyDataType_GetArrFuncs(descr)->copyswapn(&dst->z, dstride, &src->z, sstride, n, swap, NULL);
   Py_DECREF(descr);
 }
 
@@ -1481,28 +1488,29 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   _PyQuaternion_ArrFuncs.fillwithscalar = (PyArray_FillWithScalarFunc*)QUATERNION_fillwithscalar;
 
   // The quaternion array descr
-  quaternion_descr = PyObject_New(PyArray_Descr, &PyArrayDescr_Type);
-  quaternion_descr->typeobj = &PyQuaternion_Type;
-  quaternion_descr->kind = 'V';
-  quaternion_descr->type = 'q';
-  quaternion_descr->byteorder = '=';
-  quaternion_descr->flags = NPY_NEEDS_PYAPI | NPY_USE_GETITEM | NPY_USE_SETITEM;
-  quaternion_descr->type_num = 0; // assigned at registration
-  quaternion_descr->elsize = quaternion_elsize;
-  quaternion_descr->alignment = quaternion_alignment;
-  quaternion_descr->subarray = NULL;
-  quaternion_descr->fields = NULL;
-  quaternion_descr->names = NULL;
-  quaternion_descr->f = &_PyQuaternion_ArrFuncs;
-  quaternion_descr->metadata = NULL;
-  quaternion_descr->c_metadata = NULL;
+  Py_SET_TYPE(&quaternion_proto, &PyArrayDescr_Type);
+  quaternion_proto.typeobj = &PyQuaternion_Type;
+  quaternion_proto.kind = 'V';
+  quaternion_proto.type = 'q';
+  quaternion_proto.byteorder = '=';
+  quaternion_proto.flags = NPY_NEEDS_PYAPI | NPY_USE_GETITEM | NPY_USE_SETITEM;
+  quaternion_proto.type_num = 0;  // assigned at registration
+  quaternion_proto.elsize = quaternion_elsize;
+  quaternion_proto.alignment = quaternion_alignment;
+  quaternion_proto.subarray = NULL;
+  quaternion_proto.fields = NULL;
+  quaternion_proto.names = NULL;
+  quaternion_proto.f = &_PyQuaternion_ArrFuncs;
+  quaternion_proto.metadata = NULL;
+  quaternion_proto.c_metadata = NULL;
 
   Py_INCREF(&PyQuaternion_Type);
-  quaternionNum = PyArray_RegisterDataType(quaternion_descr);
+  quaternionNum = PyArray_RegisterDataType(&quaternion_proto);
 
   if (quaternionNum < 0) {
     INITERROR;
   }
+  quaternion_descr = PyArray_DescrFromType(quaternionNum);
 
   register_cast_function(NPY_BOOL, quaternionNum, (PyArray_VectorUnaryFunc*)BOOL_to_quaternion);
   register_cast_function(NPY_BYTE, quaternionNum, (PyArray_VectorUnaryFunc*)BYTE_to_quaternion);
