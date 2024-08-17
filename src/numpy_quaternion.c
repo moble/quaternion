@@ -25,9 +25,6 @@ typedef npy_intp NPY_INTP_CONST;
 typedef npy_intp const NPY_INTP_CONST;
 #endif
 
-// The following definitions, along with `#define NPY_PY3K 1`, can
-// also be found in the header <numpy/npy_3kcompat.h>.
-#if PY_MAJOR_VERSION >= 3
 #define PyUString_FromString PyUnicode_FromString
 static NPY_INLINE int PyInt_Check(PyObject *op) {
     int overflow = 0;
@@ -38,16 +35,6 @@ static NPY_INLINE int PyInt_Check(PyObject *op) {
     return (overflow == 0);
 }
 #define PyInt_AsLong PyLong_AsLong
-#else
-#define PyUString_FromString PyString_FromString
-#endif
-
-// This macro was introduced in python 3.4.2
-#ifndef Py_RETURN_NOTIMPLEMENTED
-/* Macro for returning Py_NotImplemented from a function */
-#define Py_RETURN_NOTIMPLEMENTED \
-    return Py_INCREF(Py_NotImplemented), Py_NotImplemented
-#endif
 
 
 // The basic python object holding a quaternion
@@ -547,19 +534,11 @@ static int pyquaternion_num_nonzero(PyObject* a) {
   }
 CANNOT_CONVERT(int)
 CANNOT_CONVERT(float)
-#if PY_MAJOR_VERSION < 3
-CANNOT_CONVERT(long)
-CANNOT_CONVERT(oct)
-CANNOT_CONVERT(hex)
-#endif
 
 static PyNumberMethods pyquaternion_as_number = {
   pyquaternion_add,               // nb_add
   pyquaternion_subtract,          // nb_subtract
   pyquaternion_multiply,          // nb_multiply
-  #if PY_MAJOR_VERSION < 3
-  pyquaternion_divide,            // nb_divide
-  #endif
   0,                              // nb_remainder
   0,                              // nb_divmod
   pyquaternion_num_power,         // nb_power
@@ -573,26 +552,12 @@ static PyNumberMethods pyquaternion_as_number = {
   0,                              // nb_and
   0,                              // nb_xor
   0,                              // nb_or
-  #if PY_MAJOR_VERSION < 3
-  0,                              // nb_coerce
-  #endif
   pyquaternion_convert_int,       // nb_int
-  #if PY_MAJOR_VERSION >= 3
   0,                              // nb_reserved
-  #else
-  pyquaternion_convert_long,      // nb_long
-  #endif
   pyquaternion_convert_float,     // nb_float
-  #if PY_MAJOR_VERSION < 3
-  pyquaternion_convert_oct,       // nb_oct
-  pyquaternion_convert_hex,       // nb_hex
-  #endif
   0,                              // nb_inplace_add
   0,                              // nb_inplace_subtract
   0,                              // nb_inplace_multiply
-  #if PY_MAJOR_VERSION < 3
-  0,                              // nb_inplace_divide
-  #endif
   0,                              // nb_inplace_remainder
   0,                              // nb_inplace_power
   0,                              // nb_inplace_lshift
@@ -605,12 +570,8 @@ static PyNumberMethods pyquaternion_as_number = {
   0,                              // nb_inplace_floor_divide
   0,                              // nb_inplace_true_divide
   0,                              // nb_index
-  #if PY_MAJOR_VERSION >= 3
-  #if PY_MINOR_VERSION >= 5
   0,                              // nb_matrix_multiply
   0,                              // nb_inplace_matrix_multiply
-  #endif
-  #endif
 };
 
 
@@ -848,12 +809,7 @@ pyquaternion_str(PyObject *o)
 // Note that many of the slots below will be filled later, after the
 // corresponding functions are defined.
 static PyTypeObject PyQuaternion_Type = {
-#if PY_MAJOR_VERSION >= 3
   PyVarObject_HEAD_INIT(NULL, 0)
-#else
-  PyObject_HEAD_INIT(NULL)
-  0,                                          // ob_size
-#endif
   "quaternion.quaternion",                    // tp_name
   sizeof(PyQuaternion),                       // tp_basicsize
   0,                                          // tp_itemsize
@@ -861,11 +817,7 @@ static PyTypeObject PyQuaternion_Type = {
   0,                                          // tp_print
   0,                                          // tp_getattr
   0,                                          // tp_setattr
-#if PY_MAJOR_VERSION >= 3
   0,                                          // tp_reserved
-#else
-  0,                                          // tp_compare
-#endif
   pyquaternion_repr,                          // tp_repr
   &pyquaternion_as_number,                    // tp_as_number
   0,                                          // tp_as_sequence
@@ -876,11 +828,7 @@ static PyTypeObject PyQuaternion_Type = {
   0,                                          // tp_getattro
   0,                                          // tp_setattro
   0,                                          // tp_as_buffer
-#if PY_MAJOR_VERSION >= 3
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   // tp_flags
-#else
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES, // tp_flags
-#endif
   "Floating-point quaternion numbers",        // tp_doc
   0,                                          // tp_traverse
   0,                                          // tp_clear
@@ -907,12 +855,8 @@ static PyTypeObject PyQuaternion_Type = {
   0,                                          // tp_subclasses
   0,                                          // tp_weaklist
   0,                                          // tp_del
-#if PY_VERSION_HEX >= 0x02060000
   0,                                          // tp_version_tag
-#endif
-#if PY_VERSION_HEX >= 0x030400a1
   0,                                          // tp_finalize
-#endif
 };
 
 // Functions implementing internal features. Not all of these function
@@ -1395,8 +1339,6 @@ int quaternion_alignment = offsetof(align_test, q);
 /////////////////////////////////////////////////////////////////
 
 
-#if PY_MAJOR_VERSION >= 3
-
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
     "numpy_quaternion",
@@ -1414,15 +1356,6 @@ static struct PyModuleDef moduledef = {
 // This is the initialization function that does the setup
 PyMODINIT_FUNC PyInit_numpy_quaternion(void) {
 
-#else
-
-#define INITERROR return
-
-// This is the initialization function that does the setup
-PyMODINIT_FUNC initnumpy_quaternion(void) {
-
-#endif
-
   PyObject *module;
   PyObject *tmp_ufunc;
   PyObject *slerp_evaluate_ufunc;
@@ -1434,11 +1367,7 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   PyObject* numpy_dict;
 
   // Initialize a (for now, empty) module
-#if PY_MAJOR_VERSION >= 3
   module = PyModule_Create(&moduledef);
-#else
-  module = Py_InitModule("numpy_quaternion", QuaternionMethods);
-#endif
 
   if(module==NULL) {
     INITERROR;
@@ -1712,9 +1641,5 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
   PyModule_AddObject(module, "quaternion", (PyObject *)&PyQuaternion_Type);
 
 
-#if PY_MAJOR_VERSION >= 3
     return module;
-#else
-    return;
-#endif
 }

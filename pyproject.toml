@@ -2,7 +2,7 @@
 name = "quaternion"
 description = "Add a quaternion dtype to NumPy"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {file = "LICENSE"}
 authors = [
   { name = "Michael Boyle", email = "michael.oliver.boyle@gmail.com" }
