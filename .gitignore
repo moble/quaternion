@@ -65,3 +65,4 @@ pip_manylinux1_cache
 .envs
 notes
 poetry.lock
+.vscode
