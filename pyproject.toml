@@ -17,9 +17,9 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Astronomy"
 ]
 dependencies = [
-  "numpy ==2.0.0.rc2",
+  "numpy",
   "scipy >=1.5",
-#   "numba >=0.55; implementation_name == 'cpython'",
+  "numba >=0.55; implementation_name == 'cpython'",
   "importlib-metadata; python_version<'3.10'"
 ]
 dynamic = ["version"]
