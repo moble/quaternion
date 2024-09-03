@@ -182,7 +182,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v3  # Don't upgrade to v4 until each artifact is named
+      - uses: actions/download-artifact@v4.1.7  # Don't upgrade to v4 until each artifact is named
         with:
           name: artifact
           path: dist
