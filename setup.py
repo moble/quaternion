@@ -52,31 +52,6 @@ setup_metadata = dict(
     long_description=long_description,
     long_description_content_type="text/markdown",
     ext_modules=extensions,
-    # install_requires=[
-    #     "numpy>=1.13",
-    #     # See also extras and :environment_marker specs below
-    # ],
-    # extras_require={
-    #     "scipy": [
-    #         "scipy",
-    #     ],
-    #     "numba:python_version < '3.6' and platform_python_implementation != 'PyPy'": [
-    #         "numba<0.49.0",
-    #         "llvmlite<0.32.0",
-    #     ],
-    #     "numba:python_version >= '3.6' and platform_python_implementation != 'PyPy'": [
-    #         "numba",
-    #     ],
-    #     "docs":  [
-    #         "mkdocs",
-    #         "mktheapidocs[plugin]",
-    #         "pymdown-extensions",
-    #     ],
-    #     "testing": [
-    #         "pytest",
-    #         "pytest-cov",
-    #     ]
-    # },
     version=version,
 )
 
