@@ -73,7 +73,7 @@ jobs:
             archs: "aarch64"
 
     env:
-      CIBW_SKIP: cp27-* cp35-* cp36-* cp37-* pp* *-musllinux_aarch64 cp312-*_i686
+      CIBW_SKIP: cp36-* cp37-* cp38-* pp* *-musllinux_aarch64 cp312-*_i686
       CIBW_ARCHS: ${{matrix.archs}}
       CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
       CIBW_BEFORE_BUILD: python -c "print(('#'*130+'\n')*10)" && python -m pip install oldest-supported-numpy
