@@ -28,7 +28,7 @@ Homepage = "https://github.com/moble/quaternion"
 Documentation = "https://quaternionic.readthedocs.io/en/latest"
 
 [build-system]
-requires = ["setuptools>=61", "wheel", "numpy>=2.0,<3"]
+requires = ["hatchling", "setuptools>=61", "wheel", "numpy>=2.0,<3"]
 build-backend = "setuptools.build_meta"
 
 [tool.hatch.envs.default]
