@@ -79,6 +79,7 @@ jobs:
             archs: "aarch64"
 
     env:
+      PIP_ONLY_BINARY: "scipy,numpy"
       CIBW_SKIP: cp36-* cp37-* cp38-* cp39-* pp* *-musllinux_aarch64 cp312-*_i686 cp313-*
       CIBW_ARCHS: ${{matrix.archs}}
       CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
