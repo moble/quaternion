@@ -37,7 +37,7 @@ jobs:
 
       - name: Install Hatch
         shell: bash
-        run: python -m pip install --upgrade hatch
+        run: python -m pip install --disable-pip-version-check --upgrade hatch hatchling
 
       - name: Bump version
         id: get_version
@@ -45,10 +45,16 @@ jobs:
         env:
           github_event_head_commit_message: ${{ github.event.head_commit.message }}
         run: |
+          # Note: The following line reads the HEAD commit message to look for an indication of how
+          # to bump the version number.  Specifically, if `#patch`, `#minor`, or `#major` is present
+          # in the commit message, it bumps the corresponding version number.  Those can also be
+          # prepended as `#premajor`, etc., to add/bump the prerelease modifier.  If none of those
+          # are present, `#patch` is assumed — that is, the lowest-significance number is
+          # incremented.  See the documentation of the `hatch version` command for details.
           export version_bump_rule=$(python .github/scripts/parse_bump_rule.py)
           echo "version_bump_rule: '${version_bump_rule}'"
           hatch version "${version_bump_rule}"
-          export new_version=$(hatch version)
+          export new_version=$(TERM="unknown" hatch version)
           echo "new_version: '${new_version}'"
           echo "new_version=${new_version}" >> $GITHUB_ENV  # Save env variable for later steps
 
