@@ -6,12 +6,23 @@ import fileinput
 def update(version):
     if not version:
         raise ValueError("Can't replace version with empty string")
-    files = ("pyproject.toml", "setup.py", "src/quaternion/__init__.py")
+    short_version = ".".join(version.split(".")[:2])
+
+    files = ("setup.py", "src/quaternion/__init__.py")
     pattern = re.compile('^(__version__|version) *= *".*?"')
     replacement = r'\1 = "' + version + '"'
     with fileinput.input(files=files, inplace=True) as f:
         for line in f:
             print(pattern.sub(replacement, line), end="")
+
+    files = ("docs/conf.py")
+    pattern = re.compile('^release *= *".*?"')
+    short_pattern = re.compile('^version *= *".*?"')
+    replacement = r'release = "' + version + '"'
+    short_replacement = r'version = "' + short_version + '"'
+    with fileinput.input(files=files, inplace=True) as f:
+        for line in f:
+            print(short_pattern.sub(short_replacement, pattern.sub(replacement, line)), end="")
 
 
 version = os.environ["new_version"]
