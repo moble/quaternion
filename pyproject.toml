@@ -8,7 +8,7 @@ authors = ["Michael Boyle <mob22@cornell.edu>"]
 homepage = "https://github.com/moble/quaternion"
 
 [build-system]
-requires = ["setuptools!=50.0", "wheel", "oldest-supported-numpy"]
+requires = ["setuptools!=50.0", "wheel", "numpy>=2.0,<3"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
