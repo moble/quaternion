@@ -716,9 +716,9 @@ def isclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False):
     Returns a boolean array where two arrays are element-wise equal within a
     tolerance.
 
-    This function is essentially a copy of the `numpy.isclose` function,
-    with different default tolerances and one minor changes necessary to
-    deal correctly with quaternions.
+    This function is essentially a clone of the `numpy.isclose` function,
+    with different default tolerances and minor changes necessary to deal
+    correctly with quaternions.
 
     The tolerance values are positive, typically very small numbers.  The
     relative difference (`rtol` * abs(`b`)) and the absolute difference
@@ -780,8 +780,8 @@ def isclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False):
             result = np.less_equal(abs(x-y), atol + rtol * abs(y))
         return result[()]
 
-    x = np.array(a, copy=False, subok=True, ndmin=1)
-    y = np.array(b, copy=False, subok=True, ndmin=1)
+    x = np.array(a, subok=True, ndmin=1)
+    y = np.array(b, subok=True, ndmin=1)
 
     # Make sure y is an inexact type to avoid bad behavior on abs(MIN_INT).
     # This will cause casting of x later. Also, make sure to allow subclasses
@@ -790,7 +790,7 @@ def isclose(a, b, rtol=4*np.finfo(float).eps, atol=0.0, equal_nan=False):
         dt = np.result_type(y, 1.)
     except TypeError:
         dt = np.dtype(np.quaternion)
-    y = np.array(y, dtype=dt, copy=False, subok=True)
+    y = np.array(y, dtype=dt, subok=True)
 
     xfin = np.isfinite(x)
     yfin = np.isfinite(y)
