@@ -79,8 +79,13 @@ jobs:
             archs: "aarch64"
 
     env:
-      PIP_ONLY_BINARY: "scipy,numpy"
-      CIBW_SKIP: cp36-* cp37-* cp38-* cp39-* pp* *-musllinux* *-win32 *-manylinux_i686 cp313-*
+      # Exclude 32-bit builds: *-win32 *-manylinux_i686
+      # Exclude python versions not supported by numpy: cp36-* cp37-* cp38-* cp39-* pp*
+      # Exclude musllinux builds: *-musllinux*
+      # Exclude python versions not yet supported by numba: cp313-*
+      # https://numpy.org/neps/nep-0029-deprecation_policy.html
+      # https://numba.readthedocs.io/en/stable/user/installing.html#numba-support-info
+      CIBW_SKIP: *-win32 *-manylinux_i686 cp36-* cp37-* cp38-* cp39-* pp* *-musllinux* cp313-*
       CIBW_ARCHS: ${{matrix.archs}}
       CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
       CIBW_BEFORE_BUILD: python -c "print(('#'*130+'\n')*10)" && python -m pip install "numpy>=2.0,<3"
