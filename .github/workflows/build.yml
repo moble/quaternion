@@ -36,7 +36,8 @@ jobs:
           python-version: '3.12'
 
       - name: Install Hatch
-        run: pip install --upgrade hatch
+        shell: bash
+        run: python -m pip install --upgrade hatch
 
       - name: Bump version
         id: get_version
