@@ -2,7 +2,7 @@
 name = "quaternion"
 description = "Add a quaternion dtype to NumPy"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {file = "LICENSE"}
 authors = [
   { name = "Michael Boyle", email = "michael.oliver.boyle@gmail.com" }
@@ -17,10 +17,9 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Astronomy"
 ]
 dependencies = [
-  "numpy",
-  "scipy >=1.5",
-  "numba >=0.55; implementation_name == 'cpython'",
-  "importlib-metadata; python_version<'3.10'"
+  "numpy >=1.25,<3",
+  "scipy >=1.5<2",
+  "numba >=0.55; implementation_name == 'cpython'"
 ]
 dynamic = ["version"]
 
@@ -29,7 +28,7 @@ Homepage = "https://github.com/moble/quaternion"
 Documentation = "https://quaternionic.readthedocs.io/en/latest"
 
 [build-system]
-requires = ["setuptools>=61", "wheel", "oldest-supported-numpy"]
+requires = ["setuptools>=61", "wheel", "numpy>=2.0,<3"]
 build-backend = "setuptools.build_meta"
 
 [tool.hatch.envs.default]
