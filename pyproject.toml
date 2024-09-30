@@ -18,7 +18,7 @@ classifiers = [
 ]
 dependencies = [
   "numpy >=1.25,<3",
-  "scipy >=1.5<2",
+  "scipy >=1.5,<2",
   "numba >=0.55; implementation_name == 'cpython'"
 ]
 dynamic = ["version"]
