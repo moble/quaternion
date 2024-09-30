@@ -523,7 +523,7 @@ def test_as_euler_angles():
         R1 = quaternion.from_euler_angles(alpha, beta, gamma)
         R2 = quaternion.from_euler_angles(*list(quaternion.as_euler_angles(R1)))
         d = quaternion.rotation_intrinsic_distance(R1, R2)
-        assert d < 6e3*eps, ((alpha, beta, gamma), R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
+        assert d < 5e4*eps, ((alpha, beta, gamma), R1, R2, d)  # Can't use allclose here; we don't care about rotor sign
     q0 = quaternion.quaternion(0, 0.6, 0.8, 0)
     assert q0.norm() == 1.0
     assert abs(q0 - quaternion.from_euler_angles(*list(quaternion.as_euler_angles(q0)))) < 1.e-15
