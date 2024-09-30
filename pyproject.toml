@@ -52,6 +52,8 @@ dependencies = [
 build = "mkdocs build --clean"
 serve = "mkdocs serve --dev-addr localhost:8000"
 
+[tool.hatch.version]
+path = "src/quaternion/__init__.py"
 
 [tool.setuptools.dynamic]
 version = {attr = "quaternion.__version__"}
