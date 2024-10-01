@@ -29,9 +29,9 @@ Documentation = "https://quaternion.readthedocs.io/en/latest"
 
 [project.optional-dependencies]
 docs = [
-  "mkdocs",
-  "mktheapidocs",
-  "pymdown-extensions",
+  "mkdocs-material",
+  "mkdocstrings-python",
+  "pymdown-extensions"
 ]
 
 [build-system]
@@ -50,8 +50,8 @@ test = "pytest {args:tests}"
 
 [tool.hatch.envs.docs]
 dependencies = [
-  "mkdocs",
-  "mktheapidocs",
+  "mkdocs-material",
+  "mkdocstrings-python",
   "pymdown-extensions"
 ]
 [tool.hatch.envs.docs.scripts]

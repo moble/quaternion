@@ -3,19 +3,46 @@ site_name: quaternion
 repo_url: "https://github.com/moble/quaternion"
 
 plugins:
-  - search
-  - mktheapidocs:
-      modules:
-        quaternion:
-          section: "Package API:"
-          source_repo: "https://github.com/moble/quaternion/blob/main/src"
-
-theme:
-  name: 'readthedocs'
-
-extra_javascript:
-  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js
+- search
+- mkdocstrings:
+    enable_inventory: true
+    default_handler: python
+    handlers:
+      python:
+        options:
+          show_symbol_type_heading: true
+          docstring_style: numpy
 
 markdown_extensions:
-  - pymdownx.arithmatex:
-      generic: true
+  - footnotes
+  - toc:
+      permalink: true
+
+theme:
+  name: "material"
+  #name: "mkdocs"
+  #name: "readthedocs"
+  features:
+    - content.code.copy
+
+extra_css:
+  - style.css
+
+extra_javascript:
+  - javascript/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - "Home": README.md
+  - "API":
+    - "Numpy": numpy.md
+    - "Quaternion": quaternion.md
+    - "Time series": time_series.md
+    - "Means and alignment": means.md
+    - "Calculus": calculus.md
+
+# [ReadTheDocs](https://readthedocs.org/) is the service that hosts the documentation, which calls
+# [MkDocs](https://www.mkdocs.org/), which is the generic backbone that calls
+# [mkdocstrings](https://mkdocstrings.github.io/) to generate the API documentation, which uses
+# [mkdocstrings-python](https://mkdocstrings.github.io/python/) to handle python, which uses
+# [griffe](https://mkdocstrings.github.io/griffe/) to handle the actual parsing of the docstrings.

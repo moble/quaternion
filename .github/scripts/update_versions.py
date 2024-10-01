@@ -15,15 +15,6 @@ def update(version):
         for line in f:
             print(pattern.sub(replacement, line), end="")
 
-    files = ("docs/conf.py")
-    pattern = re.compile('^release *= *".*?"')
-    short_pattern = re.compile('^version *= *".*?"')
-    replacement = r'release = "' + version + '"'
-    short_replacement = r'version = "' + short_version + '"'
-    with fileinput.input(files=files, inplace=True) as f:
-        for line in f:
-            print(short_pattern.sub(short_replacement, pattern.sub(replacement, line)), end="")
-
 
 version = os.environ["new_version"]
 
