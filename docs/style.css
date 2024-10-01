@@ -1,0 +1,4 @@
+/* Add space between function docstrings */
+div.doc.doc-object.doc-function:not(:first-of-type) {
+    margin-top: 60px;
+}
