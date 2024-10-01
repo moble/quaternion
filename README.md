@@ -36,47 +36,6 @@ Optionally add `--user` after `install` in the second command if
 you're not using a python environment — though you should start.
 
 
-## Dependencies
-
-The basic requirements for this code are reasonably current versions
-of `python` and `numpy`.  In particular, `python` versions 3.8 through
-3.11 are routinely tested.  Earlier `python` versions, including 2.7,
-will work with older versions of this package; they *might* still work
-with more recent versions of this package, but even numpy no longer
-supports `python` previous to 3.8, so your mileage may vary.  Also,
-any `numpy` version [greater than
-1.13.0](https://github.com/moble/quaternion/issues/114) should work,
-but the tests are run on the most recent release at the time of the
-test.
-
-However, certain advanced functions in this package (including
-`squad`, `mean_rotor_in_intrinsic_metric`,
-`integrate_angular_velocity`, and related functions) require
-[`scipy`](http://scipy.org/) and can automatically use
-[`numba`](http://numba.pydata.org/).  `Scipy` is a standard python
-package for scientific computation, and implements interfaces to C and
-Fortran codes for optimization (among other things) need for finding
-mean and optimal rotors.  `Numba` uses [LLVM](http://llvm.org/) to
-compile python code to machine code, accelerating many numerical
-functions by factors of anywhere from 2 to 2000.  It is *possible* to
-run all the code without `numba`, but these particular functions can
-be anywhere from 4 to 400 times slower without it.
-
-Both `scipy` and `numba` can be installed with `pip` or `conda`.
-However, because `conda` is specifically geared toward scientific
-python, it is generally more robust for these more complicated
-packages.  In fact, the main
-[`anaconda`](https://www.anaconda.com/products/individual) package
-comes with both `numba` and `scipy`.  If you prefer the smaller
-download size of [`miniconda`](http://conda.pydata.org/miniconda.html)
-(which comes with minimal extras), you'll also have to run this
-command:
-
-```sh
-conda install numpy scipy numba
-```
-
-
 ## Installation
 
 Assuming you use `conda` to manage your python installation (which is
@@ -239,6 +198,50 @@ ever.<sup>[1](#1-euler-angles-are-awful)</sup> Before you complain
 about those functions using something other than your favorite
 conventions, please read [this
 page](https://github.com/moble/quaternion/wiki/Euler-angles-are-horrible).
+
+
+## Dependencies
+
+With the standard installation methods, hopefully you won't need to
+worry about dependencies directly.  But in case you do, here's what
+you need to know.
+
+The basic requirements for this code are reasonably current versions
+of `python` and `numpy`.  In particular, `python` versions 3.10
+through 3.12 are routinely tested.  Because of its crucial dependence
+on `numpy`, this package can only support versions of `python` that
+are directly supported by `numpy` — which limits support to releases
+from the past few years.  Old versions of `python` will work with
+*older* versions of this package, which are still available from PyPI
+and conda-forge.  Some older versions of `python` may still work with
+newer versions of this package, but your mileage may vary.
+
+However, certain advanced functions in this package (including
+`squad`, `mean_rotor_in_intrinsic_metric`,
+`integrate_angular_velocity`, and related functions) require
+[`scipy`](http://scipy.org/) and can automatically use
+[`numba`](http://numba.pydata.org/).  `Scipy` is a standard python
+package for scientific computation, and implements interfaces to C and
+Fortran codes for optimization (among other things) need for finding
+mean and optimal rotors.  `Numba` uses [LLVM](http://llvm.org/) to
+compile python code to machine code, accelerating many numerical
+functions by factors of anywhere from 2 to 2000.  It is *possible* to
+run all the code without `numba`, but these particular functions can
+be anywhere from 4 to 400 times slower without it.
+
+Both `scipy` and `numba` can be installed with `pip` or `conda`.
+However, because `conda` is specifically geared toward scientific
+python, it is generally more robust for these more complicated
+packages.  In fact, the main
+[`anaconda`](https://www.anaconda.com/products/individual) package
+comes with both `numba` and `scipy`.  If you prefer the smaller
+download size of [`miniconda`](http://conda.pydata.org/miniconda.html)
+(which comes with minimal extras), you'll also have to run this
+command:
+
+```sh
+conda install numpy scipy numba
+```
 
 
 ## Bug reports and feature requests
