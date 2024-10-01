@@ -27,6 +27,13 @@ dynamic = ["version"]
 Homepage = "https://github.com/moble/quaternion"
 Documentation = "https://quaternion.readthedocs.io/en/latest"
 
+[project.optional-dependencies]
+docs = [
+  "mkdocs",
+  "mktheapidocs",
+  "pymdown-extensions",
+]
+
 [build-system]
 requires = ["hatchling", "setuptools>=61", "wheel", "numpy>=2.0,<3"]
 build-backend = "setuptools.build_meta"
