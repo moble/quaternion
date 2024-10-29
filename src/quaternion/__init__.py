@@ -326,7 +326,7 @@ def from_rotation_matrix(rot, nonorthogonal=True):
     except ImportError:
         linalg = False
 
-    rot = np.array(rot, copy=False)
+    rot = np.asarray(rot)
     shape = rot.shape[:-2]
 
     if linalg and nonorthogonal:
@@ -456,7 +456,7 @@ def from_rotation_vector(rot):
         rotations.  Output shape is rot.shape[:-1].
 
     """
-    rot = np.array(rot, copy=False)
+    rot = np.asarray(rot)
     quats = np.zeros(rot.shape[:-1]+(4,))
     quats[..., 1:] = rot[...]/2
     quats = as_quat_array(quats)
