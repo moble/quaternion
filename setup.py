@@ -12,7 +12,7 @@ version = "2024.0.3"
 
 # read the contents of the README file into the PyPI description
 this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text()
+long_description = (this_directory / "README.md").read_text("utf-8")
 
 # Set appropriate optimization flags
 if "win" in platform.lower() and not "darwin" in platform.lower():
