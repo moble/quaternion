@@ -208,7 +208,7 @@ you need to know.
 
 The basic requirements for this code are reasonably current versions
 of `python` and `numpy`.  In particular, `python` versions 3.10
-through 3.12 are routinely tested.  Because of its crucial dependence
+through 3.13 are routinely tested.  Because of its crucial dependence
 on `numpy`, this package can only support versions of `python` that
 are directly supported by `numpy` — which limits support to releases
 from the past few years.  Old versions of `python` will work with
