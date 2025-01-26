@@ -127,7 +127,7 @@ jobs:
         run: |
           python -m cibuildwheel --output-dir wheelhouse
 
-      - uses: actions/upload-artifact@v3  # Don't upgrade to v4 until each artifact is named
+      - uses: actions/upload-artifact@v4  # Don't upgrade to v4 until each artifact is named
         with:
           path: ./wheelhouse/*.whl
 
@@ -163,7 +163,7 @@ jobs:
           python -m pip install --upgrade "setuptools>=61" wheel "numpy>=2.0,<3"
           python setup.py sdist
 
-      - uses: actions/upload-artifact@v3  # Don't upgrade to v4 until each artifact is named
+      - uses: actions/upload-artifact@v4  # Don't upgrade to v4 until each artifact is named
         with:
           path: dist/*.tar.gz
 
