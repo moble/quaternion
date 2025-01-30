@@ -181,7 +181,7 @@ jobs:
 
 
   upload_pypi:
-    needs: merge_artifacts
+    needs: [get_new_version, merge_artifacts]
     name: Tag and release
     runs-on: ubuntu-latest
     if: >-
