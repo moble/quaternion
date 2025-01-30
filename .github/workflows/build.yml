@@ -181,7 +181,7 @@ jobs:
         uses: actions/upload-artifact/merge@v4
         with:
           name: merged-dist
-          pattern: 'wheels-* sdist'
+          # pattern: artifact-*
 
 
   upload_pypi:
