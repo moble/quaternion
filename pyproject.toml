@@ -70,3 +70,9 @@ minversion = "6.0"
 norecursedirs = ".* build dist *.egg-info install ENV"
 junit_family="xunit2"
 addopts = "-v --tb=short --doctest-glob='' --cov=quaternion --cov-branch --cov-report xml"
+
+
+
+# FIXME: temporary workaround until https://github.com/pypa/setuptools/issues/4759 is fixed
+[tool.setuptools]
+license-files = []
