@@ -127,8 +127,9 @@ jobs:
         run: |
           python -m cibuildwheel --output-dir wheelhouse
 
-      - uses: actions/upload-artifact@v3  # Don't upgrade to v4 until each artifact is named
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-${{ matrix.os }}
           path: ./wheelhouse/*.whl
 
 
@@ -163,13 +164,25 @@ jobs:
           python -m pip install --upgrade "setuptools>=61" wheel "numpy>=2.0,<3"
           python setup.py sdist
 
-      - uses: actions/upload-artifact@v3  # Don't upgrade to v4 until each artifact is named
+      - uses: actions/upload-artifact@v4
         with:
+          name: sdist
           path: dist/*.tar.gz
 
 
+  merge_artifacts:
+    runs-on: ubuntu-latest
+    needs: [build_wheels, build_sdist]
+    steps:
+      - name: Merge artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: merged-dist
+          pattern: 'wheels-* sdist'
+
+
   upload_pypi:
-    needs: [get_new_version, build_wheels, build_sdist]
+    needs: [get_new_version, build_wheels, build_sdist, merge_artifacts]
     name: Tag and release
     runs-on: ubuntu-latest
     if: >-
@@ -196,9 +209,9 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v3  # Don't upgrade to v4 until each artifact is named
+      - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          name: merged-dist
           path: dist
 
       - uses: actions/setup-python@v5
