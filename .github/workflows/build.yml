@@ -181,7 +181,6 @@ jobs:
         uses: actions/upload-artifact/merge@v4
         with:
           name: merged-dist
-          # pattern: artifact-*
 
 
   upload_pypi:
