@@ -59,80 +59,6 @@ jobs:
           echo "new_version=${new_version}" >> "$GITHUB_OUTPUT"  # Save variable for later steps
 
 
-  build_wheels:
-    needs: get_new_version
-    name: Build wheels on ${{ matrix.os }} for ${{matrix.archs}}
-
-    runs-on: ${{ matrix.os }}
-
-    if: >-
-        !contains(github.event.head_commit.message, '[skip ci]')
-        && !contains(github.event.head_commit.message, '[skip tests]')
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        archs: ["auto"]
-        include:
-          - os: ubuntu-latest
-            archs: "aarch64"
-
-    env:
-      CIBW_ARCHS: ${{matrix.archs}}
-      CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
-      CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux_2_28"  # Probably remove this after ~June 2025
-      CIBW_BEFORE_BUILD: python -c "print(('#'*130+'\n')*10)" && python -m pip install "numpy>=2.0,<3"
-      CIBW_TEST_REQUIRES: pytest pytest-cov
-      CIBW_TEST_COMMAND: "pytest {project}/tests"
-      CIBW_SKIP: "*-win32 *-manylinux_i686 cp36-* cp37-* cp38-* cp39-* pp* *-musllinux*"
-      # Exclude 32-bit builds: *-win32 *-manylinux_i686
-      # Exclude python versions not supported by numpy: cp36-* cp37-* cp38-* cp39-* pp*
-      # Exclude musllinux builds: *-musllinux*
-      # Exclude python versions not yet supported by numba: cp313-*
-      # https://numpy.org/neps/nep-0029-deprecation_policy.html
-      # https://numba.readthedocs.io/en/stable/user/installing.html#numba-support-info
-
-    steps:
-      - name: Set up QEMU
-        if: matrix.archs == 'aarch64'
-        id: qemu
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
-
-      - name: "Check out code"
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v5
-        name: Install Python
-        with:
-          python-version: '3.13'
-
-      - name: Update versions
-        shell: bash
-        run: |
-          export new_version=${{needs.get_new_version.outputs.new_version}}
-          echo "Updating version to '${new_version}'"
-          python .github/scripts/update_versions.py
-
-      - name: Install cibuildwheel
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install cibuildwheel
-
-      - name: Build wheels
-        run: |
-          python -m cibuildwheel --output-dir wheelhouse
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wheels-${{ matrix.os }}-${{ matrix.archs }}
-          path: ./wheelhouse/*.whl
-
-
   build_sdist:
     needs: get_new_version
     name: Build source distribution
@@ -172,7 +98,7 @@ jobs:
 
   merge_artifacts:
     runs-on: ubuntu-latest
-    needs: [build_wheels, build_sdist]
+    needs: build_sdist
     steps:
       - name: Merge artifacts
         uses: actions/upload-artifact/merge@v4
@@ -238,19 +164,19 @@ jobs:
           git commit -m "Update version for new release" pyproject.toml setup.py src/quaternion/__init__.py
           git tag -a "v${new_version}" -m "Version ${new_version}"
           git status
-          git push --follow-tags  # Will not trigger new workflow because it uses GITHUB_TOKEN
+          #git push --follow-tags  # Will not trigger new workflow because it uses GITHUB_TOKEN
 
-      - name: Create release
-        if: "!contains(github.event.head_commit.message, '[no release]')"
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ needs.get_new_version.outputs.new_version }}
-          name: Release v${{ needs.get_new_version.outputs.new_version }}
-          draft: false
-          prerelease: false
+      # - name: Create release
+      #   if: "!contains(github.event.head_commit.message, '[no release]')"
+      #   id: create_release
+      #   uses: softprops/action-gh-release@v2
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: v${{ needs.get_new_version.outputs.new_version }}
+      #     name: Release v${{ needs.get_new_version.outputs.new_version }}
+      #     draft: false
+      #     prerelease: false
 
       - name: Publish to PyPI
         if: "!contains(github.event.head_commit.message, '[no pypi]')"
@@ -261,4 +187,4 @@ jobs:
           HATCH_INDEX_AUTH: ${{ secrets.PYPI_TOKEN }}
         shell: bash
         run: |
-          hatch publish
+          hatch publish -r test
