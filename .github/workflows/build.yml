@@ -72,11 +72,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
         archs: ["auto"]
-        include:
-          - os: ubuntu-latest
-            archs: "aarch64"
+      # matrix:
+      #   os: [ubuntu-latest, windows-latest, macos-latest]
+      #   archs: ["auto"]
+      #   include:
+      #     - os: ubuntu-latest
+      #       archs: "aarch64"
 
     env:
       CIBW_ARCHS: ${{matrix.archs}}
@@ -85,7 +88,7 @@ jobs:
       CIBW_BEFORE_BUILD: python -c "print(('#'*130+'\n')*10)" && python -m pip install "numpy>=2.0,<3"
       CIBW_TEST_REQUIRES: pytest pytest-cov
       CIBW_TEST_COMMAND: "pytest {project}/tests"
-      CIBW_SKIP: "*-win32 *-manylinux_i686 cp36-* cp37-* cp38-* cp39-* pp* *-musllinux* cp313-*"
+      CIBW_SKIP: "*-win32 *-manylinux_i686 cp36-* cp37-* cp38-* cp39-* pp* *-musllinux*"
       # Exclude 32-bit builds: *-win32 *-manylinux_i686
       # Exclude python versions not supported by numpy: cp36-* cp37-* cp38-* cp39-* pp*
       # Exclude musllinux builds: *-musllinux*
