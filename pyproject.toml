@@ -19,7 +19,7 @@ classifiers = [
 dependencies = [
   "numpy >=1.25,<3",
   "scipy >=1.5,<2",
-  "numba >=0.55; implementation_name == 'cpython'"
+  #"numba >=0.55; implementation_name == 'cpython'"
 ]
 dynamic = ["version"]
 
@@ -42,7 +42,8 @@ build-backend = "setuptools.build_meta"
 dependencies = [
   "pytest",
   "pytest-cov",
-  "black"
+  "black",
+  "numba"
 ]
 [tool.hatch.envs.default.scripts]
 # Run these as `hatch run test`
