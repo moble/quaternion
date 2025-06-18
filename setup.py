@@ -15,7 +15,7 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text("utf-8")
 
 # Set appropriate optimization flags
-if "win" in platform.lower() and not "darwin" in platform.lower():
+if "win" in platform.lower() and platform.lower() != 'cygwin' and not "darwin" in platform.lower():
     extra_compile_args = ["/O2"]
 else:
     extra_compile_args = ["-O3", "-w"]
