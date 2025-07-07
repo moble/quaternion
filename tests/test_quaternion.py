@@ -1415,6 +1415,37 @@ def test_ufuncs(Rs, Qs):
                     np.zeros(Qs[Qs_finitenonzero].shape), atol=1.e-14, rtol=1.e-15)
 
 
+def test_cumulative_functions():
+    import numpy as np
+    import quaternion
+    Qs = quaternion.from_float_array(np.random.randn(100_000, 4))
+    Qs = Qs / np.abs(Qs)
+
+    def cumsum(Qs):
+        assert len(Qs) > 0
+        Ss = np.empty(len(Qs), dtype=Qs.dtype)
+        Ss[0] = Qs[0]
+        for i in range(1, len(Qs)):
+            Ss[i] = Ss[i - 1] + Qs[i]
+        return Ss
+    def cumprod(Qs):
+        assert len(Qs) > 0
+        Ps = np.empty(len(Qs), dtype=Qs.dtype)
+        Ps[0] = Qs[0]
+        for i in range(1, len(Qs)):
+            Ps[i] = Ps[i - 1] * Qs[i]
+        return Ps
+
+    assert np.allclose(np.cumsum(Qs), cumsum(Qs), rtol=1.e-14, atol=1.e-15)
+    assert np.allclose(np.cumprod(Qs), cumprod(Qs), rtol=1.e-14, atol=1.e-15)
+    assert np.array_equal(np.cumsum(Qs), Qs.cumsum())
+    assert np.array_equal(np.cumprod(Qs), Qs.cumprod())
+    assert np.array_equal(np.cumulative_sum(Qs), Qs.cumsum())
+    assert np.array_equal(np.cumulative_prod(Qs), Qs.cumprod())
+    # Issue #225
+    q = quaternion.as_quat_array(np.zeros((1000, 4), dtype=np.float64))
+    assert np.allclose(np.cumprod(q), cumprod(q), rtol=1.e-14, atol=1.e-15)
+
 @pytest.mark.parametrize(
     ("ufunc",),
     [
