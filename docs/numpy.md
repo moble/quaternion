@@ -41,7 +41,8 @@ which represent the same things as unit quaternions.
 
 Note: when passed to `quaternion.rotate_vectors`, these quaternions
 would rotate by $\pi/2$ (90°) and $\pi$ (180°) respectively, due to double-cover.
-When using `np.exp` to create 3d rotation quaternions, divide the rotation vectors in half.
+When creating 3d rotation quaternions from axis-angle format, use
+`quaternion.from_rotation_vector` instead, which accounts for double-cover.
 
 
 ## <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code> `numpy.log(R)`
