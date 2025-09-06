@@ -39,6 +39,10 @@ $\pi/2$ (90°) rotation about the y-axis.  The output is
 ```
 which represent the same things as unit quaternions.
 
+Note: when passed to `quaternion.rotate_vectors`, these quaternions
+would rotate by $\pi/2$ (90°) and $\pi$ (180°) respectively, due to double-cover.
+When using `np.exp` to create 3d rotation quaternions, divide the rotation vectors in half.
+
 
 ## <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code> `numpy.log(R)`
 
