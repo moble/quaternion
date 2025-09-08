@@ -23,9 +23,9 @@ This returns the exponential function applied to each quaternion in
 the array.  This is the quaternion analog of the exponential function
 for complex numbers, and is defined as usual:
 
-$$
+\[
 \exp(g) = \sum_{n=0}^\infty \frac{g^n}{n!}.
-$$
+\]
 
 The interpretation is that if `g` is the "generator" of a rotation,
 then `numpy.exp(g)` is the quaternion representation of the
@@ -71,8 +71,8 @@ we see that the result is precisely the same as `g`.
 However, just as with the complex logarithm, the quaternion logarithm
 is multi-valued, and we must make a choice of branch cut.  The `log`
 function always returns the value of the logarithm whose vector part
-has magnitude less than or equal to $\pi$.  Thus, $exp(log(q)) = q$
-will always be true, but $log(exp(g)) = g$ will only be true if the
+has magnitude less than or equal to $\pi$.  Thus, $\exp(\log(q)) = q$
+will always be true, but $\log(\exp(g)) = g$ will only be true if the
 vector part of $g$ has magnitude less than or equal to $\pi$.
 
 
