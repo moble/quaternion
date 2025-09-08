@@ -17,6 +17,7 @@ markdown_extensions:
   - footnotes
   - toc:
       permalink: true
+  - pymdownx.arithmatex
 
 theme:
   name: "material"
