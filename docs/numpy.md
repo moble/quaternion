@@ -22,9 +22,11 @@ functions that are particularly useful for quaternions.
 This returns the exponential function applied to each quaternion in
 the array.  This is the quaternion analog of the exponential function
 for complex numbers, and is defined as usual:
-```math
+
+$$
 \exp(g) = \sum_{n=0}^\infty \frac{g^n}{n!}.
-```
+$$
+
 The interpretation is that if `g` is the "generator" of a rotation,
 then `numpy.exp(g)` is the quaternion representation of the
 corresponding rotation operator.
