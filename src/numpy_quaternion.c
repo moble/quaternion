@@ -1447,6 +1447,11 @@ PyMODINIT_FUNC initnumpy_quaternion(void) {
     INITERROR;
   }
 
+#ifdef Py_GIL_DISABLED
+  /* Indicate this extension does NOT require the GIL in free-threaded builds. */
+  PyUnstable_Module_SetGIL(module, Py_MOD_GIL_NOT_USED);
+#endif
+
   // Initialize numpy
   import_array();
   if (PyErr_Occurred()) {
