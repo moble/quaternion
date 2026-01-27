@@ -829,19 +829,95 @@ pyquaternion_hash(PyObject *o)
 static PyObject *
 pyquaternion_repr(PyObject *o)
 {
-  char str[128];
   quaternion q = ((PyQuaternion *)o)->obval;
-  sprintf(str, "quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
-  return PyUString_FromString(str);
+  
+  // Create a temporary array containing the quaternion components
+  npy_intp dims[1] = {4};
+  PyObject *array = PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+  if (array == NULL) {
+    return NULL;
+  }
+  
+  double *data = (double *)PyArray_DATA((PyArrayObject *)array);
+  data[0] = q.w;
+  data[1] = q.x;
+  data[2] = q.y;
+  data[3] = q.z;
+  
+  // Use numpy's array2string to format the components according to printoptions
+  PyObject *array2string = NULL;
+  PyObject *numpy_module = NULL;
+  PyObject *result_str = NULL;
+  PyObject *formatted_array = NULL;
+  
+  numpy_module = PyImport_ImportModule("numpy");
+  if (numpy_module == NULL) {
+    Py_DECREF(array);
+    return NULL;
+  }
+  
+  array2string = PyObject_GetAttrString(numpy_module, "array2string");
+  Py_DECREF(numpy_module);
+  if (array2string == NULL) {
+    Py_DECREF(array);
+    return NULL;
+  }
+  
+  // Call numpy.array2string(array, separator=', ')
+  PyObject *kwargs = Py_BuildValue("{s:s}", "separator", ", ");
+  if (kwargs == NULL) {
+    Py_DECREF(array);
+    Py_DECREF(array2string);
+    return NULL;
+  }
+  
+  formatted_array = PyObject_Call(array2string, PyTuple_Pack(1, array), kwargs);
+  Py_DECREF(array);
+  Py_DECREF(array2string);
+  Py_DECREF(kwargs);
+  
+  if (formatted_array == NULL) {
+    return NULL;
+  }
+  
+  // Extract the string and strip the brackets
+  const char *array_str = PyUnicode_AsUTF8(formatted_array);
+  if (array_str == NULL) {
+    Py_DECREF(formatted_array);
+    return NULL;
+  }
+  
+  // Strip '[' and ']' and create the final string
+  size_t len = strlen(array_str);
+  if (len < 2 || array_str[0] != '[' || array_str[len-1] != ']') {
+    Py_DECREF(formatted_array);
+    return PyUString_FromString("quaternion()");
+  }
+  
+  // Build the result: "quaternion(" + components + ")"
+  char *result = (char *)malloc(len + 20);  // Enough space for "quaternion(" + components + ")\0"
+  if (result == NULL) {
+    Py_DECREF(formatted_array);
+    PyErr_NoMemory();
+    return NULL;
+  }
+  
+  strcpy(result, "quaternion(");
+  strncat(result, array_str + 1, len - 2);  // Copy everything between [ and ]
+  strcat(result, ")");
+  
+  result_str = PyUString_FromString(result);
+  free(result);
+  Py_DECREF(formatted_array);
+  
+  return result_str;
 }
 
 static PyObject *
 pyquaternion_str(PyObject *o)
 {
-  char str[128];
-  quaternion q = ((PyQuaternion *)o)->obval;
-  sprintf(str, "quaternion(%.15g, %.15g, %.15g, %.15g)", q.w, q.x, q.y, q.z);
-  return PyUString_FromString(str);
+  // Use the same implementation as repr for consistency
+  return pyquaternion_repr(o);
 }
 
 

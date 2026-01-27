@@ -244,6 +244,30 @@ conda install numpy scipy numba
 ```
 
 
+## Running tests
+
+First, install the package in development/editable mode along with the test dependencies:
+
+```sh
+python -m pip install -e .
+python -m pip install pytest pytest-cov
+```
+
+Then run the tests:
+
+```sh
+pytest tests/
+```
+
+Alternatively, if you're using `hatch` (the project's development tool), you can simply run:
+
+```sh
+hatch run test
+```
+
+This will automatically set up the test environment and run all tests.
+
+
 ## Bug reports and feature requests
 
 Bug reports and feature requests are entirely welcome (with [very few
