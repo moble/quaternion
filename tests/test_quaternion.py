@@ -1731,6 +1731,35 @@ def test_pickle():
     assert pickle.loads(pickle.dumps(a)) == a
 
 
+def test_quaternion_repr_respects_printoptions():
+    """Test that quaternion repr respects numpy print options (Issue #254)."""
+    import quaternion
+    import numpy as np
+    
+    q = quaternion.from_rotation_vector([1, 2, 3])
+    
+    original_options = np.get_printoptions()
+    
+    try:
+        default_repr = repr(q)
+        
+        np.set_printoptions(precision=5, suppress=True, sign='+', floatmode='fixed')
+        
+        custom_repr = repr(q)
+        
+        assert custom_repr != default_repr, \
+            "Quaternion repr should change when numpy print options change"
+        
+        assert '+' in custom_repr, \
+            "Quaternion repr should include '+' signs when sign='+' is set"
+        
+        assert '0.29555112749297978' not in custom_repr, \
+            "Quaternion repr should use reduced precision when precision=5 is set"
+            
+    finally:        
+        np.set_printoptions(**original_options)
+
+
 if __name__ == '__main__':
     print("The tests should be run automatically via pytest (`pip install pytest` and then just `pytest`)")
 
