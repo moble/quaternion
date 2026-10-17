@@ -395,6 +395,13 @@ pyquaternion__reduce(PyQuaternion* self)
 }
 
 static PyObject *
+pyquaternion_copy(PyObject* self, PyObject* NPY_UNUSED(args))
+{
+  // The components are mutable, unlike the usual numpy scalar value.
+  return PyQuaternion_FromQuaternion(((PyQuaternion*)self)->obval);
+}
+
+static PyObject *
 pyquaternion_getstate(PyQuaternion* self, PyObject* args)
 {
   /* printf("\n\n\nI'm Trying, OKAY?\n\n\n"); */
@@ -425,6 +432,10 @@ pyquaternion_setstate(PyQuaternion* self, PyObject* args)
 // packaged up here, and will be used in the `tp_methods` field when
 // definining the PyQuaternion_Type below.
 PyMethodDef pyquaternion_methods[] = {
+  {"__copy__", pyquaternion_copy, METH_NOARGS,
+   "Return an independent copy of the quaternion components"},
+  {"__deepcopy__", pyquaternion_copy, METH_O,
+   "Return an independent copy of the quaternion components"},
   // Unary bool returners
   {"nonzero", pyquaternion_nonzero, METH_NOARGS,
    "True if the quaternion has all zero components"},
