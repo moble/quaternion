@@ -1725,12 +1725,6 @@ def test_numpy_save_and_load():
     assert np.array_equal(a, b)
 
 
-def test_pickle():
-    import pickle
-    a = quaternion.one
-    assert pickle.loads(pickle.dumps(a)) == a
-
-
 @pytest.mark.parametrize("deep", [False, True])
 @pytest.mark.parametrize("components", [
     (1., 2., 3., 4.),
@@ -1758,6 +1752,14 @@ def test_deepcopy_shared_quaternion():
     assert saved["camera"] is not rotation
     saved["camera"].x = 9.
     assert rotation.x == 2.
+
+
+def test_pickle():
+    import pickle
+    a = quaternion.one
+    assert pickle.loads(pickle.dumps(a)) == a
+
+
 
 
 if __name__ == '__main__':
