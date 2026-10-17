@@ -1731,9 +1731,37 @@ def test_pickle():
     assert pickle.loads(pickle.dumps(a)) == a
 
 
+@pytest.mark.parametrize("deep", [False, True])
+@pytest.mark.parametrize("components", [
+    (1., 2., 3., 4.),
+    (-0., 0., -0., 0.),
+    (np.nan, np.inf, -np.inf, 1.),
+])
+def test_copy_is_independent(deep, components):
+    import copy
+    original = quaternion.quaternion(*components)
+    copied = copy.deepcopy(original) if deep else copy.copy(original)
+    assert copied is not original
+    assert quaternion.as_float_array(copied).tobytes() == quaternion.as_float_array(original).tobytes()
+    copied.w = 7.
+    assert quaternion.as_float_array(original).tobytes() == np.array(components).tobytes()
+
+
+def test_deepcopy_shared_quaternion():
+    import copy
+    rotation = quaternion.quaternion(1., 2., 3., 4.)
+    scene = {"camera": rotation, "object": rotation}
+    scene["self"] = scene
+    saved = copy.deepcopy(scene)
+    assert saved["camera"] is saved["object"]
+    assert saved["self"] is saved
+    assert saved["camera"] is not rotation
+    saved["camera"].x = 9.
+    assert rotation.x == 2.
+
+
 if __name__ == '__main__':
     print("The tests should be run automatically via pytest (`pip install pytest` and then just `pytest`)")
-
 
 
 
